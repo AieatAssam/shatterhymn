@@ -1,0 +1,32 @@
+import { describe, expect, it, vi } from 'vitest';
+import { Haptics, hapticForStrike, PATTERNS } from '../src/haptics/haptics';
+
+describe('haptics', () => {
+  it('uses the specified patterns and priorities', () => {
+    expect(PATTERNS).toEqual({
+      ui: { pattern: [6], priority: 1 }, tick: { pattern: [8], priority: 2 },
+      dud: { pattern: [10, 40, 10], priority: 3 }, close: { pattern: [6, 30, 6], priority: 4 },
+      shatter1: { pattern: [14], priority: 5 }, shatter2: { pattern: [14, 30, 16], priority: 5 },
+      shatter4: { pattern: [16, 24, 18, 24, 20], priority: 5 }, shell: { pattern: [10], priority: 5 },
+      mend: { pattern: [10, 40, 14, 40, 18], priority: 6 }, crack: { pattern: [20, 15, 20, 15, 20, 15, 20], priority: 7 },
+      newBest: { pattern: [12, 50, 12, 50, 20], priority: 7 },
+      choir: { pattern: [20, 70, 20, 50, 20, 35, 20, 22, 20, 15, 20], priority: 8 },
+      gameOver: { pattern: [20, 20, 20, 40, 20, 80, 20, 140, 20], priority: 9 },
+    });
+  });
+  it('arbitrates priorities and throttles repeated patterns', () => {
+    let now = 0; const vibrate = vi.fn(() => true);
+    const h = new Haptics({ vibrate, now: () => now, isIOS: false });
+    h.play('tick'); expect(vibrate).toHaveBeenLastCalledWith([8]);
+    h.play('tick'); expect(vibrate).toHaveBeenCalledTimes(1);
+    h.play('crack'); now = 60; h.play('shatter1'); h.play('tick'); expect(vibrate).toHaveBeenCalledTimes(2);
+    h.play('choir'); expect(vibrate).toHaveBeenCalledTimes(3);
+    now = 500; h.play('shatter1'); expect(vibrate).toHaveBeenCalledTimes(4);
+    h.enabled = false; now = 1000; h.play('gameOver'); expect(vibrate).toHaveBeenCalledTimes(4);
+  });
+  it('degrades without vibrate and selects strike tiers', () => {
+    const h = new Haptics({ now: () => 0, isIOS: true });
+    expect(h.supported).toBe(false); expect(h.iosSwitch).toBe(true); expect(() => h.play('tick')).not.toThrow();
+    expect([1, 2, 3, 4, 9].map(hapticForStrike)).toEqual(['shatter1', 'shatter2', 'shatter2', 'shatter4', 'shatter4']);
+  });
+});
