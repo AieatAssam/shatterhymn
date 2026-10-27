@@ -1,3 +1,4 @@
+import { BLOOM } from './fxConfig';
 import { valueNoise1D } from '../core/noise';
 import { Spring1D } from '../core/spring';
 import type { Loop } from '../core/loop';
@@ -8,7 +9,7 @@ export function shake(trauma:number):number{return trauma*trauma;}
 export function decayTrauma(trauma:number,seconds:number):number{return Math.max(0,trauma-1.6*seconds);}
 export function effectiveShake(trauma:number,reducedMotion:boolean,multiplier=1):number{return reducedMotion?0:shake(trauma)*multiplier;}
 export class Juice {
- trauma=0; reducedMotion=false; shakeMultiplier=1; time=0; flash=0; bloom=1.15; ca=.0006; choirTime=-1; bellX=new Spring1D(1,3.2,.35);bellY=new Spring1D(1,3.2,.35);fov=new Spring1D(30,2.5,.6); dudTime=1000;crackTime=1000;recoilX=0;recoilY=0;holdTime=0;holding=false;
+ trauma=0; reducedMotion=false; shakeMultiplier=1; time=0; flash=0; bloom: number=BLOOM.intensity; ca=.0006; choirTime=-1; bellX=new Spring1D(1,3.2,.35);bellY=new Spring1D(1,3.2,.35);fov=new Spring1D(30,2.5,.6); dudTime=1000;crackTime=1000;recoilX=0;recoilY=0;holdTime=0;holding=false;
  constructor(private readonly loop:Loop){}
  event(e:SimEvent):void{
   if(e.type==='holdStart'){this.holding=true;this.holdTime=0;}
@@ -25,7 +26,7 @@ export class Juice {
   // SG§5 f1–f9: flash, camera punch, beams and fracture animation use real time.
   if(this.choirTime>=0&&this.choirTime<(this.reducedMotion?120:67))this.flash=(this.reducedMotion?.12:.35)*(1-this.choirTime/(this.reducedMotion?120:67));else this.flash=0;
   // SG§5 f10–f45: post effects decay through the slow-motion interval.
-  if(this.choirTime>160){this.bloom=1.15+(this.bloom-1.15)*Math.exp(-3*dt);this.ca=.0006+(this.ca-.0006)*Math.exp(-6*dt);}if(this.choirTime>160)this.fov.target=30;
+  if(this.choirTime>160){this.bloom=BLOOM.intensity+(this.bloom-BLOOM.intensity)*Math.exp(-3*dt);this.ca=.0006+(this.ca-.0006)*Math.exp(-6*dt);}if(this.choirTime>160)this.fov.target=30;
   const steps=Math.max(1,Math.ceil(dt*120));for(let i=0;i<steps;i++){this.bellX.step(dt/steps);this.bellY.step(dt/steps);this.fov.step(dt/steps);}
  }
  get offsetX():number{return .35*effectiveShake(this.trauma,this.reducedMotion,this.shakeMultiplier)*valueNoise1D(11,this.time*18);}

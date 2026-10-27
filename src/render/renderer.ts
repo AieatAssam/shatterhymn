@@ -12,9 +12,13 @@ import { Crystals } from "./crystals";
 import { createBackground } from "./background";
 import { createBell, createHalo } from "./bell";
 import { fitCamera } from "./camera";
-import { BLOOM, CAMERA_FOV, CA_MODULATION, CA_OFFSET, KEY_DIR, NOISE_OPACITY, NOTE_COLORS, PALETTE, RESIZE_DEBOUNCE_MS, LEVEL_SWEEP_MS, VIGNETTE } from "./fxConfig";
+import { BELL_IDLE_GLOW, BELL_SCALE, BLOOM, CAMERA_FOV, CA_MODULATION, CA_OFFSET, KEY_DIR, NOISE_OPACITY, NOTE_COLORS, PALETTE, RESIZE_DEBOUNCE_MS, LEVEL_SWEEP_MS, VIGNETTE } from "./fxConfig";
 import { createFloor } from "./floor";
 import { AutoTier, detectTier, TIERS, type Tier } from "./quality";
+export function setPostTier(mainPass: EffectPass, post: EffectPass, tier: Tier): void {
+  const wantPost = tier !== "low";
+  post.enabled = wantPost; post.renderToScreen = wantPost; mainPass.renderToScreen = !wantPost;
+}
 class TierBloomEffect extends BloomEffect {
   scale: number = BLOOM.resolutionScale;
   override setSize(width: number, height: number): void {
@@ -24,7 +28,7 @@ class TierBloomEffect extends BloomEffect {
 }
 export class GameRenderer {
   private readonly renderer: WebGLRenderer; private readonly composer: EffectComposer; private readonly scene = new Scene(); private readonly camera = new PerspectiveCamera(CAMERA_FOV, 1, 0.1, 1000);
-  private readonly bloom = new TierBloomEffect(BLOOM); private readonly post: EffectPass; private readonly quality: AutoTier; private tier: Tier; private resizeTimer: number | undefined; private time = 0; private lastFrameTime: number | null = null;
+  private readonly bloom = new TierBloomEffect(BLOOM); private readonly post: EffectPass; private readonly mainPass: EffectPass; private readonly quality: AutoTier; private tier: Tier; private resizeTimer: number | undefined; private time = 0; private lastFrameTime: number | null = null;
   private readonly tint = [new Spring1D(0,6,1), new Spring1D(0,6,1), new Spring1D(0,6,1)];
   private readonly crystals: Crystals; private readonly sparks: Sparks; private readonly shards: Shards; private readonly rings: Rings; private readonly threads: Threads; private readonly juice: Juice; private readonly caEffect: ChromaticAberrationEffect; private readonly flashOverlay: HTMLDivElement; private readonly choirText: HTMLDivElement; private choirTextDelay=160; private gameOverBurst = -1; private reducedMotion = false;
   private readonly projection = new Vector3();
@@ -50,7 +54,7 @@ export class GameRenderer {
     this.composer = new EffectComposer(this.renderer, { frameBufferType: HalfFloatType });
     const noise = new NoiseEffect({ premultiply: true }); noise.blendMode.opacity.value = NOISE_OPACITY;
     this.composer.addPass(new RenderPass(this.scene, this.camera));
-    this.composer.addPass(new EffectPass(this.camera, this.bloom, new VignetteEffect(VIGNETTE), new ToneMappingEffect({ mode: ToneMappingMode.ACES_FILMIC })));
+    this.mainPass = new EffectPass(this.camera, this.bloom, new VignetteEffect(VIGNETTE), new ToneMappingEffect({ mode: ToneMappingMode.ACES_FILMIC })); this.composer.addPass(this.mainPass);
     this.caEffect = new ChromaticAberrationEffect({ offset: new Vector2(CA_OFFSET, CA_OFFSET), radialModulation: true, modulationOffset: CA_MODULATION }); this.post = new EffectPass(this.camera, this.caEffect, noise); this.composer.addPass(this.post);
     this.tier = detectTier(window.matchMedia("(pointer: coarse)").matches); this.quality = new AutoTier(this.tier); this.setTier(this.tier);
     window.addEventListener("resize", this.onResize); window.visualViewport?.addEventListener("resize", this.onResize);
@@ -81,12 +85,12 @@ export class GameRenderer {
     const steps = Math.max(1, Math.ceil(realDtMs / 1000 / (1 / 120))); const dt = realDtMs / 1000 / steps;
     for (let i = 0; i < steps; i++) for (const spring of this.tint) spring.step(dt);
     this.shared.uNoteColor.value.setRGB(this.tint[0]!.x, this.tint[1]!.x, this.tint[2]!.x);
-    this.shared.uNoteGlow.value = Math.min(1,(state.dial.holding ? Math.min(1, 0.5 + state.dial.holdMs / 2000) : 0)+this.shards.glow);
+    this.shared.uNoteGlow.value = Math.min(1,Math.max(BELL_IDLE_GLOW, state.dial.holding ? Math.min(1, 0.5 + state.dial.holdMs / 2000) : 0)+this.shards.glow);
     const halo = (this.halo.material as ShaderMaterial).uniforms; halo.uCurrent!.value = state.dial.note; halo.uActive!.value = state.K;
     let danger = 0; for (const c of state.crystals) if (c.alive && c.rho - c.r < 3.1) { danger = 1; break; } halo.uDanger!.value = danger;
     const bell = (this.bell.material as ShaderMaterial).uniforms; bell.uCracks!.value = state.cracks; bell.uGrace!.value = state.graceMs > 0 ? 1 : 0; bell.uDud!.value = this.reducedMotion && this.juice.dudTime < 600 ? Math.sin(Math.PI * this.juice.dudTime / 600) : 0; bell.uCrackFlash!.value = Math.max(0, 1 - this.juice.crackTime / 80);
     const j=this.juice; const anticipation=j.holding?Math.min(1,j.holdTime/90):0; const squash=1-(1-anticipation)**2;
-    this.bell.scale.set(j.bellX.x+.06*squash,j.bellY.x-.08*squash,1);
+    this.bell.scale.set(BELL_SCALE*(j.bellX.x+.06*squash),BELL_SCALE*(j.bellY.x-.08*squash),BELL_SCALE);
     this.bell.rotation.z=(!this.reducedMotion&&j.holding ? Math.min(3,.6+.4*j.holdTime/1000)*Math.PI/180*Math.sin(j.time*22*Math.PI):0)+(!this.reducedMotion&&j.dudTime<600?8*Math.PI/180*Math.exp(-6*j.dudTime/1000)*Math.sin(14*Math.PI*j.dudTime/1000):0);
     this.bell.position.x=j.recoilX*Math.exp(-j.crackTime/100);this.bell.position.y=j.recoilY*Math.exp(-j.crackTime/100);
     this.bloom.intensity=j.bloom;this.caEffect.offset.set(j.ca,j.ca);this.flashOverlay.style.opacity=String(j.flash);
@@ -113,7 +117,7 @@ export class GameRenderer {
   }
   project(x: number, y: number): { sx: number; sy: number } { this.projection.set(x, y, 0).project(this.camera); return { sx: (this.projection.x + 1) * window.innerWidth / 2, sy: (1 - this.projection.y) * window.innerHeight / 2 }; }
   resize(): void { const width = window.innerWidth, height = window.innerHeight; if (!width || !height) return; fitCamera(this.camera, width / height); this.renderer.setSize(width, height, false); this.composer.setSize(width, height); }
-  setTier(tier: Tier): void { this.tier = tier; this.quality.tier = tier; this.renderer.setPixelRatio(tier === "low" ? 1 : Math.min(window.devicePixelRatio || 1, TIERS[tier].dpr)); this.bloom.scale = TIERS[tier].bloom; this.post.enabled = tier !== "low"; this.shards.setTier(tier);this.sparks.setTier(tier,this.renderer.getPixelRatio()); this.resize(); }
+  setTier(tier: Tier): void { this.tier = tier; this.quality.tier = tier; this.renderer.setPixelRatio(tier === "low" ? 1 : Math.min(window.devicePixelRatio || 1, TIERS[tier].dpr)); this.bloom.scale = TIERS[tier].bloom; setPostTier(this.mainPass, this.post, tier); this.bloom.mipmapBlurPass.levels = tier === "low" ? 4 : 8; this.shards.setTier(tier);this.sparks.setTier(tier,this.renderer.getPixelRatio()); this.resize(); }
   dispose(): void {
     window.removeEventListener("resize", this.onResize); window.visualViewport?.removeEventListener("resize", this.onResize); window.clearTimeout(this.resizeTimer);
     for (const mesh of [this.background, this.floor, this.halo, this.bell]) { mesh.geometry.dispose(); const material = mesh.material as ShaderMaterial; if (mesh === this.bell) for (const name of ["uCrack0", "uCrack1", "uCrack2"]) material.uniforms[name]!.value.dispose(); material.dispose(); }

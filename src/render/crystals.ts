@@ -58,7 +58,7 @@ export class Crystals {
       if(draw.kind === "mend") { this.object.position.set(draw.x,draw.y,0.4); this.object.rotation.set(0,0,0); this.object.scale.setScalar(draw.r*(1+0.08*Math.sin(time*3*Math.PI))); this.object.updateMatrix(); this.rings.setMatrixAt(ringCount++,this.object.matrix); }
       v.flash=Math.max(0,v.flash-realDt); v.shellFlash=Math.max(0,v.shellFlash-realDt);
     }
-    for(let i=0;i<5;i++){const mesh=this.meshes[i]!; mesh.count=this.counts[i]!; mesh.instanceMatrix.needsUpdate=true; const a=this.attrs[i]!; a.aColor!.needsUpdate=true; a.aCore!.needsUpdate=true; a.aDark!.needsUpdate=true; a.aFlash!.needsUpdate=true; a.aCrack!.needsUpdate=true; a.aFade!.needsUpdate=true; a.aKind!.needsUpdate=true;} this.rings.count=ringCount; this.rings.instanceMatrix.needsUpdate=true;
+    for(let i=0;i<5;i++){const mesh=this.meshes[i]!; mesh.count=this.counts[i]!; mesh.visible=mesh.count>0; mesh.instanceMatrix.needsUpdate=true; const a=this.attrs[i]!; a.aColor!.needsUpdate=true; a.aCore!.needsUpdate=true; a.aDark!.needsUpdate=true; a.aFlash!.needsUpdate=true; a.aCrack!.needsUpdate=true; a.aFade!.needsUpdate=true; a.aKind!.needsUpdate=true;} this.rings.count=ringCount; this.rings.visible=ringCount>0; this.rings.instanceMatrix.needsUpdate=true;
   }
   dispose(): void { for(const mesh of this.meshes){this.scene.remove(mesh);mesh.geometry.dispose();(mesh.material as ShaderMaterial).dispose();} this.scene.remove(this.rings);this.rings.geometry.dispose();(this.rings.material as MeshBasicMaterial).dispose(); }
 }
