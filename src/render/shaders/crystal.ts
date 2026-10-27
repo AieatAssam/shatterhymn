@@ -37,6 +37,6 @@ void main(){
   }
   color+=vColor*fres*vSelected*.45;
   color=mix(color,vec3(1.),vFlash);
-  color*=min(1.,${PLAY_START.crystalMax}/max(max(color.r,color.g),max(color.b,.0001)));
+  color*=min(1.,${Number(PLAY_START.crystalMax).toFixed(2)}/max(max(color.r,color.g),max(color.b,.0001)));
   gl_FragColor=vec4(color,vFade);
 }`;
