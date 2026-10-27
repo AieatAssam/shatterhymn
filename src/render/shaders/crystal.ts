@@ -1,5 +1,6 @@
-export const vertex = `attribute vec3 aColor,aCore,aDark; attribute float aFlash,aCrack,aFade,aKind; varying vec3 vColor,vCore,vDark,vNormal,vView,vLocal; varying float vFlash,vCrack,vFade,vKind,vSeed; void main(){vSeed=float(gl_InstanceID);vColor=aColor;vCore=aCore;vDark=aDark;vFlash=aFlash;vCrack=aCrack;vFade=aFade;vKind=aKind;vLocal=position;vec4 p=modelViewMatrix*instanceMatrix*vec4(position,1.);vNormal=normalize(normalMatrix*mat3(instanceMatrix)*normal);vView=normalize(-p.xyz);gl_Position=projectionMatrix*p;}`;
-export const fragment = `uniform vec3 uKeyDir; uniform float uTime,uHeat; varying vec3 vColor,vCore,vDark,vNormal,vView,vLocal; varying float vFlash,vCrack,vFade,vKind,vSeed;
+import { PLAY_START } from "../fxConfig";
+export const vertex = `attribute vec3 aColor,aCore,aDark; attribute float aFlash,aCrack,aFade,aKind,aSelected; varying vec3 vColor,vCore,vDark,vNormal,vView,vLocal; varying float vFlash,vCrack,vFade,vKind,vSeed,vSelected; void main(){vSeed=float(gl_InstanceID);vColor=aColor;vCore=aCore;vDark=aDark;vFlash=aFlash;vCrack=aCrack;vFade=aFade;vKind=aKind;vSelected=aSelected;vLocal=position;vec4 p=modelViewMatrix*instanceMatrix*vec4(position,1.);vNormal=normalize(normalMatrix*mat3(instanceMatrix)*normal);vView=normalize(-p.xyz);gl_Position=projectionMatrix*p;}`;
+export const fragment = `uniform vec3 uKeyDir; uniform float uTime,uHeat; varying vec3 vColor,vCore,vDark,vNormal,vView,vLocal; varying float vFlash,vCrack,vFade,vKind,vSeed,vSelected;
 float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);} float edge(vec2 p){vec2 g=floor(p),f=fract(p);float a=10.,b=10.;for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){vec2 o=vec2(float(x),float(y));vec2 q=o+vec2(hash(g+o),hash(g+o+19.))-f;float d=dot(q,q);if(d<a){b=a;a=d;}else b=min(b,d);}return sqrt(b)-sqrt(a);}
 vec3 env(vec3 d){ // the cathedral seen through the gem (no texture fetch)
   float up=clamp(d.y*0.5+0.5,0.,1.);
@@ -34,6 +35,8 @@ void main(){
     color=mix(color,color*vec3(1.25,1.0,0.6),0.35)+vec3(1.0,0.78,0.35)*(fres*2.6+glint*2.0)
          +vec3(1.,.82,.48)*0.25*(0.5+0.5*sin(uTime*9.4248));
   }
-  color=mix(color,vec3(4.),vFlash);
+  color+=vColor*fres*vSelected*.45;
+  color=mix(color,vec3(1.),vFlash);
+  color*=min(1.,${PLAY_START.crystalMax}/max(max(color.r,color.g),max(color.b,.0001)));
   gl_FragColor=vec4(color,vFade);
 }`;

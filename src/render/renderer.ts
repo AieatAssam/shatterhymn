@@ -73,7 +73,7 @@ export class GameRenderer {
     if(event.type === "strike") { if(event.n>=7 && event.closeCount>0)this.choirTextDelay=180;  if(event.n>=2)this.threads.burst(event.shattered,event.note,freezeMsForStrike(event.n,event.closeCount>0)); }
     if(event.type === "dud") this.rings.launch("dud",event.note);
     if(event.type === "shellBreak") this.shards.burst(event.x,event.y,event.note,0,true);
-    if(event.type === "crack") { this.rings.launch("crack",0); for(const c of event.flared)this.shards.burst(c.x,c.y,c.note); }
+    if(event.type === "crack") { this.rings.launch("crack",0); if(this.getState().stats.score>0) for(const c of event.flared)this.shards.burst(c.x,c.y,c.note); }
     // SG§5 f10: three rings begin at the end of the freeze, 50 ms apart.
     if(event.type === "choir") { this.choirText.innerHTML=`<div style="font:700 72px Cinzel,serif">CHOIR!</div><div style="font:600 20px Inter,sans-serif">${event.n} at once</div>`; this.choirTextDelay=160; this.rings.launch("choir",event.note,160);this.rings.launch("choir",event.note,210,0xffffff);this.rings.launch("choir",event.note,260,0xffd27a); }
     if(event.type === "gameOver") { this.gameOverBurst=250; this.juice.heat.target=this.juice.heat.x; }

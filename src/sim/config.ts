@@ -12,7 +12,7 @@ export const FAIRNESS_MS = 2000, FAIRNESS_ANGLE = 0.3, FAIRNESS_R = 8, FAIRNESS_
 export const MEND_COOLDOWN_MS = 30000, RUSHER_SPEED_FACTOR = 1.7, RING_SPEED_FACTOR = 0.8;
 export interface LevelRow { K: number; spawnInterval: number; speed: number; fieldCap: number; stepMs: number }
 export const LEVELS: readonly LevelRow[] = [
-  { K: 3, spawnInterval: 1.5, speed: 0.85, fieldCap: 6, stepMs: 420 },
+  { K: 3, spawnInterval: 1.5, speed: 0.85, fieldCap: 8, stepMs: 420 },
   { K: 3, spawnInterval: 1.35, speed: 0.95, fieldCap: 8, stepMs: 400 },
   { K: 4, spawnInterval: 1.25, speed: 1.05, fieldCap: 10, stepMs: 380 },
   { K: 4, spawnInterval: 1.1, speed: 1.15, fieldCap: 12, stepMs: 360 },

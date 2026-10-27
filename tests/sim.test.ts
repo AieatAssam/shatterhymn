@@ -27,6 +27,18 @@ describe('simulation', () => {
     expect(sim.step(none).map(e => e.type).filter(t => t === 'gameOver')).toHaveLength(1);
     expect(sim.step(none)).toHaveLength(0);
   });
+  it('ends on the third crack in that tick and rejects later strikes', () => {
+    const sim = new Sim({ seed: 1, mode: 'run', slowDial: false });
+    sim.state.cracks = 2;
+    const c = sim.state.crystals[0]!;
+    Object.assign(c, { alive: true, id: 1, note: 1, rho: 2, r: .55, speed: 0 });
+    const events = sim.step(none);
+    expect(sim.state.over).toBe(true);
+    expect(events.map(e => e.type)).toEqual(expect.arrayContaining(['crack', 'gameOver']));
+    Object.assign(c, { alive: true, note: 0, rho: 5 });
+    expect(sim.step({ press: true, release: true, cancel: false })).toEqual([]);
+    expect(c.alive).toBe(true);
+  });
   it('levels at 20, 40 and 80 seconds', () => {
     const sim = new Sim({ seed: 4, mode: 'run', slowDial: false });
     const levels = [];

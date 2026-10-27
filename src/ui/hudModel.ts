@@ -18,3 +18,5 @@ export function hudChipLayout(viewport: number, bestWidth: number): { maxWidth: 
   const gap = 16;
   return { maxWidth: Math.max(0, Math.min(viewport / 2 - 64, (viewport - 24 - bestWidth - gap * 2) / 2)), gap };
 }
+
+export function multiplierText(mult: number): string { return mult > 1 ? `×${mult}` : ""; }

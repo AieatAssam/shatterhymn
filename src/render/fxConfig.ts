@@ -25,3 +25,5 @@ export const TITLE_FX = { goldenScale: 1.25, orbitRadius: 1.3, sparkles: 6, pool
 export const TELL_FX = { closeScale: 1.6, closeLife: .25, goldShards: 12, ringWidth: .35, discWhite: .3 } as const;
 
 export const FINISH = { floaterGap: 12, closeOffset: 56, closeOpaqueMs: 400, scoreMs: 600, gemBodyMax: .55, shardBodyMax: .45, shardDarkFacet: .4, beamFadePx: 80, titleSweep: 3 } as const;
+
+export const PLAY_START = { rose: .08, rosePeriod: 7, roseBreath: .08, selectedScale: 1.15, crystalMax: .9, shaftAlpha: .045 } as const;

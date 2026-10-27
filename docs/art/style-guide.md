@@ -388,3 +388,8 @@ Lead-approved numbers from `/workspace/wow-game/wow/SCORECARD-W2.md` §4. Prefer
 - Fever heat at streak 3/6/10 = 0.6 / 0.85 / 1.0. Mult 56 px gold at streak ≥ 3.
 - Title: hide lancet glass (beams stay). Pop `+N` is white with void0 outline.
 - Results panel `rgba(11,9,32,0.60)` + blur 8px; mission scroll padding above footer.
+
+## 14. W1h play-start overrides (2026-10-27)
+- Level 0 `fieldCap` 6 → 8 so the opening can show ≥ 8 crystals by ~0:20 (lead sign-off; visual density only, sim scoring unchanged).
+- Opening rose during play: base lit ≈ 0.08 (was ~0.045), slow 7 s breathe ±8%. Selected-note crystals +15% visual scale.
+- Results-body uses `align-content: start` so unlock label and PB-gap are never clipped.
