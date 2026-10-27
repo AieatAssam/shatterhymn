@@ -89,7 +89,7 @@ export class Spawner {
     if (this.timer > 1e-7) return;
     const row = levelRow(effectiveLevel(state));
     const unlocked = FORMATIONS.filter(f => f.fromLevel <= effectiveLevel(state));
-    const formation: Formation = this.opening ? 'pair' : this.rng.weighted(unlocked.map(f => ({ item: f.id, w: f.weight })));
+    const formation: Formation = this.opening ? 'ring' : this.rng.weighted(unlocked.map(f => ({ item: f.id, w: f.weight })));
     const count = formation === 'single' ? 1 : formation === 'pair' ? 2 : formation === 'arc' ? Math.min(5, 3 + Math.floor(effectiveLevel(state) / 3)) : formation === 'duet' ? 4 : formation === 'spiral' ? state.K : 6;
     if (aliveCount(state) + this.pending.length + count > Math.min(row.fieldCap, MAX_CRYSTALS)) { this.timer = SPAWN_RETRY_MS; return; }
     let theta = this.rng.range(0, Math.PI * 2);
@@ -109,7 +109,9 @@ export class Spawner {
       const speed = row.speed * (formation === 'ring' ? RING_SPEED_FACTOR : kind === 'rusher' ? RUSHER_SPEED_FACTOR : 1);
       this.spawn(state, note, theta + offsets[i]!, kind, speed, swirl, events);
     }
+    const wasOpening = this.opening;
     this.opening = false;
-    this.timer = row.spawnInterval * 1000 * (1 + SPAWN_COUNT_FACTOR * (count - 1));
+    const fillFast = aliveCount(state) < Math.min(row.fieldCap, 8);
+    this.timer = (wasOpening || fillFast) ? Math.min(500, row.spawnInterval * 1000 * 0.4) : row.spawnInterval * 1000 * (1 + SPAWN_COUNT_FACTOR * (count - 1));
   }
 }

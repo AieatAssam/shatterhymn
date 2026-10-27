@@ -393,3 +393,7 @@ Lead-approved numbers from `/workspace/wow-game/wow/SCORECARD-W2.md` §4. Prefer
 - Level 0 `fieldCap` 6 → 8 so the opening can show ≥ 8 crystals by ~0:20 (lead sign-off; visual density only, sim scoring unchanged).
 - Opening rose during play: base lit ≈ 0.08 (was ~0.045), slow 7 s breathe ±8%. Selected-note crystals +15% visual scale.
 - Results-body uses `align-content: start` so unlock label and PB-gap are never clipped.
+
+## 15. W1i play-start densify (2026-10-27)
+- Opening formation is a 6-crystal ring (was pair); fill-fast spawn until alive < min(fieldCap,8).
+- PLAY_START.rose 0.055, selectedScale 1.28, crystalMax 0.85; rose edge AA via fwidth; non-selected crystals dimmed ~18%.

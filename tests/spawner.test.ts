@@ -11,11 +11,11 @@ function bot(sim: Sim): SimInput {
 }
 const none = { press: false, release: false, cancel: false };
 describe('spawn director', () => {
-  it('opens with a pair at one second', () => {
+  it('opens with a ring of six at one second', () => {
     const sim = new Sim({ seed: 1, mode: 'run', slowDial: false });
     for (let i = 0; i < 59; i++) expect(sim.step(none).filter(e => e.type === 'spawn')).toHaveLength(0);
     const spawned = sim.step(none).filter(e => e.type === 'spawn');
-    expect(spawned).toHaveLength(2); expect(spawned[0]!.note).toBe(spawned[1]!.note);
+    expect(spawned).toHaveLength(6);
   });
   it('draws every active tone once per bag and rebuilds for new K', () => {
     const spawner = new Spawner(new Rng(7));
