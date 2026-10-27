@@ -168,3 +168,11 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid 
 .results-footer { border-radius:20px; }
 .pb-gap { color:#f4f1ff; }
 .result-progress .earned { display:block; background:#ffc23f; z-index:1; }
+
+/* W1f polish */
+.hud-backing { position:fixed; z-index:6; inset:0 0 auto; height:28vh; pointer-events:none; background:linear-gradient(rgba(5,4,12,.85) 0%, rgba(5,4,12,.85) 65%, transparent 100%); }
+.next-chip > div:first-child { font-size:11px; white-space:nowrap; }
+.pop-text.close .main { display:inline-block; }
+.result-progress .before { display:block; background:#b47a26; opacity:.55; border-radius:8px 0 0 8px; }
+.result-progress .earned { display:block; width:var(--earned); background:#ffc23f; opacity:1; border-radius:0 8px 8px 0; box-shadow:0 0 8px #ffd27a; animation:reward-fill 600ms 700ms ease-out backwards; }
+@keyframes reward-fill { from { width:0; } to { width:var(--earned); } }

@@ -24,4 +24,4 @@ export const SHATTER = { counts: { low: 22, medium: 30, high: 40 }, speed: 11, s
 export const TITLE_FX = { goldenScale: 1.25, orbitRadius: 1.3, sparkles: 6, poolAlpha: .55, tickSpeed: .35, discardRadius: 11.5 } as const;
 export const TELL_FX = { closeScale: 1.6, closeLife: .25, goldShards: 12, ringWidth: .35, discWhite: .3 } as const;
 
-export const FINISH = { floaterGap: 8, closeOffset: 56, closeOpaqueMs: 400, scoreMs: 600, gemBodyMax: .55, shardDarkFacet: .45, beamFadePx: 80, titleSweep: 3 } as const;
+export const FINISH = { floaterGap: 12, closeOffset: 56, closeOpaqueMs: 400, scoreMs: 600, gemBodyMax: .55, shardBodyMax: .45, shardDarkFacet: .4, beamFadePx: 80, titleSweep: 3 } as const;
