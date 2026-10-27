@@ -378,3 +378,13 @@ Low ≤ 18 steady / ≤ 21 peak; Medium ≤ 26; High ≤ 30. Low bloom intensity
 
 ### 12.6 Title / results / HUD
 Title layout and chips per design §18.3. Results footer per §18.5. HUD next-unlock and fever mult chip per §18.4. Pop text: size `min(56, 24+4N)`, life 900 ms, gold gradient at N ≥ 4.
+
+## 13. W1d wow overrides (2026-10-27)
+
+Lead-approved numbers from `/workspace/wow-game/wow/SCORECARD-W2.md` §4. Prefer these over earlier §5 / §12 values where they conflict.
+
+- Crystal visual scale `near 1.9 / far 3.6`. Body luminance ≤ 0.55; bloom threshold Low 0.72. Rose during play lit 0.045 ×0.55 under arena.
+- Shatter: see `SHATTER` in fxConfig (shard counts Low 22 / Med 30 / High 40, speed 11+13r, drag 1.5, harvest 1.5 s, life 2.6 s). One shockwave ring per strike to 9 u / 900 ms. Flash DOM opacities 0.30/0.45/0.60/0.75.
+- Fever heat at streak 3/6/10 = 0.6 / 0.85 / 1.0. Mult 56 px gold at streak ≥ 3.
+- Title: hide lancet glass (beams stay). Pop `+N` is white with void0 outline.
+- Results panel `rgba(11,9,32,0.60)` + blur 8px; mission scroll padding above footer.

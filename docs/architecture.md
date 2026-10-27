@@ -446,3 +446,9 @@ On push to `main` + `workflow_dispatch`: `actions/checkout@v4` → `actions/setu
 
 ## 15. Testing strategy
 Everything under `core`, `sim` and `meta`, plus `haptics.ts` and `audio/scales.ts`, is unit-tested in Node. Render, audio graph and DOM are verified by `npm run build` succeeding and by code review against the style guide (no browser is available to the implementer). Each milestone in `milestones.md` lists its required tests. `npm run check` must pass at the end of every milestone.
+
+## 19. Screenshot harness hook (`?qa=1`)
+
+When the URL contains `?qa=1`, the controller exposes a read-only `window.__shatterhymnQA()` that returns
+`{ dialNote: number | null, mult: number, streak: number, score: number, crystals: { note: number, rho: number, kind: string }[] }`.
+No visible UI. No writes into `src/sim`. Used only by the lead's screenshot harness to hold until the dial matches a common near crystal so ×3 and fever can be captured. Absent without the query flag.
