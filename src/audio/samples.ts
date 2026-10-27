@@ -1,0 +1,7 @@
+export type Family = "glass-light" | "glass-medium" | "glass-heavy" | "bell-heavy" | "ui-glass" | "ui-click" | "ui-back" | "dud";
+const names = [ ...["glass-light", "glass-medium", "glass-heavy", "bell-heavy"].flatMap(f => Array.from({length: 5}, (_, i) => `${f}-${i}.mp3`)), ...[1, 2, 3].map(i => `ui-glass-${i}.mp3`), "ui-click.mp3", "ui-back.mp3", "dud.mp3" ];
+export class Samples {
+ private readonly buffers = new Map<string, AudioBuffer>(); private readonly indices = new Map<Family, number>();
+ async load(ctx: AudioContext, baseUrl: string): Promise<void> { await Promise.all(names.map(async name => { const response = await fetch(baseUrl + "audio/" + name); if (!response.ok) throw new Error(`Failed to load ${name}`); this.buffers.set(name, await ctx.decodeAudioData(await response.arrayBuffer())); })); }
+ play(ctx: AudioContext, dest: AudioNode, family: Family, when: number, gain = 1, rate = 1): void { const count = family === "ui-glass" ? 3 : family.startsWith("glass-") || family === "bell-heavy" ? 5 : 1; const index = this.indices.get(family) ?? 0; this.indices.set(family, (index + 1) % count); const name = count === 1 ? `${family}.mp3` : `${family}-${index + (family === "ui-glass" ? 1 : 0)}.mp3`; const buffer = this.buffers.get(name); if (!buffer) return; const source = ctx.createBufferSource(), volume = ctx.createGain(); source.buffer = buffer; source.playbackRate.value = rate; volume.gain.value = gain; source.connect(volume); volume.connect(dest); source.start(when); }
+}
