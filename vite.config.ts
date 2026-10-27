@@ -25,7 +25,7 @@ function swPrecache(): Plugin {
   };
 }
 export default defineConfig({
-  base: "./",
+  base: "/shatterhymn/",
   build: { target: "es2022", assetsInlineLimit: 0 },
   plugins: [swPrecache()],
   test: { environment: "node", include: ["tests/**/*.test.ts"] },
