@@ -4,15 +4,11 @@ import { Haptics, hapticForStrike, PATTERNS } from '../src/haptics/haptics';
 describe('haptics', () => {
   it('uses the specified patterns and priorities', () => {
     expect(PATTERNS).toEqual({
-      fever: { pattern: [8, 30, 8, 30, 12], priority: 5 },
-      ui: { pattern: [6], priority: 1 }, tick: { pattern: [8], priority: 2 },
-      dud: { pattern: [28], priority: 3 }, close: { pattern: [6, 30, 6], priority: 4 },
-      shatter1: { pattern: [14], priority: 5 }, shatter2: { pattern: [14, 30, 16], priority: 5 },
-      shatter4: { pattern: [16, 24, 18, 24, 20], priority: 5 }, shell: { pattern: [10], priority: 5 },
-      mend: { pattern: [10, 40, 14, 40, 18], priority: 6 }, crack: { pattern: [20, 15, 20, 15, 20, 15, 20], priority: 7 },
-      newBest: { pattern: [12, 50, 12, 50, 20], priority: 7 },
-      choir: { pattern: [20, 70, 20, 50, 20, 35, 20, 22, 20, 15, 20], priority: 8 },
-      gameOver: { pattern: [20, 20, 20, 40, 20, 80, 20, 140, 20], priority: 9 },
+      shatter1: { pattern: [10], priority: 5 }, shatter2: { pattern: [14], priority: 5 }, shatter4: { pattern: [18], priority: 5 },
+      choir: { pattern: [22, 60, 18], priority: 8 }, dud: { pattern: [28], priority: 3 }, crack: { pattern: [26], priority: 7 },
+      fever: { pattern: [12, 40, 16], priority: 5 }, mend: { pattern: [10, 40, 14], priority: 6 }, shell: { pattern: [8], priority: 5 },
+      ui: { pattern: [6], priority: 1 }, tick: { pattern: [8], priority: 2 }, newBest: { pattern: [12, 50, 18], priority: 7 },
+      gameOver: { pattern: [20, 40, 20, 80, 24], priority: 9 },
     });
   });
   it('arbitrates priorities and throttles repeated patterns', () => {
@@ -20,14 +16,15 @@ describe('haptics', () => {
     const h = new Haptics({ vibrate, now: () => now, isIOS: false });
     h.play('tick'); expect(vibrate).toHaveBeenLastCalledWith([8]);
     h.play('tick'); expect(vibrate).toHaveBeenCalledTimes(1);
-    h.play('crack'); now = 60; h.play('shatter1'); h.play('tick'); expect(vibrate).toHaveBeenCalledTimes(2);
+    h.play('crack'); now = 10; h.play('shatter1'); h.play('tick'); expect(vibrate).toHaveBeenCalledTimes(2);
     h.play('choir'); expect(vibrate).toHaveBeenCalledTimes(3);
-    now = 500; h.play('shatter1'); expect(vibrate).toHaveBeenCalledTimes(4);
+    now = 500; h.play('shatter1', true); expect(vibrate).toHaveBeenLastCalledWith([14]); expect(vibrate).toHaveBeenCalledTimes(4);
     h.enabled = false; now = 1000; h.play('gameOver'); expect(vibrate).toHaveBeenCalledTimes(4);
   });
   it('degrades without vibrate and selects strike tiers', () => {
     const h = new Haptics({ now: () => 0, isIOS: true });
     expect(h.supported).toBe(false); expect(h.iosSwitch).toBe(true); expect(() => h.play('tick')).not.toThrow();
+    const vibrate = vi.fn(() => true); const ios = new Haptics({ vibrate, now: () => 0, isIOS: true }); ios.play('choir'); expect(vibrate).not.toHaveBeenCalled();
     expect([1, 2, 3, 4, 9].map(hapticForStrike)).toEqual(['shatter1', 'shatter2', 'shatter2', 'shatter4', 'shatter4']);
   });
 });

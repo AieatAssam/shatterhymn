@@ -191,3 +191,11 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid 
 @media (prefers-reduced-motion:reduce) { .color-button { transition:none; } .color-button.new-note { animation:none; } }
 .color-pad.reduce-motion .color-button { transition:none; }
 .color-pad.reduce-motion .color-button.new-note { animation:none; }
+
+.hearts svg, .hearts svg.broken { width:28px; height:28px; fill:rgba(232,236,244,.35); stroke:#e8ecf4; opacity:.8; filter:none; }
+.best { font-size:9.6px; color:#8a8fa3; }
+.pop-text { background:rgba(5,4,12,.6); border-radius:12px; padding:8px 14px; }
+.pop-text.penalty { background:rgba(5,4,12,.72); color:#f4f1ff; text-shadow:none; -webkit-text-stroke:0; }
+.pop-text.penalty .glyph { display:inline; color:var(--note); font-size:1em; }
+
+.score.new-best::after { content:"NEW BEST"; display:block; color:#8a8fa3; font:600 9.6px Inter,sans-serif; letter-spacing:.1em; }

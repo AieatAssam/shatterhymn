@@ -22,8 +22,8 @@ void main(){
   color=mix(color,coreColor,core*.2);
   vec3 H=normalize(uKeyDir+V);
   float glint=pow(max(dot(N,H),0.),48.)*(.55+.45*sin(uTime*7.+vSeed*31.));
-  color+=vec3(.62,.85,1.)*fres*1.6+vec3(1.)*glint*2.5;
-  color+=vec3(1.,.82,.48)*fres*2.4*uHeat;
+  color+=vec3(.62,.85,1.)*fres*1.0+vec3(1.)*glint*1.6;
+  color+=vec3(1.)*fres*.6*uHeat;
   vec3 irid=.5+.5*cos(6.2831*(fres+uTime*.04+vec3(0.,.33,.67)));
   float e=min(edge(vLocal.xy*3.),min(edge(vLocal.xy*6.),edge(vLocal.xy*12.)));
   color+=vec3(4.)*(1.-smoothstep(0.,0.04,e))*vCrack;
