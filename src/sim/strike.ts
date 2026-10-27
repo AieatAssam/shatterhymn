@@ -1,4 +1,4 @@
-import { CHOIR_N, CHOIR_R, CLOSE_GAP, CRYSTAL_R, HALO_R, JAR_MS, PRISM_BLAST_R, RECOVERY_MS, SCORE, SPLITTER_CHILD_ANGLE, TARGETABLE_R } from './config';
+import { GOLDEN_POINTS, GOLDEN_SHARDS, CHOIR_N, CHOIR_R, CLOSE_GAP, CRYSTAL_R, HALO_R, JAR_MS, PRISM_BLAST_R, RECOVERY_MS, SCORE, SPLITTER_CHILD_ANGLE, TARGETABLE_R } from './config';
 import type { Crystal, ShatterInfo, SimEvent, SimState } from './types';
 
 export type SpawnChild = (parent: Crystal, note: number, theta: number) => void;
@@ -79,6 +79,10 @@ export function resolveStrike(state: SimState, note: number, events: SimEvent[],
     points += choirPoints;
     state.stats.choirs++;
     events.push({ type: 'choir', note, n, swept, points: choirPoints });
+  }
+  for (const c of [...shattered, ...swept]) if (c.kind === 'golden') {
+    const bonus = GOLDEN_POINTS * mult; points += bonus; state.stats.shards += GOLDEN_SHARDS; state.stats.goldens++;
+    events.push({ type: 'golden', id: c.id, x: c.x, y: c.y, note: c.note, points: bonus });
   }
   state.stats.score += points;
   state.stats.biggestN = Math.max(state.stats.biggestN, n);

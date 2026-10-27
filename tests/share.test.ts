@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { hymnLine, shareText, shareUrl } from "../src/meta/share";
 import type { RunResult } from "../src/meta/runEnd";
 
-const run: RunResult = { mode: "daily", seed: 0x3f9a12c0, slowDial: false, hymn: [0,0,1,3,10,2,4], stats: {score:18420,biggestN:9,longestStreak:14,timeMs:134000,crystalsBroken:0,choirs:0,closeCalls:0,prismsBroken:0,duds:0,strikes:0,maxMult:1,shards:0} };
+const run: RunResult = { mode: "daily", seed: 0x3f9a12c0, slowDial: false, hymn: [0,0,1,3,10,2,4], stats: {score:18420,biggestN:9,longestStreak:14,timeMs:134000,crystalsBroken:0,choirs:0,closeCalls:0,prismsBroken:0,duds:0,strikes:0,maxMult:1,shards:0,goldens:0} };
 describe("sharing", () => {
  it("maps the hymn and truncates by symbols", () => {
   expect(hymnLine(run.hymn)).toBe("🟥🟥🟨🟦✨🟩🟪");

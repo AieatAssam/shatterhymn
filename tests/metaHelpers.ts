@@ -1,2 +1,2 @@
 import type { RunResult } from "../src/meta/runEnd";
-export function result(overrides: Partial<RunResult["stats"]> = {}, mode: RunResult["mode"] = "run"): RunResult { return { mode, seed: 1, hymn: [], slowDial: false, stats: { score: 0, timeMs: 0, biggestN: 0, longestStreak: 0, crystalsBroken: 0, choirs: 0, closeCalls: 0, prismsBroken: 0, duds: 0, strikes: 0, maxMult: 1, shards: 0, ...overrides } }; }
+export function result(overrides: Partial<RunResult["stats"]> = {}, mode: RunResult["mode"] = "run"): RunResult { return { mode, seed: 1, hymn: [], slowDial: false, stats: { score: 0, timeMs: 0, biggestN: 0, longestStreak: 0, crystalsBroken: 0, choirs: 0, closeCalls: 0, prismsBroken: 0, duds: 0, strikes: 0, maxMult: 1, shards: 0, goldens: 0, ...overrides } }; }
