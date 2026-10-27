@@ -12,3 +12,9 @@ export function nextChipModel(save: SaveV1, runShards: number, celebrateId?: str
   const unlocked = save.progress.lifetimeShards < next.need && total >= next.need;
   return { line: `${unlocked ? 'Unlocked' : 'Next'}: ${next.name}${next.kind === 'skin' ? ' bell' : ''}`, have: unlocked ? Math.min(total, next.need) : total, need: next.need, unlocked };
 }
+
+/** Available width of the chip in the symmetric HUD grid. */
+export function hudChipLayout(viewport: number, bestWidth: number): { maxWidth: number; gap: number } {
+  const gap = 16;
+  return { maxWidth: Math.max(0, Math.min(viewport / 2 - 64, (viewport - 24 - bestWidth - gap * 2) / 2)), gap };
+}

@@ -11,23 +11,19 @@ vec3 env(vec3 d){ // the cathedral seen through the gem (no texture fetch)
 void main(){
   vec3 N=normalize(vNormal),V=normalize(vView);
   float ndv=clamp(dot(N,V),0.,1.);
-  float facet=floor((0.25+0.75*max(dot(N,uKeyDir),0.))*4.)/4.;          // SG gem-cut steps (kept)
+  float light=max(dot(N,uKeyDir),0.);
   float fres=pow(1.-ndv,2.6);
-  float fid=fract(sin(dot(floor(N*3.0+0.5),vec3(12.9898,78.233,37.719)))*43758.5453); // per-facet id
-  vec3 body=mix(vDark,vColor,facet);
-  vec3 R=refract(-V,N,0.66);                                              // glass IOR ≈1.5
-  vec3 seen=env(R)*vColor*1.8;                                            // refraction tint
-  vec3 Ri=reflect(R,vec3(-N.xy,N.z));
-  float tir=pow(max(dot(Ri,uKeyDir),0.),8.);                              // internal facet flare
-  vec3 color=mix(body,seen,0.42)+vCore*tir*(0.8+0.8*fid);
-  vec3 irid=0.5+0.5*cos(6.2831*(fres*1.3+fid*0.4+uTime*0.04+vec3(0.,0.33,0.67)));
-  color+=mix(vec3(1.),vCore,0.4)*fres*2.2+irid*fres*0.45;                 // white rim + thin-film
-  float core=smoothstep(0.62,0.,length(vLocal.xy));
-  color+=vCore*(1.2*core+1.4*core*core)*(vKind>3.5&&vKind<4.5?1.3:1.);    // hot inner glow
+  vec3 body=mix(vDark,vColor,step(.08,light))*(.35+.65*light);
+  float lum=dot(body,vec3(.2126,.7152,.0722)); body*=min(1.,.55/max(lum,.0001));
+  vec3 color=body;
+  float core=smoothstep(.30,0.,length(vLocal.xy));
+  vec3 coreColor=vCore;float coreLum=dot(coreColor,vec3(.2126,.7152,.0722));coreColor*=min(1.,.8/max(coreLum,.0001));
+  color=mix(color,coreColor,core*.5);
   vec3 H=normalize(uKeyDir+V);
-  float glint=pow(max(dot(N,H),0.),96.)*(0.55+0.45*sin(uTime*7.+vSeed*31.+fid*20.));
-  color+=vec3(6.)*glint;                                                  // star glints (bloom)
-  color+=vec3(1.,0.82,0.48)*fres*1.2*uHeat;                               // fever: gold rims
+  float glint=pow(max(dot(N,H),0.),48.)*(.55+.45*sin(uTime*7.+vSeed*31.));
+  color+=vec3(.62,.85,1.)*fres*1.6+vec3(1.)*glint*2.5;
+  color+=vec3(1.,.82,.48)*fres*2.4*uHeat;
+  vec3 irid=.5+.5*cos(6.2831*(fres+uTime*.04+vec3(0.,.33,.67)));
   float e=min(edge(vLocal.xy*3.),min(edge(vLocal.xy*6.),edge(vLocal.xy*12.)));
   color+=vec3(4.)*(1.-smoothstep(0.,0.04,e))*vCrack;
   if(vKind>0.5&&vKind<1.5&&length(vLocal.xy)>0.3){float cracks=1.-smoothstep(0.025,0.06,abs(sin(atan(vLocal.y,vLocal.x)*1.5)*length(vLocal.xy)));vec3 rock=mix(vec3(0.023,0.018,0.039),vec3(0.068,0.051,0.116),hash(floor(vLocal.xy*18.)));color=mix(rock,color,cracks);}
