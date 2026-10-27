@@ -381,3 +381,33 @@ Settings save immediately. Audio sliders preview with a dial tick.
 - Respect the player's time: runs are short, pausing is instant, and the game auto-pauses when hidden.
 - Accessibility: colour + shape + pitch for every note, Slow dial, Reduce motion, volume controls, readable text (min 16 px, 4.5:1 contrast).
 - Crediting: all inspirations and assets listed in `CREDITS.md` and in-game Credits.
+
+
+## 18. WOW pass addendum (v1.1 · 2026-10-27)
+
+Normative. Overrides earlier sections where they differ. Full surgical plan: `/workspace/wow-game/wow/WOW-PLAN.md`.
+
+### 18.1 Golden scoring
+After strike step 7: each Golden crystal shattered by this strike (as a target, a prism blast victim or a Choir sweep) adds `250 × mult` points and 5 shards, and emits `golden`. A Golden destroyed by a crack flare or grace gives nothing.
+
+### 18.2 Variety events (§7.6)
+Separate event RNG seeded with `seed ^ 0x5EEDE7E7`. First event at 20–26 s, then every 20–40 s, with a 1 s warning. Golden from level ≥ 1; Chord wave from level ≥ 2 (weights 3 : 2, never two chord waves in a row). Caps/retry/give-up as WOW-PLAN §5.4. Golden: speed ×0.8, swirl ±0.08. Chord wave: 7 crystals of one note on a 1.5 rad arc at speed ×0.75.
+
+Attract mode: `K = 5`, spawner uses level-3 formations/kinds while `level` and `elapsedMs` stay 0. First attract event at 4 s, then every 9–14 s, alternating chord / golden. Attract pilot: wait until a group of ≥ 5 of one note is within rho 6 before striking it; prefer notes with count ≥ 7.
+
+### 18.3 Title
+**Play** hero button (68 px). Row of 4 icon chips: Daily Hymn #N (dot or best badge), Missions (badge `n / 3`), Collection, Settings. `Friend's seed XXXXXXXX` pill only when URL has a valid `?seed=`. Arena centre at 42% height in attract mode.
+
+### 18.4 HUD
+Next-unlock chip under the hearts: `Next: {name}` + bar + `{have} / {need}`; mid-run unlock shows `Unlocked: {name}`. Multiplier chip shows 2 progress pips toward the next multiplier.
+
+### 18.5 Results
+Layout: title, score (count-up), New best / Best plus distance line, next-unlock bar, stats (2 columns), hymn line, missions, toasts; **footer fixed: Play again (primary, 64 px, focused), then Share · Menu.** Space/Enter = Play again. Appears in under 1 s after game over.
+
+### 18.6 Tips and pop strings
+- Tip golden: `New: Golden crystal. Break it with its colour for a bonus: 250 points × your multiplier and 5 shards.`
+- Tip chord: `Chord wave: 7 crystals of one colour. Break all 7 with one note for a Choir.`
+- Pops: `1 more for a Choir`, `2 more for a Choir`, `Gold bonus +{points}`, `Chord wave`.
+
+### 18.7 Clarity
+Instruction strings from the clarity pass stay. Tagline on title is branding only.

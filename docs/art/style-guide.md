@@ -355,3 +355,26 @@ Enabled when Settings → Reduce motion is on (defaults from `prefers-reduced-mo
 - **Don't** use flat-coloured meshes, default `MeshStandardMaterial`, or unlit sprites as final art.
 - **Don't** add bloom to text or UI panels (DOM; CSS glow only where listed).
 - **Don't** let any effect hide crystals near the bell: the flash overlay must never exceed 0.35 alpha or last over 70 ms.
+
+
+## 12. WOW pass addendum (v1.1 · 2026-10-27)
+
+Normative visual overrides. Full numbers in `/workspace/wow-game/wow/WOW-PLAN.md`. Mirror as named constants in `fxConfig.ts`.
+
+### 12.1 Crystals
+Visual scale `crystalVisualScale(rho)` 1.8 (rho ≥ 7) → 1.15 (rho ≤ 3). Extrude depth 0.42, bevel 0.18/0.12, 2 segments. Wobble ±22°. Diamond aspect 0.68. Shader: fake refraction env, internal flare, thin-film iridescence, glints ×6, fever gold rim, golden kind. Rusher = glow-quad tail. Floor light pool per crystal (2.6 × visual r, 30% alpha). Draw crystals in front of the bell.
+
+### 12.2 Background / cathedral
+5 lancet windows at top casting tinted beams; rose window behind bell; light shafts from bell toward broken crystals; floor ring flashes; outer ticks; nebula octaves by tier. Heat/fever and beat pulse. "80% dark" still applies at heat 0.
+
+### 12.3 Shatter
+Shards 26/18/12 by tier; pools 1600/1000/600; speed 6–15; 15% hero shards 0.45–0.75; harvest delay 0.75 s for N ≥ 4; streaks 0.35 s. Sparks 10/8/6, 8–18 px.
+
+### 12.4 Escalation / heat
+Fever at streak ≥ 6 (or mult ≥ 4): world warms, crystal edges gold, music layers, mult chip fever ring. Per-strike ladder scales shafts/bloom/flash/CA with N. Close-call juice amplified.
+
+### 12.5 Draw-call budgets
+Low ≤ 18 steady / ≤ 21 peak; Medium ≤ 26; High ≤ 30. Low bloom intensity 1.6, radius 0.75, 3 levels. Never disable the EffectPass that writes to screen.
+
+### 12.6 Title / results / HUD
+Title layout and chips per design §18.3. Results footer per §18.5. HUD next-unlock and fever mult chip per §18.4. Pop text: size `min(56, 24+4N)`, life 900 ms, gold gradient at N ≥ 4.
