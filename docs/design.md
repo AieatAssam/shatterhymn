@@ -300,12 +300,12 @@ Contextual tips (shown once each, ever, as a 3 s banner under the score, non-blo
 - First dud: `No crystals of that colour were on screen. Picking a colour with none makes the bell wobble for a moment.`
 - First crack: `A crystal hit the bell. Two more hits and the run ends. Nearby crystals were cleared.`
 - First time a special kind appears:
-  - Geode: `New: Geode. Hit it twice with its note. The first hit breaks the rock shell.`
+  - Geode: `New: Geode. Hit it twice with its colour. The first hit breaks the rock shell.`
   - Prism: `New: Prism. It keeps changing colour. Break it and it breaks everything near it.`
-  - Splitter: `New: Splitter. It breaks into two small crystals of the next note.`
+  - Splitter: `New: Splitter. It breaks into two small crystals of the next colour.`
   - Rusher: `New: Rusher. Small and fast. Deal with it first.`
   - Mend: `New: Mend crystal (white glow). Break it to repair one crack.`
-- First time K grows: `New note: Blue star. The dial now has 4 notes.` (and `New note: Purple circle. The dial now has 5 notes.`)
+- First time K grows: `New colour: Blue star. The dial now has 4 colours.` (and `New colour: Purple circle. The dial now has 5 colours.`)
 
 ## 12. Share
 

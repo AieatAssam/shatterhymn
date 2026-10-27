@@ -2,13 +2,13 @@ import type { SimEvent } from "../sim/types";
 export const TIPS: Record<string, string> = {
  dud: "No crystals of that colour were on screen. Picking a colour with none makes the bell wobble for a moment.",
  crack: "A crystal hit the bell. Two more hits and the run ends. Nearby crystals were cleared.",
- geode: "New: Geode. Hit it twice with its note. The first hit breaks the rock shell.",
+ geode: "New: Geode. Hit it twice with its colour. The first hit breaks the rock shell.",
  prism: "New: Prism. It keeps changing colour. Break it and it breaks everything near it.",
- splitter: "New: Splitter. It breaks into two small crystals of the next note.",
+ splitter: "New: Splitter. It breaks into two small crystals of the next colour.",
  rusher: "New: Rusher. Small and fast. Deal with it first.",
  mend: "New: Mend crystal (white glow). Break it to repair one crack.",
- blue: "New note: Blue star. The dial now has 4 notes.",
- purple: "New note: Purple circle. The dial now has 5 notes.",
+ blue: "New colour: Blue star. The dial now has 4 colours.",
+ purple: "New colour: Purple circle. The dial now has 5 colours.",
 };
 export class BannerQueue {
  private readonly pending: string[] = []; private current: string | null = null; private until = 0;

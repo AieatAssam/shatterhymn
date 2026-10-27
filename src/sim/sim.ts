@@ -27,6 +27,8 @@ export class Sim {
     this.tutorialStep = index;
     const step = this.script[index];
     if (!step) return;
+    for (const crystal of this.state.crystals) crystal.alive = false;
+    this.state.jarMs = 0; this.state.recoveryMs = 0;
     for (const spawn of step.spawns) this.spawner.spawn(this.state, spawn.note, spawn.theta, 'normal', levelRow(0).speed, 0, this.events);
   }
   step(input: SimInput): readonly SimEvent[] {
@@ -38,7 +40,7 @@ export class Sim {
     if (input.press) pressDial(s, events);
     if (input.release) {
       const note = releaseDial(s);
-      if (note !== null) {
+      if (note !== null && (s.mode !== 'tutorial' || this.tutorialStep === 2 || this.tutorialStep === 4)) {
         const score = s.stats.score;
         resolveStrike(s, note, events, (parent, childNote, theta) => this.spawner.spawnChild(s, parent, childNote, theta, events));
         if (s.mode === 'tutorial') { s.stats.score = score; s.stats.shards = 0; }
