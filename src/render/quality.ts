@@ -1,0 +1,22 @@
+export type Tier = "high" | "medium" | "low";
+export const TIERS = { high: { dpr: 2, shards: 1200, sparks: 400, bloom: 0.5 }, medium: { dpr: 1.5, shards: 800, sparks: 300, bloom: 0.5 }, low: { dpr: 1, shards: 450, sparks: 160, bloom: 0.35 } } as const;
+export function detectTier(coarse: boolean): Tier { return coarse ? "medium" : "high"; }
+export class AutoTier {
+  private readonly frames = new Float32Array(90); private count = 0; private index = 0; private total = 0; private elapsed = 0; private lastChange = -3000; private fastMs = 0; private lowered = false; private raised = false;
+  constructor(public tier: Tier) {}
+  update(dt: number): Tier {
+    this.elapsed += dt;
+    if (this.elapsed <= 2000 || dt > 250 || dt <= 0) { this.fastMs = 0; return this.tier; }
+    if (this.count === 90) this.total -= this.frames[this.index]!; else this.count++;
+    this.frames[this.index] = dt; this.total += dt; this.index = (this.index + 1) % 90;
+    if (this.count < 90) return this.tier;
+    const mean = this.total / 90;
+    this.fastMs = mean < 11 ? this.fastMs + dt : 0;
+    if (mean > 19 && this.elapsed - this.lastChange >= 3000 && this.tier !== "low") {
+      this.tier = this.tier === "high" ? "medium" : "low"; this.lowered = true; this.lastChange = this.elapsed; this.fastMs = 0;
+    } else if (this.fastMs >= 6000 && this.lowered && !this.raised && this.tier !== "high") {
+      this.tier = this.tier === "low" ? "medium" : "high"; this.raised = true; this.lastChange = this.elapsed; this.fastMs = 0;
+    }
+    return this.tier;
+  }
+}

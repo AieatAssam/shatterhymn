@@ -1,0 +1,7 @@
+import { Shape } from "three";
+/** The five note outlines, centred and with unit circumradius. */
+export function glyphShape(note: number): Shape {
+  const shape = new Shape(); const points = note === 0 ? 3 : note === 1 ? 4 : note === 2 ? 6 : note === 3 ? 10 : 24;
+  for (let i = 0; i < points; i++) { const angle = Math.PI / 2 + i * Math.PI * 2 / points; const radius = note === 3 && i % 2 ? 0.45 : 1; const x = Math.cos(angle) * radius, y = Math.sin(angle) * radius; if (i === 0) shape.moveTo(x,y); else shape.lineTo(x,y); }
+  shape.closePath(); return shape;
+}
