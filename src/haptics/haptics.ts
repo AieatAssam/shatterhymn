@@ -1,6 +1,7 @@
-export type HapticId = 'ui' | 'tick' | 'dud' | 'close' | 'shatter1' | 'shatter2' | 'shatter4' | 'shell' | 'mend' | 'crack' | 'newBest' | 'choir' | 'gameOver';
+export type HapticId = 'fever' | 'ui' | 'tick' | 'dud' | 'close' | 'shatter1' | 'shatter2' | 'shatter4' | 'shell' | 'mend' | 'crack' | 'newBest' | 'choir' | 'gameOver';
 
 export const PATTERNS: Record<HapticId, { pattern: number[]; priority: number }> = {
+  fever: { pattern: [8, 30, 8, 30, 12], priority: 5 },
   ui: { pattern: [6], priority: 1 }, tick: { pattern: [8], priority: 2 },
   dud: { pattern: [10, 40, 10], priority: 3 }, close: { pattern: [6, 30, 6], priority: 4 },
   shatter1: { pattern: [14], priority: 5 }, shatter2: { pattern: [14, 30, 16], priority: 5 },

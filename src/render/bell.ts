@@ -18,6 +18,6 @@ export function createBell(shared: Record<string, { value: unknown }>): Mesh {
   const mesh = new Mesh(geometry, material); mesh.position.z = BELL_Z; return mesh;
 }
 export function createHalo(shared: Record<string, { value: unknown }>): Mesh {
-  const material = new ShaderMaterial({ vertexShader: haloShader.vertex, fragmentShader: haloShader.fragment, transparent: true, depthWrite: false, uniforms: { ...shared, uInk: { value: new Color(PALETTE.ink) }, uCrackColor: { value: new Color(PALETTE.crack) }, uNotes: { value: NOTE_COLORS.map(color => new Color(color)) }, uDanger: { value: 0 }, uActive: { value: 3 }, uCurrent: { value: 0 } } });
+  const material = new ShaderMaterial({ vertexShader: haloShader.vertex, fragmentShader: haloShader.fragment, transparent: true, depthWrite: false, uniforms: { ...shared, uInk: { value: new Color(PALETTE.ink) }, uCrackColor: { value: new Color(PALETTE.crack) }, uNotes: { value: NOTE_COLORS.map(color => new Color(color)) }, uDanger: { value: 0 }, uCloseFlash: { value: 0 }, uActive: { value: 3 }, uCurrent: { value: 0 } } });
   const mesh = new Mesh(new PlaneGeometry((DIAL_RADIUS + 0.2)*2,(DIAL_RADIUS + 0.2)*2), material); mesh.position.z = 0.01; return mesh;
 }

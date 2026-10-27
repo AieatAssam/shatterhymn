@@ -1,5 +1,7 @@
 import type { SimEvent } from "../sim/types";
 export const TIPS: Record<string, string> = {
+ golden: "New: Golden crystal. Break it with its colour for a bonus: 250 points × your multiplier and 5 shards.",
+ chord: "Chord wave: 7 crystals of one colour. Break all 7 with one note for a Choir.",
  dud: "No crystals of that colour were on screen. Picking a colour with none makes the bell wobble for a moment.",
  crack: "A crystal hit the bell. Two more hits and the run ends. Nearby crystals were cleared.",
  geode: "New: Geode. Hit it twice with its colour. The first hit breaks the rock shell.",
@@ -15,5 +17,5 @@ export class BannerQueue {
  constructor(private readonly now: () => number, readonly seen: Set<string>, public enabled = true, private readonly onSeen: () => void = () => {}) {}
  enqueue(id: string): void { if (!this.enabled || !TIPS[id] || this.seen.has(id) || this.pending.includes(id) || this.current === id) return; this.pending.push(id); }
  update(): string | null { if (!this.enabled) { this.current = null; this.pending.length = 0; return null; } const now = this.now(); if (this.current && now >= this.until) this.current = null; if (!this.current && this.pending.length) { this.current = this.pending.shift()!; this.seen.add(this.current); this.onSeen(); this.until = now + 3000; } return this.current; }
- event(event: SimEvent): void { if (event.type === "dud" || event.type === "crack") this.enqueue(event.type); else if (event.type === "spawn") this.enqueue(event.kind); else if (event.type === "levelUp" && event.newNote !== null) this.enqueue(event.newNote === 3 ? "blue" : "purple"); }
+ event(event: SimEvent): void { if (event.type === "chordWave") this.enqueue("chord"); else if (event.type === "dud" || event.type === "crack") this.enqueue(event.type); else if (event.type === "spawn") this.enqueue(event.kind); else if (event.type === "levelUp" && event.newNote !== null) this.enqueue(event.newNote === 3 ? "blue" : "purple"); }
 }

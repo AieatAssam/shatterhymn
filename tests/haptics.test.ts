@@ -4,6 +4,7 @@ import { Haptics, hapticForStrike, PATTERNS } from '../src/haptics/haptics';
 describe('haptics', () => {
   it('uses the specified patterns and priorities', () => {
     expect(PATTERNS).toEqual({
+      fever: { pattern: [8, 30, 8, 30, 12], priority: 5 },
       ui: { pattern: [6], priority: 1 }, tick: { pattern: [8], priority: 2 },
       dud: { pattern: [10, 40, 10], priority: 3 }, close: { pattern: [6, 30, 6], priority: 4 },
       shatter1: { pattern: [14], priority: 5 }, shatter2: { pattern: [14, 30, 16], priority: 5 },

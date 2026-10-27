@@ -1,13 +1,14 @@
 import { crystalVisualScale } from './fxConfig';
-import { AdditiveBlending, Color, DoubleSide, DynamicDrawUsage, ExtrudeGeometry, InstancedBufferAttribute, InstancedMesh, MeshBasicMaterial, Object3D, RingGeometry, Scene, ShaderMaterial } from "three";
+import { Color, DoubleSide, DynamicDrawUsage, ExtrudeGeometry, InstancedBufferAttribute, InstancedMesh, Object3D, Scene, ShaderMaterial } from "three";
 import { easeOutBack } from "../core/ease";
 import { MAX_CRYSTALS } from "../sim/config";
 import type { Crystal, SimEvent, SimState } from "../sim/types";
 import { glyphShape } from "./glyphs";
 import { NOTE_COLORS } from "./fxConfig";
+import { GlowQuads } from './glowQuads';
 import * as shader from "./shaders/crystal";
 
-const CAP = MAX_CRYSTALS * 7;
+const CAP = MAX_CRYSTALS * 2;
 const cores = [0xffb3c0,0xffe8a8,0xb8ffe2,0xc2e2ff,0xebd3ff].map(c => new Color(c));
 const darks = [0x7a1230,0x7a4a06,0x0b5a3e,0x103c7a,0x46177a].map(c => new Color(c));
 const colors = NOTE_COLORS.map(c => new Color(c));
@@ -15,15 +16,15 @@ const kinds = { normal: 0, geode: 1, prism: 2, splitter: 3, rusher: 4, mend: 5, 
 type Visual = { id: number; crystal: Crystal; flash: number; pending: number; duration: number; choir: boolean; shellFlash: number; note: number; previousNote: number; blend: number; trailX: Float32Array; trailY: Float32Array };
 export class Crystals {
   private readonly meshes: InstancedMesh[] = []; private readonly attrs: Record<string, InstancedBufferAttribute>[] = []; private readonly visual: Visual[] = Array.from({length: MAX_CRYSTALS}, () => ({id: 0, crystal: {id:0,alive:false,kind:'normal',note:0,rho:0,theta:0,r:0,speed:0,swirl:0,shell:false,prismMs:0,pushMs:0,ageMs:0,x:0,y:0}, flash: 0, pending: 0, duration: 0, choir: false, shellFlash: 0, note: 0, previousNote: 0, blend: 1, trailX: new Float32Array(6), trailY: new Float32Array(6)}));
-  private readonly object = new Object3D(); private readonly color = new Color(); private readonly core = new Color(); private readonly dark = new Color(); private readonly counts = new Int32Array(5); private readonly rings: InstancedMesh;
-  constructor(private readonly scene: Scene, shared: Record<string, { value: unknown }>) {
+  private readonly object = new Object3D(); private readonly color = new Color(); private readonly core = new Color(); private readonly dark = new Color(); private readonly counts = new Int32Array(5); private readonly gold = new Color(0xffd27a);
+  constructor(private readonly scene: Scene, shared: Record<string, { value: unknown }>, private readonly glow: GlowQuads) {
     for (let i=0;i<5;i++) {
       const geometry = new ExtrudeGeometry(glyphShape(i), { depth: 0.42, bevelEnabled: true, bevelThickness: 0.18, bevelSize: 0.12, bevelSegments: 2 }).toNonIndexed(); geometry.computeVertexNormals(); geometry.translate(0,0,-0.21); geometry.computeBoundingSphere(); geometry.scale(1 / geometry.boundingSphere!.radius, 1 / geometry.boundingSphere!.radius, 1);
       const attrs: Record<string, InstancedBufferAttribute> = {};
       for (const name of ["aColor","aCore","aDark","aFlash","aCrack","aFade","aKind"]) { const attr = new InstancedBufferAttribute(new Float32Array(CAP * (name === "aColor" || name === "aCore" || name === "aDark" ? 3 : 1)), name === "aColor" || name === "aCore" || name === "aDark" ? 3 : 1); attr.setUsage(DynamicDrawUsage); geometry.setAttribute(name,attr); attrs[name]=attr; }
-      const mesh = new InstancedMesh(geometry, new ShaderMaterial({uniforms: {...shared}, vertexShader: shader.vertex, fragmentShader: shader.fragment, transparent: true, depthWrite: false, side: DoubleSide}), CAP); mesh.instanceMatrix.setUsage(DynamicDrawUsage); mesh.frustumCulled=false; mesh.count=0; this.meshes.push(mesh); this.attrs.push(attrs); scene.add(mesh);
+      const mesh = new InstancedMesh(geometry, new ShaderMaterial({uniforms: {...shared}, vertexShader: shader.vertex, fragmentShader: shader.fragment, transparent: true, depthWrite: false, side: DoubleSide}), CAP); mesh.instanceMatrix.setUsage(DynamicDrawUsage); mesh.frustumCulled=false; mesh.count=0; mesh.renderOrder=10; this.meshes.push(mesh); this.attrs.push(attrs); scene.add(mesh);
     }
-    this.rings = new InstancedMesh(new RingGeometry(1.15,1.23,32), new MeshBasicMaterial({color: 0xffd27a, transparent: true, opacity: 0.7, blending: AdditiveBlending, depthWrite: false, side: DoubleSide}), MAX_CRYSTALS); this.rings.instanceMatrix.setUsage(DynamicDrawUsage); this.rings.frustumCulled=false; this.rings.count=0; scene.add(this.rings);
+
   }
   private readonly ghosts: Visual[] = Array.from({length: MAX_CRYSTALS}, () => ({id:0, crystal: {id:0,alive:false,kind:"normal",note:0,rho:0,theta:0,r:0,speed:0,swirl:0,shell:false,prismMs:0,pushMs:0,ageMs:0,x:0,y:0}, flash:0,pending:0,duration:0,choir:false,shellFlash:0,note:0,previousNote:0,blend:1,trailX:new Float32Array(6),trailY:new Float32Array(6)}));
   onBurst: (x:number,y:number,note:number,choir:boolean) => void = () => {};
@@ -45,7 +46,7 @@ export class Crystals {
   }
   reset(): void { for (const v of this.visual) { v.id=0; v.flash=0; v.shellFlash=0; } for (const v of this.ghosts) v.id=0; }
   update(state: SimState, dt: number, time: number, realDt: number, reducedMotion: boolean): void {
-    this.counts.fill(0); let ringCount=0;
+    this.counts.fill(0);
     for (let slot=0;slot<state.crystals.length+this.ghosts.length;slot++) {
       const ghost=slot>=state.crystals.length; const v=ghost ? this.ghosts[slot-state.crystals.length]! : this.visual[slot]!; const c=ghost ? v.crystal : state.crystals[slot]!;
       if (ghost) { if (!v.id) continue; v.pending-=realDt; if(v.pending<=0){this.onBurst(c.x,c.y,c.note,v.choir);v.id=0;continue;} c.alive=false; }
@@ -54,12 +55,11 @@ export class Crystals {
       const draw=c.alive ? c : ghost ? v.crystal : null; if (!draw) continue;
       const note=draw.note; const mesh=this.meshes[note]!; const attr=this.attrs[note]!; const spin=(0.6+(draw.id%61)/100)*(draw.id%2 ? 1 : -1); const age=draw.ageMs/1000; const scale=draw.r*crystalVisualScale(draw.rho)*easeOutBack(Math.min(1,draw.ageMs/280),1.7); const fade=Math.min(1,draw.ageMs/280);
       this.color.copy(colors[draw.kind === "prism" ? v.previousNote : note]!).lerp(colors[note]!,draw.kind === "prism" ? v.blend : 1); this.core.copy(cores[note]!).multiplyScalar(note === 0 || note === 3 || note === 4 ? 1.8 : 1.7); this.dark.copy(darks[note]!); if(draw.rho<4.5) this.core.multiplyScalar(1+0.35*Math.sin(time*6*Math.PI));
-      const copies=draw.kind === "rusher" && c.alive ? 7 : 1;
-      for(let j=0;j<copies;j++) { const index=this.counts[note]!; this.counts[note]=index+1; this.object.position.set(j === 0 ? draw.x : v.trailX[j-1]!,j === 0 ? draw.y : v.trailY[j-1]!,0.6+0.08*Math.sin(age*2*Math.PI*0.7+draw.id)); this.object.rotation.set(0.20944*Math.sin(age*2*Math.PI*0.7*(reducedMotion?.25:1)+draw.id),0.20944*Math.cos(age*2*Math.PI*0.7*(reducedMotion?.25:1)+draw.id),age*spin); this.object.scale.setScalar(scale*(ghost ? 1.15 : v.shellFlash>60 ? .85 : 1)); this.object.updateMatrix(); mesh.setMatrixAt(index,this.object.matrix); attr.aColor!.setXYZ(index,this.color.r,this.color.g,this.color.b); attr.aCore!.setXYZ(index,this.core.r,this.core.g,this.core.b); attr.aDark!.setXYZ(index,this.dark.r,this.dark.g,this.dark.b); attr.aFlash!.setX(index,ghost ? (v.duration>=160 ? 1-.4*(1-v.pending/v.duration) : v.pending>v.duration-50 ? 1 : 0) : Math.min(1,v.shellFlash/50)); attr.aCrack!.setX(index,ghost ? 1-v.pending/v.duration : 0); attr.aFade!.setX(index,fade*(j===0?1:(7-j)/9)); attr.aKind!.setX(index,draw.kind === "geode" && !draw.shell ? 0 : kinds[draw.kind]); }
-      if(draw.kind === "mend") { this.object.position.set(draw.x,draw.y,0.4); this.object.rotation.set(0,0,0); this.object.scale.setScalar(draw.r*(1+0.08*Math.sin(time*3*Math.PI))); this.object.updateMatrix(); this.rings.setMatrixAt(ringCount++,this.object.matrix); }
+      const index=this.counts[note]!; this.counts[note]=index+1; this.object.position.set(draw.x,draw.y,0.6+0.08*Math.sin(age*2*Math.PI*0.7+draw.id)); this.object.rotation.set(0.384*Math.sin(age*2*Math.PI*0.7*(reducedMotion?.25:1)+draw.id),0.384*Math.cos(age*2*Math.PI*0.7*(reducedMotion?.25:1)+draw.id),age*spin); this.object.scale.setScalar(scale*(ghost ? 1.15 : v.shellFlash>60 ? .85 : 1)); this.object.updateMatrix(); mesh.setMatrixAt(index,this.object.matrix); attr.aColor!.setXYZ(index,this.color.r,this.color.g,this.color.b); attr.aCore!.setXYZ(index,this.core.r,this.core.g,this.core.b); attr.aDark!.setXYZ(index,this.dark.r,this.dark.g,this.dark.b); attr.aFlash!.setX(index,ghost ? (v.duration>=160 ? 1-.4*(1-v.pending/v.duration) : v.pending>v.duration-50 ? 1 : 0) : Math.min(1,v.shellFlash/50)); attr.aCrack!.setX(index,ghost ? 1-v.pending/v.duration : 0); attr.aFade!.setX(index,fade); attr.aKind!.setX(index,draw.kind === "geode" && !draw.shell ? 0 : kinds[draw.kind]);
+      if(c.alive){const golden=draw.kind === 'golden'; const pool=golden?this.gold:this.color; this.glow.disc(draw.x,draw.y,.02,2.6*scale*(golden?1.4:1),pool,(golden?.45:.30)*(draw.rho<4.5?1+.35*Math.sin(time*6*Math.PI):1));if(draw.kind==='mend')this.glow.ring(draw.x,draw.y,.4,1.25*scale,this.gold,.7*(1+.08*Math.sin(time*3*Math.PI)));const length=1.2*scale*draw.speed*(draw.kind==='rusher'?2.5:1);this.glow.streak(draw.x,draw.y,draw.x+Math.cos(draw.theta)*length,draw.y+Math.sin(draw.theta)*length,.1,.7*scale,this.color,draw.kind==='rusher'?.6:.35);}
       v.flash=Math.max(0,v.flash-realDt); v.shellFlash=Math.max(0,v.shellFlash-realDt);
     }
-    for(let i=0;i<5;i++){const mesh=this.meshes[i]!; mesh.count=this.counts[i]!; mesh.visible=mesh.count>0; mesh.instanceMatrix.needsUpdate=true; const a=this.attrs[i]!; a.aColor!.needsUpdate=true; a.aCore!.needsUpdate=true; a.aDark!.needsUpdate=true; a.aFlash!.needsUpdate=true; a.aCrack!.needsUpdate=true; a.aFade!.needsUpdate=true; a.aKind!.needsUpdate=true;} this.rings.count=ringCount; this.rings.visible=ringCount>0; this.rings.instanceMatrix.needsUpdate=true;
+    for(let i=0;i<5;i++){const mesh=this.meshes[i]!; mesh.count=this.counts[i]!; mesh.visible=mesh.count>0; mesh.instanceMatrix.needsUpdate=true; const a=this.attrs[i]!; a.aColor!.needsUpdate=true; a.aCore!.needsUpdate=true; a.aDark!.needsUpdate=true; a.aFlash!.needsUpdate=true; a.aCrack!.needsUpdate=true; a.aFade!.needsUpdate=true; a.aKind!.needsUpdate=true;}
   }
-  dispose(): void { for(const mesh of this.meshes){this.scene.remove(mesh);mesh.geometry.dispose();(mesh.material as ShaderMaterial).dispose();} this.scene.remove(this.rings);this.rings.geometry.dispose();(this.rings.material as MeshBasicMaterial).dispose(); }
+  dispose(): void { for(const mesh of this.meshes){this.scene.remove(mesh);mesh.geometry.dispose();(mesh.material as ShaderMaterial).dispose();} }
 }

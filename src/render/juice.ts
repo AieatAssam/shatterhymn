@@ -8,13 +8,16 @@ export function traumaForStrike(n:number):number{return Math.min(.45,.10+.04*n);
 export function shake(trauma:number):number{return trauma*trauma;}
 export function decayTrauma(trauma:number,seconds:number):number{return Math.max(0,trauma-1.6*seconds);}
 export function effectiveShake(trauma:number,reducedMotion:boolean,multiplier=1):number{return reducedMotion?0:shake(trauma)*multiplier;}
+export function heatForStreak(streak:number):number{return streak>=10?1:streak>=6?.7:streak>=3?.35:0;}
+export function shaftsForStrike(n:number):{count:number;strength:number}{return n>=7?{count:6,strength:1.6}:{count:Math.min(6,n+1),strength:Math.min(1.2,.35+.12*n)};}
 export class Juice {
- trauma=0; reducedMotion=false; shakeMultiplier=1; time=0; flash=0; bloom: number=BLOOM.intensity; ca=.0006; choirTime=-1; bellX=new Spring1D(1,3.2,.35);bellY=new Spring1D(1,3.2,.35);fov=new Spring1D(30,2.5,.6); dudTime=1000;crackTime=1000;recoilX=0;recoilY=0;holdTime=0;holding=false;
+ heat=new Spring1D(0,1.2,1); feverEntered=false; trauma=0; reducedMotion=false; shakeMultiplier=1; time=0; flash=0; bloom: number=BLOOM.intensity; ca=.0006; choirTime=-1; bellX=new Spring1D(1,3.2,.35);bellY=new Spring1D(1,3.2,.35);fov=new Spring1D(30,2.5,.6); dudTime=1000;crackTime=1000;recoilX=0;recoilY=0;holdTime=0;holding=false;
  constructor(private readonly loop:Loop){}
  event(e:SimEvent):void{
   if(e.type==='holdStart'){this.holding=true;this.holdTime=0;}
   if(e.type==='dialStep'){this.bellX.x+=.03;this.bellY.x+=.03;}
-  if(e.type==='strike'){this.holding=false;if(e.n<7){this.bellX.x=.94;this.bellY.x=1.12;}if(e.n>0){const ms=freezeMsForStrike(e.n,e.closeCount>0);this.loop.freeze(ms);this.trauma=Math.min(1,this.trauma+traumaForStrike(e.n)+(e.closeCount>0?.05:0));if(e.n>=7&&!this.reducedMotion)this.loop.slowmo(.25,350,250);}else if(e.shellBreaks>0)this.loop.freeze(30);}
+  if(e.type==='strike'){const previous=this.heat.target;this.heat.target=heatForStreak(e.streak);this.heat.f=1.2;if(previous<.7&&this.heat.target>=.7)this.feverEntered=true;if(e.n>0&&e.n<7){this.bloom+=Math.min(.9,.12*e.n);if(!this.reducedMotion)this.ca+=Math.min(.0028,.0005*e.n);if(e.n>=5)this.flash=.1;if(e.n>=4&&!this.reducedMotion)this.fov.target=29.6;}this.holding=false;if(e.n<7){this.bellX.x=.94;this.bellY.x=1.12;}if(e.n>0){const ms=freezeMsForStrike(e.n,e.closeCount>0);this.loop.freeze(ms);this.trauma=Math.min(1,this.trauma+traumaForStrike(e.n)+(e.closeCount>0?.05:0));if(e.n>=7&&!this.reducedMotion)this.loop.slowmo(.25,350,250);}else if(e.shellBreaks>0)this.loop.freeze(30);}
+  if(e.type==='dud'||e.type==='crack'){this.heat.target=0;this.heat.f=3;}
   if(e.type==='dud'){this.holding=false;this.dudTime=0;this.trauma=Math.min(1,this.trauma+.08);}
   if(e.type==='crack'){this.loop.freeze(120);this.trauma=Math.min(1,this.trauma+.6);this.crackTime=0;const d=Math.hypot(e.x,e.y)||1;this.recoilX=-.15*e.x/d;this.recoilY=-.15*e.y/d;}
   if(e.type==='mend')this.loop.freeze(60);
@@ -24,10 +27,10 @@ export class Juice {
  }
  update(ms:number):void{const dt=ms/1000;this.time+=dt;this.trauma=decayTrauma(this.trauma,dt);this.dudTime+=ms;this.crackTime+=ms;if(this.holding)this.holdTime+=ms;if(this.choirTime>=0)this.choirTime+=ms;
   // SG§5 f1–f9: flash, camera punch, beams and fracture animation use real time.
-  if(this.choirTime>=0&&this.choirTime<(this.reducedMotion?120:67))this.flash=(this.reducedMotion?.12:.35)*(1-this.choirTime/(this.reducedMotion?120:67));else this.flash=0;
+  if(this.choirTime>=0&&this.choirTime<(this.reducedMotion?120:67))this.flash=(this.reducedMotion?.12:.35)*(1-this.choirTime/(this.reducedMotion?120:67));else this.flash=Math.max(0,this.flash-ms/500);
   // SG§5 f10–f45: post effects decay through the slow-motion interval.
-  if(this.choirTime>160){this.bloom=BLOOM.intensity+(this.bloom-BLOOM.intensity)*Math.exp(-3*dt);this.ca=.0006+(this.ca-.0006)*Math.exp(-6*dt);}if(this.choirTime>160)this.fov.target=30;
-  const steps=Math.max(1,Math.ceil(dt*120));for(let i=0;i<steps;i++){this.bellX.step(dt/steps);this.bellY.step(dt/steps);this.fov.step(dt/steps);}
+  if(!(this.choirTime>=0&&this.choirTime<160)){this.bloom=BLOOM.intensity+(this.bloom-BLOOM.intensity)*Math.exp(-4*dt);this.ca=.0006+(this.ca-.0006)*Math.exp(-4*dt);}if(this.choirTime<0||this.choirTime>160)this.fov.target=30;
+  const steps=Math.max(1,Math.ceil(dt*120));for(let i=0;i<steps;i++){this.heat.step(dt/steps);this.bellX.step(dt/steps);this.bellY.step(dt/steps);this.fov.step(dt/steps);}
  }
  get offsetX():number{return .35*effectiveShake(this.trauma,this.reducedMotion,this.shakeMultiplier)*valueNoise1D(11,this.time*18);}
  get offsetY():number{return .35*effectiveShake(this.trauma,this.reducedMotion,this.shakeMultiplier)*valueNoise1D(23,this.time*18);}
