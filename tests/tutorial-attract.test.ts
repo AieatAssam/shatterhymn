@@ -12,9 +12,9 @@ it('provides seven scripted steps and tutorial crystals stop without scoring or 
   sim.step({ press: true, release: true, cancel: false });
   expect(sim.state.stats.score).toBe(0); expect(sim.state.cracks).toBe(0); expect(sim.state.elapsedMs).toBe(0);
 });
-it('attract pilot targets the most common note and attract stays at level zero', () => {
+it('attract pilot waits for five crystals and attract stays at level zero', () => {
   const sim = new Sim({ seed: 2, mode: 'attract', slowDial: false });
-  const c = sim.state.crystals[0]!; Object.assign(c, { alive: true, id: 1, note: 0, rho: 5, r: 0.55 });
+  for (let i = 0; i < 5; i++) Object.assign(sim.state.crystals[i]!, { alive: true, id: i + 1, note: 0, rho: 5, r: 0.55 });
   const pilot = new AttractPilot();
   expect(pilot.update(sim.state, 2500)).toEqual({ press: true, release: true, cancel: false });
   for (let i = 0; i < 5000; i++) sim.step(pilot.update(sim.state));

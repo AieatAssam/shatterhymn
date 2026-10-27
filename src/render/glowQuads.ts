@@ -1,13 +1,13 @@
 import { AdditiveBlending, Color, DynamicDrawUsage, InstancedBufferAttribute, InstancedMesh, Object3D, PlaneGeometry, Scene, ShaderMaterial } from 'three';
 import type { Tier } from './quality';
-const CAPS = { high: 512, medium: 384, low: 256 } as const;
+const CAPS = { high: 512, medium: 256, low: 160 } as const;
 export class GlowQuads {
  readonly mesh: InstancedMesh; private cap=512; private count=0; private readonly obj=new Object3D();
  private readonly colors=new InstancedBufferAttribute(new Float32Array(512*3),3); private readonly alpha=new InstancedBufferAttribute(new Float32Array(512),1); private readonly mode=new InstancedBufferAttribute(new Float32Array(512),1);
  constructor(private readonly scene:Scene) {
   const geo=new PlaneGeometry(1,1); geo.setAttribute('aColor',this.colors);geo.setAttribute('aAlpha',this.alpha);geo.setAttribute('aMode',this.mode);
   for(const a of [this.colors,this.alpha,this.mode]) a.setUsage(DynamicDrawUsage);
-  const mat=new ShaderMaterial({transparent:true,depthWrite:false,blending:AdditiveBlending,vertexShader:`attribute vec3 aColor; attribute float aAlpha,aMode; varying vec3 vColor; varying float vAlpha,vMode; varying vec2 vUv; void main(){vUv=uv*2.-1.;vColor=aColor;vAlpha=aAlpha;vMode=aMode;gl_Position=projectionMatrix*modelViewMatrix*instanceMatrix*vec4(position,1.);}`,fragmentShader:`varying vec3 vColor; varying float vAlpha,vMode; varying vec2 vUv; void main(){float r=length(vUv);float a;if(vMode<.5)a=pow(max(0.,1.-r),2.2);else if(vMode<1.5)a=smoothstep(.14,0.,abs(r-.8));else {float t=vUv.x*.5+.5;a=(1.-t)*(1.-t)*smoothstep(1.,0.,abs(vUv.y));}gl_FragColor=vec4(vColor*1.6,a*vAlpha);}`});
+  const mat=new ShaderMaterial({transparent:true,depthWrite:false,blending:AdditiveBlending,vertexShader:`attribute vec3 aColor; attribute float aAlpha,aMode; varying vec3 vColor; varying float vAlpha,vMode; varying vec2 vUv; void main(){vUv=uv*2.-1.;vColor=aColor;vAlpha=aAlpha;vMode=aMode;gl_Position=projectionMatrix*modelViewMatrix*instanceMatrix*vec4(position,1.);}`,fragmentShader:`varying vec3 vColor; varying float vAlpha,vMode; varying vec2 vUv; void main(){float r=length(vUv);float a;if(vMode<.5)a=pow(max(0.,1.-r),2.2);else if(vMode<1.5)a=smoothstep(.14,0.,abs(r-.8));else {float t=vUv.x*.5+.5;a=(1.-t)*(1.-t)*smoothstep(1.,0.,abs(vUv.y));}if(a*vAlpha<.004)discard;gl_FragColor=vec4(vColor*1.6,a*vAlpha);}`});
   this.mesh=new InstancedMesh(geo,mat,512);this.mesh.instanceMatrix.setUsage(DynamicDrawUsage);this.mesh.frustumCulled=false;this.mesh.renderOrder=2;this.mesh.count=0;this.mesh.visible=false;scene.add(this.mesh);
  }
  setTier(t:Tier):void{this.cap=CAPS[t];} begin():void{this.count=0;}

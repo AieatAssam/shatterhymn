@@ -14,6 +14,7 @@ import { dailyNumber, localDateISO } from "../core/date";
 import { hexToSeed, randomSeed, seedToHex } from "../core/rng";
 import { dailySeed } from "../meta/daily";
 import { applyRunResult, type RunOutcome, type RunResult } from "../meta/runEnd";
+import { checkUnlocks } from "../meta/unlocks";
 import { loadSave, writeSave, resetSave, type SaveV1, type StorageLike } from "../meta/save";
 import { AttractPilot } from "../sim/attract";
 import { TUTORIAL_SCRIPT, TUTORIAL_RETRY } from "../sim/tutorial";
@@ -36,6 +37,7 @@ export class Controller {
  constructor(canvas: HTMLCanvasElement, surface: HTMLElement) {
   this.storage = { getItem: key => localStorage.getItem(key), setItem: (key, value) => localStorage.setItem(key, value) };
   this.save = loadSave(this.storage);
+  if (checkUnlocks(this.save).length) writeSave(this.storage, this.save);
   const params = new URLSearchParams(location.search); this.initialMode = params.get("daily") === "1" ? "daily" : "run"; this.nextSeed = hexToSeed(params.get("seed") ?? "");
   this.sim = new Sim({seed: randomSeed(), mode: "attract", slowDial: false});
   this.audio.setVolumes(this.save.settings?.sfx ?? 80, this.save.settings?.music ?? 60); this.audio.setScale(this.save.equipped?.scale ?? "bright");

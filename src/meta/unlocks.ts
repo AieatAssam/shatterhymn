@@ -25,6 +25,6 @@ export function checkUnlocks(save: SaveV1, r?: RunResult): Unlock[] {
  return unlocked;
 }
 export function nextLockedByShards(save: SaveV1): { kind: string; id: string; name: string; have: number; need: number } | null {
- const candidates = [...SKINS.map(item => ({ kind: "skin", item, list: save.unlocks.skins })), ...SCALE_UNLOCKS.map(item => ({ kind: "scale", item, list: save.unlocks.scales as string[] }))].filter(x => x.item.requirement.type === "shards" && !x.list.includes(x.item.id)).sort((a, b) => a.item.requirement.value - b.item.requirement.value);
+ const candidates = [...SKINS.map(item => ({ kind: "skin", item, list: save.unlocks.skins })), ...SCALE_UNLOCKS.map(item => ({ kind: "scale", item, list: save.unlocks.scales as string[] }))].filter(x => x.item.requirement.type === "shards" && x.item.requirement.value > save.progress.lifetimeShards && !x.list.includes(x.item.id)).sort((a, b) => a.item.requirement.value - b.item.requirement.value);
  const next = candidates[0]; return next ? { kind: next.kind, id: next.item.id, name: next.item.name, have: save.progress.lifetimeShards, need: next.item.requirement.value } : null;
 }

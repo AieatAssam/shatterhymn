@@ -4,7 +4,7 @@ export const fragment = `
 #ifndef OCTAVES
 #define OCTAVES 4
 #endif
-uniform float uTime,uRealTime,uChoir,uHeat,uBeat,uAspect,uRose,uWarnNote;
+uniform float uTime,uRealTime,uChoir,uHeat,uBeat,uAspect,uRose,uWarnNote,uShaftCount,uTitle;
 uniform vec2 uBell; uniform vec3 uVoid0,uVoid1,uVoid2,uFog,uBeam,uNoteColor; uniform vec3 uNotes[5]; uniform vec4 uShafts[6];
 varying vec2 vUv;
 float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
@@ -20,19 +20,18 @@ void main(){
   float beamAmp=${BEAM_MAX.toFixed(2)}*(1.+2.*uChoir+.6*uHeat+.25*uBeat);
   for(int i=0;i<5;i++){
     float fi=float(i), wx=.14+fi*.18, dx=p.x-wx, hw=.04;
-    float lancet=step(abs(dx),hw)*step(.80,p.y)*step(p.y,.95-abs(dx)*1.6);
-    float u=dx/hw*.5+.5; float pane=abs(fract(u*3.)-.5)*2.;
-    vec3 glass=noteCol(mod(fi*2.+floor(u*3.),5.));
-    col+=glass*lancet*smoothstep(0.,.25,pane)*(.10+.10*uHeat+.30*uChoir);
+    float u=dx/hw*.5+.5; vec3 glass=noteCol(mod(fi*2.+floor(u*3.),5.));
+    if(p.y>.78){ float lancet=step(abs(dx),hw)*step(.80,p.y)*step(p.y,.95-abs(dx)*1.6); float pane=abs(fract(u*3.)-.5)*2.; float frame=step(abs(dx),hw-.003)*step(.803,p.y)*step(p.y,.947-abs(dx)*1.6); col+=glass*lancet*frame*smoothstep(0.,.25,pane)*(.22+.10*uHeat+.30*uChoir); }
+    if(p.y<=.84){
     float x=wx+sin(uTime*.314159+fi)*.02+(p.y-.80)*.21256;              // −12° slant
     float w=.05+.025*mod(fi*3.,5.), d=(p.x-x)/w;
     float b=exp(-d*d*3.)*pow(clamp(p.y/.80,0.,1.),1.6)*smoothstep(.84,.78,p.y)*(.55+.45*sin(fi*2.3+uTime*.15));
-    col+=mix(uBeam,glass,.35*uHeat)*min(b,1.)*beamAmp;
+    col+=mix(uBeam,glass,.35*uHeat)*min(b,1.)*beamAmp; }
   }
   float edge=smoothstep(.30,.78,length(p-.5)); col=mix(col,uVoid0,edge);   // keep 80% dark
   // rose window behind the bell (frames the arena)
-  vec2 dv=(p-uBell)*vec2(uAspect,1.); float br=length(dv), ba=atan(dv.y,dv.x);
-  float r=br/0.26;
+  vec2 dv=(p-uBell)*vec2(uAspect,1.); float br=length(dv);
+  float r=br/0.26, ba=0.; if(r<1.||uShaftCount>0.) ba=atan(dv.y,dv.x);
   if(r<1.&&r>.18){
     float ring=floor(r*4.), petals=ring<.5?5.:ring<2.5?10.:20.;
     float su=(ba/6.283185+.5)*petals+(abs(ring-2.)<.5?.5:0.), seg=floor(su);
@@ -40,12 +39,12 @@ void main(){
     float ni=mod(seg+ring*2.,5.);
     float warn=(uWarnNote>=0.&&abs(ni-uWarnNote)<.5)?2.+1.5*sin(uRealTime*25.1327):0.;
     float sweep=.8+.2*sin((ba/6.283185)*12.566-uRealTime*.9);
-    float lit=(0.045+0.20*uHeat+.06*uBeat*(.3+uHeat)+uRose)*(1.+warn)*sweep*smoothstep(1.,.85,r)*smoothstep(.18,.26,r);
-    col+=noteCol(ni)*lit*lead;
+    float lit=(0.11+0.20*uHeat+.06*uBeat*(.3+uHeat)+uRose+.10*uTitle)*(1.+warn)*sweep*smoothstep(1.,.85,r)*smoothstep(.18,.26,r);
+    col+=noteCol(ni)*lit*mix(.15,1.,lead);
   }
   // light shafts from the bell toward what you just broke
-  for(int i=0;i<6;i++){
-    vec4 s=uShafts[i]; float age=uRealTime-s.y, life=s.z>1.3?.9:.55;
+  if(uShaftCount>0.) for(int i=0;i<6;i++){
+    vec4 s=uShafts[i]; float age=uRealTime-s.y, life=s.z>1.3?1.4:1.0;
     if(s.z<=0.||age<0.||age>life) continue;
     float t=age/life, da=abs(atan(sin(ba-s.x),cos(ba-s.x))), w=mix(.05,.14,t);
     col+=noteCol(s.w)*exp(-da*da/(w*w))*smoothstep(.03,.10,br)*exp(-br*1.4)*(1.-t)*(1.-t)*s.z;

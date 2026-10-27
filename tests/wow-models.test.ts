@@ -6,7 +6,7 @@ import { resolveStrike } from '../src/sim/strike';
 import { crystal, state } from './simFixtures';
 import type { SimEvent } from '../src/sim/types';
 describe('WOW models', () => {
-  it('scales crystals smoothly from near to far', () => { expect(crystalVisualScale(3)).toBe(1.15); expect(crystalVisualScale(7)).toBe(1.8); expect(crystalVisualScale(5)).toBeGreaterThan(crystalVisualScale(4)); });
+  it('scales crystals smoothly from near to far', () => { expect(crystalVisualScale(3)).toBe(1.45); expect(crystalVisualScale(7)).toBe(2.1); expect(crystalVisualScale(5)).toBeGreaterThan(crystalVisualScale(4)); });
   it('gates friend seed and models daily and missions chips', () => {
     const save = resetSave(), ctx = { save, friend: null as string | null };
     expect(titleModel(ctx, '2026-10-27')).toMatchObject({ friend: null, daily: { label: 'Daily Hymn #1', aria: 'Daily Hymn #1 — Not played yet', badge: null }, missions: { badge: '0 / 3' } });
