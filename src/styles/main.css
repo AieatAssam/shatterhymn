@@ -41,7 +41,7 @@ html, body { touch-action: none; user-select: none; overscroll-behavior: none; }
 .lock { display: none; position: absolute; width: 12px; height: 12px; right: 0; bottom: 0; color: #f4f1ff; }
 .locked .lock { display: block; }
 .unlock { display: none; position: absolute; width: 56px; top: 52px; left: 50%; transform: translateX(-50%); font-size: 13px; line-height: 1.15; letter-spacing: .02em; text-align: center; color: #a59fc9; white-space: normal; }
-.locked.first-run .unlock { display: block; }
+.locked.first-run.first-locked .unlock { display: block; }
 .caret { position: absolute; left: calc(50% - 144px + 16px); top: 54px; width: 16px; height: 3px; border-radius: 3px; background: #ffd27a; box-shadow: 0 0 8px #ffd27a; }
 .pop-text { position: absolute; top: 0; left: 0; opacity: 0; white-space: nowrap; font-weight: 800; line-height: 1.1; text-align: center; -webkit-text-stroke: .5px white; text-shadow: 0 1px 7px currentColor; }
 .pop-text span { display: block; font-size: 16px; -webkit-text-stroke: 0; }
