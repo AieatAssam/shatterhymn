@@ -1,5 +1,11 @@
 import { Color, HalfFloatType, NoToneMapping, PerspectiveCamera, Scene, ShaderMaterial, SRGBColorSpace, Vector2, Vector3, WebGLRenderer } from "three";
 import { BloomEffect, ChromaticAberrationEffect, EffectComposer, EffectPass, NoiseEffect, RenderPass, ToneMappingEffect, ToneMappingMode, VignetteEffect } from "postprocessing";
+import type { Loop } from "../core/loop";
+import { Shards } from "./shards";
+import { Sparks } from "./sparks";
+import { Rings } from "./rings";
+import { Threads } from "./threads";
+import { Juice, freezeMsForStrike } from "./juice";
 import { Spring1D } from "../core/spring";
 import type { SimEvent, SimState } from "../sim/types";
 import { Crystals } from "./crystals";
@@ -20,48 +26,83 @@ export class GameRenderer {
   private readonly renderer: WebGLRenderer; private readonly composer: EffectComposer; private readonly scene = new Scene(); private readonly camera = new PerspectiveCamera(CAMERA_FOV, 1, 0.1, 1000);
   private readonly bloom = new TierBloomEffect(BLOOM); private readonly post: EffectPass; private readonly quality: AutoTier; private tier: Tier; private resizeTimer: number | undefined; private time = 0; private lastFrameTime: number | null = null;
   private readonly tint = [new Spring1D(0,6,1), new Spring1D(0,6,1), new Spring1D(0,6,1)];
-  private readonly crystals: Crystals;
+  private readonly crystals: Crystals; private readonly sparks: Sparks; private readonly shards: Shards; private readonly rings: Rings; private readonly threads: Threads; private readonly juice: Juice; private readonly caEffect: ChromaticAberrationEffect; private readonly flashOverlay: HTMLDivElement; private readonly choirText: HTMLDivElement; private choirTextDelay=160; private gameOverBurst = -1; private reducedMotion = false;
   private readonly colors = NOTE_COLORS.map(c => new Color(c));
   private readonly shared = { uTime: { value: 0 }, uKeyDir: { value: new Vector3(...KEY_DIR).normalize() }, uNoteColor: { value: new Color(NOTE_COLORS[0]) }, uNoteGlow: { value: 0 } };
   private readonly background = createBackground(this.shared); private readonly floor = createFloor(this.shared); private readonly halo = createHalo(this.shared); private readonly bell = createBell(this.shared);
   private readonly onResize = (): void => { window.clearTimeout(this.resizeTimer); this.resizeTimer = window.setTimeout(() => this.resize(), RESIZE_DEBOUNCE_MS); };
-  constructor(canvas: HTMLCanvasElement, private readonly getState: () => SimState) {
+  constructor(canvas: HTMLCanvasElement, private readonly getState: () => SimState, loop: Loop) {
+    this.juice = new Juice(loop); this.reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches; this.juice.reducedMotion=this.reducedMotion;
+    this.flashOverlay=document.createElement("div"); Object.assign(this.flashOverlay.style,{position:"fixed",inset:"0",background:"white",pointerEvents:"none",opacity:"0",zIndex:"5"}); canvas.parentElement?.appendChild(this.flashOverlay);
+    this.choirText=document.createElement("div"); Object.assign(this.choirText.style,{position:"fixed",left:"50%",top:"50%",transform:"translate(-50%, -50%)",pointerEvents:"none",textAlign:"center",color:"#ffd27a",textShadow:"0 0 18px #ffd27a",opacity:"0",zIndex:"6"}); canvas.parentElement?.appendChild(this.choirText);
     this.renderer = new WebGLRenderer({ canvas, antialias: false, powerPreference: "high-performance", stencil: false, depth: true, alpha: false });
     this.renderer.outputColorSpace = SRGBColorSpace; this.renderer.toneMapping = NoToneMapping; this.renderer.setClearColor(PALETTE.void0);
     this.scene.add(this.background, this.floor, this.halo, this.bell);
-    this.crystals = new Crystals(this.scene, this.shared);
+    this.crystals = new Crystals(this.scene, this.shared); this.sparks=new Sparks(this.scene); this.shards=new Shards(this.scene,this.sparks,this.shared); this.shards.reducedMotion=this.reducedMotion; this.rings=new Rings(this.scene); this.threads=new Threads(this.scene);
+    this.crystals.onBurst=(x,y,note,choir)=>this.shards.burst(x,y,note,choir?6:0);
     this.composer = new EffectComposer(this.renderer, { frameBufferType: HalfFloatType });
     const noise = new NoiseEffect({ premultiply: true }); noise.blendMode.opacity.value = NOISE_OPACITY;
     this.composer.addPass(new RenderPass(this.scene, this.camera));
     this.composer.addPass(new EffectPass(this.camera, this.bloom, new VignetteEffect(VIGNETTE), new ToneMappingEffect({ mode: ToneMappingMode.ACES_FILMIC })));
-    this.post = new EffectPass(this.camera, new ChromaticAberrationEffect({ offset: new Vector2(CA_OFFSET, CA_OFFSET), radialModulation: true, modulationOffset: CA_MODULATION }), noise); this.composer.addPass(this.post);
+    this.caEffect = new ChromaticAberrationEffect({ offset: new Vector2(CA_OFFSET, CA_OFFSET), radialModulation: true, modulationOffset: CA_MODULATION }); this.post = new EffectPass(this.camera, this.caEffect, noise); this.composer.addPass(this.post);
     this.tier = detectTier(window.matchMedia("(pointer: coarse)").matches); this.quality = new AutoTier(this.tier); this.setTier(this.tier);
     window.addEventListener("resize", this.onResize); window.visualViewport?.addEventListener("resize", this.onResize);
   }
-  event(event: SimEvent): void { this.crystals.event(event); }
-  reset(): void { this.crystals.reset(); }
+  event(event: SimEvent): void {
+    this.crystals.event(event); this.juice.event(event);
+    if(event.type === "strike") { if(event.n>=7 && event.closeCount>0)this.choirTextDelay=180; this.rings.launch("strike",event.note); if(event.n>=2)this.threads.burst(event.shattered,event.note,freezeMsForStrike(event.n,event.closeCount>0)); }
+    if(event.type === "dud") this.rings.launch("dud",event.note);
+    if(event.type === "shellBreak") this.shards.burst(event.x,event.y,event.note,0,true);
+    if(event.type === "crack") { this.rings.launch("crack",0); for(const c of event.flared)this.shards.burst(c.x,c.y,c.note); }
+    // SG§5 f10: three rings begin at the end of the freeze, 50 ms apart.
+    if(event.type === "choir") { this.choirText.innerHTML=`<div style="font:700 72px Cinzel,serif">CHOIR!</div><div style="font:600 20px Inter,sans-serif">${event.n} at once</div>`; this.choirTextDelay=160; this.rings.launch("choir",event.note,160);this.rings.launch("choir",event.note,210,0xffffff);this.rings.launch("choir",event.note,260,0xffd27a); }
+    if(event.type === "gameOver") this.gameOverBurst=250;
+  }
+  reset(): void { this.crystals.reset();this.shards.reset();this.sparks.reset();this.rings.reset();this.threads.reset();this.bell.visible=true;this.gameOverBurst=-1;this.choirText.style.opacity="0"; }
+  setReducedMotion(value:boolean):void{this.reducedMotion=value;this.juice.reducedMotion=value;this.shards.reducedMotion=value;}
+
   frame(realDtMs: number, simDtMs: number): void {
-    this.time += realDtMs / 1000; this.shared.uTime.value = this.time;
+    this.time += realDtMs / 1000; this.shared.uTime.value = this.time * (this.reducedMotion ? .25 : 1); this.juice.update(realDtMs);
+    if(this.gameOverBurst>=0){this.gameOverBurst-=realDtMs;if(this.gameOverBurst<0){this.shards.burst(0,0,this.getState().dial.note,20,false,true);this.bell.visible=false;}}
     const state = this.getState(), target = this.colors[state.dial.note]!;
     this.tint[0]!.target = target.r; this.tint[1]!.target = target.g; this.tint[2]!.target = target.b;
     const steps = Math.max(1, Math.ceil(realDtMs / 1000 / (1 / 120))); const dt = realDtMs / 1000 / steps;
     for (let i = 0; i < steps; i++) for (const spring of this.tint) spring.step(dt);
     this.shared.uNoteColor.value.setRGB(this.tint[0]!.x, this.tint[1]!.x, this.tint[2]!.x);
-    this.shared.uNoteGlow.value = state.dial.holding ? Math.min(1, 0.5 + state.dial.holdMs / 2000) : 0;
+    this.shared.uNoteGlow.value = Math.min(1,(state.dial.holding ? Math.min(1, 0.5 + state.dial.holdMs / 2000) : 0)+this.shards.glow);
     const halo = (this.halo.material as ShaderMaterial).uniforms; halo.uCurrent!.value = state.dial.note; halo.uActive!.value = state.K;
     let danger = 0; for (const c of state.crystals) if (c.alive && c.rho - c.r < 3.1) { danger = 1; break; } halo.uDanger!.value = danger;
     const bell = (this.bell.material as ShaderMaterial).uniforms; bell.uCracks!.value = state.cracks; bell.uGrace!.value = state.graceMs > 0 ? 1 : 0;
-    this.crystals.update(state, simDtMs, this.time);
+    const j=this.juice; const anticipation=j.holding?Math.min(1,j.holdTime/90):0; const squash=1-(1-anticipation)**2;
+    this.bell.scale.set(j.bellX.x+.06*squash,j.bellY.x-.08*squash,1);
+    this.bell.rotation.z=(!this.reducedMotion&&j.holding ? Math.min(3,.6+.4*j.holdTime/1000)*Math.PI/180*Math.sin(j.time*22*Math.PI):0)+(!this.reducedMotion&&j.dudTime<600?8*Math.PI/180*Math.exp(-6*j.dudTime/1000)*Math.sin(14*Math.PI*j.dudTime/1000):0);
+    this.bell.position.x=j.recoilX*Math.exp(-j.crackTime/100);this.bell.position.y=j.recoilY*Math.exp(-j.crackTime/100);
+    this.bloom.intensity=j.bloom;this.caEffect.offset.set(j.ca,j.ca);this.flashOverlay.style.opacity=String(j.flash);
+    // SG§5 f10 and f102: the Choir label enters at the burst and fades after settling.
+    const textAge=j.choirTime-this.choirTextDelay;
+    const textAlpha=textAge<0?0:this.reducedMotion?Math.min(1,textAge/150):1;
+    this.choirText.style.opacity=String(textAlpha*Math.max(0,Math.min(1,(2000-j.choirTime)/300)));
+    const textScale=this.reducedMotion?1:1+.6*Math.exp(-textAge/160)*Math.cos(textAge*2*Math.PI*4/1000);
+    this.choirText.style.transform=`translate(-50%, -50%) scale(${textAge<0?1:textScale})`;
+
+    (this.background.material as ShaderMaterial).uniforms.uChoir!.value=j.choirTime>=0&&j.choirTime<160?1:0;
+    fitCamera(this.camera,this.camera.aspect); this.camera.position.x+=j.offsetX;this.camera.position.y+=j.offsetY;this.camera.rotation.z+=j.roll;this.camera.fov=j.fov.x;this.camera.updateProjectionMatrix();
+    // SG§5 f1–f9 and f10–f24: ghosts animate during freeze and burst in a ripple.
+    this.crystals.update(state, simDtMs, this.time, realDtMs, this.reducedMotion);this.rings.update(realDtMs);this.threads.update(realDtMs);
+    // SG§5 f10–f45 and f37–f102: particles use scaled time and harvest into the bell.
+    this.shards.update(simDtMs/1000);this.sparks.update(simDtMs/1000);
+    // SG§5 f102: the in-world effects have settled; text is owned by M6.
+
     const now = performance.now(); const frameTime = this.lastFrameTime === null ? 0 : now - this.lastFrameTime; this.lastFrameTime = now;
     const tier = this.quality.update(frameTime); if (tier !== this.tier) this.setTier(tier);
     this.composer.render(realDtMs / 1000);
   }
   resize(): void { const width = window.innerWidth, height = window.innerHeight; if (!width || !height) return; fitCamera(this.camera, width / height); this.renderer.setSize(width, height, false); this.composer.setSize(width, height); }
-  setTier(tier: Tier): void { this.tier = tier; this.quality.tier = tier; this.renderer.setPixelRatio(tier === "low" ? 1 : Math.min(window.devicePixelRatio || 1, TIERS[tier].dpr)); this.bloom.scale = TIERS[tier].bloom; this.post.enabled = tier !== "low"; this.resize(); }
+  setTier(tier: Tier): void { this.tier = tier; this.quality.tier = tier; this.renderer.setPixelRatio(tier === "low" ? 1 : Math.min(window.devicePixelRatio || 1, TIERS[tier].dpr)); this.bloom.scale = TIERS[tier].bloom; this.post.enabled = tier !== "low"; this.shards.setTier(tier);this.sparks.setTier(tier,this.renderer.getPixelRatio()); this.resize(); }
   dispose(): void {
     window.removeEventListener("resize", this.onResize); window.visualViewport?.removeEventListener("resize", this.onResize); window.clearTimeout(this.resizeTimer);
     for (const mesh of [this.background, this.floor, this.halo, this.bell]) { mesh.geometry.dispose(); const material = mesh.material as ShaderMaterial; if (mesh === this.bell) for (const name of ["uCrack0", "uCrack1", "uCrack2"]) material.uniforms[name]!.value.dispose(); material.dispose(); }
-    this.crystals.dispose();
+    this.crystals.dispose();this.shards.dispose();this.sparks.dispose();this.rings.dispose();this.threads.dispose();this.flashOverlay.remove();this.choirText.remove();
     this.composer.dispose(); this.renderer.dispose();
   }
 }

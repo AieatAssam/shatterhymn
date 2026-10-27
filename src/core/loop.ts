@@ -32,7 +32,7 @@ export class Loop {
     const simDt = this.paused || nowMs < this.freezeUntil ? 0 : realDt * this.timeScale;
     this.acc += simDt;
     let steps = 0;
-    while (this.acc >= SIM_DT_MS && steps < 5) { this.opts.tick(); this.acc -= SIM_DT_MS; steps++; }
+    while (this.acc >= SIM_DT_MS && steps < 5) { this.opts.tick(); this.acc -= SIM_DT_MS; steps++; if (nowMs < this.freezeUntil) { this.acc = 0; break; } }
     if (steps === 5) this.acc = 0;
     this.opts.frame(realDt, simDt);
   }
