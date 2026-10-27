@@ -19,7 +19,9 @@ export function crystalVisualScale(rho: number): number {
 
 export const CRYSTAL_GLOW = { poolRadius: 1.15, lowMaxRho: 8.5, shadowRadius: .9, shadowAlpha: .5 } as const;
 
-export const SHATTER = { counts: { low: 22, medium: 30, high: 40 }, speed: 11, speedRandom: 13, drag: 1.5, size: .4, sizeRandom: .5, largeChance: .15, largeSize: 1, largeSizeRandom: .6, largeSpin: 1, largeSpinRandom: 2, life: 2.6, ringRadius: 9, ringLife: .9, fringeLife: .6, fringeOffset: .25, fringeAlpha: .45, discRadius: 6, discAlpha: .55, flashLife: .35, flashOpacity: [.3,.45,.6,.75], flashInterval: 1/3, bellDim: .35, bellDimLife: .6, shaftLife: 1.2 } as const;
+export const SHATTER = { counts: { low: 22, medium: 30, high: 40 }, speed: 11, speedRandom: 13, drag: 1.5, size: .4, sizeRandom: .5, largeChance: .15, largeSize: 1, largeSizeRandom: .6, largeSpin: 1, largeSpinRandom: 2, life: 2.6, ringRadius: 9, ringLife: .9, fringeLife: .3, fringeOffset: .35, fringeAlpha: .6, discRadius: 6, discAlpha: .55, flashLife: .35, flashOpacity: [.3,.45,.6,.75], flashInterval: 1/3, bellDim: .35, bellDimLife: .6, shaftLife: 1.2 } as const;
 
 export const TITLE_FX = { goldenScale: 1.25, orbitRadius: 1.3, sparkles: 6, poolAlpha: .55, tickSpeed: .35, discardRadius: 11.5 } as const;
 export const TELL_FX = { closeScale: 1.6, closeLife: .25, goldShards: 12, ringWidth: .35, discWhite: .3 } as const;
+
+export const FINISH = { floaterGap: 8, closeOffset: 56, closeOpaqueMs: 400, scoreMs: 600, gemBodyMax: .55, shardDarkFacet: .45, beamFadePx: 80, titleSweep: 3 } as const;

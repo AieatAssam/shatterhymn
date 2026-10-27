@@ -1,9 +1,11 @@
 import { Color, DynamicDrawUsage, InstancedBufferAttribute, InstancedMesh, Object3D, Scene, ShaderMaterial, TetrahedronGeometry } from 'three';
-import { NOTE_COLORS, PALETTE, SHARD_HARVEST_DELAY, SHATTER } from './fxConfig';
+import { NOTE_COLORS, PALETTE, SHARD_HARVEST_DELAY, SHATTER, FINISH } from './fxConfig';
 import { TIERS, type Tier } from './quality';
 import { Sparks } from './sparks';
 import * as shader from './shaders/shard';
 type Shard={x:number;y:number;z:number;vx:number;vy:number;vz:number;age:number;size:number;rot:number;spin:number;ax:number;ay:number;az:number;note:number;rock:boolean;bell:boolean};
+export function shardColor(rgb: readonly [number,number,number]): [number,number,number] { const scale=Math.min(1,SHATTER_BODY_MAX/Math.max(...rgb,0.0001));return [rgb[0]*scale,rgb[1]*scale,rgb[2]*scale]; }
+const SHATTER_BODY_MAX = FINISH.gemBodyMax;
 export class Shards {
  private readonly pool:Shard[]=Array.from({length:1600},()=>({x:0,y:0,z:0,vx:0,vy:0,vz:0,age:3,size:0,rot:0,spin:0,ax:0,ay:0,az:0,note:0,rock:false,bell:false})); private cursor=0;private cap=1600;private count=18; private readonly obj=new Object3D();private readonly color=new Color();private readonly colors=new InstancedBufferAttribute(new Float32Array(4800),3);private readonly alpha=new InstancedBufferAttribute(new Float32Array(1600),1);private readonly mesh:InstancedMesh; glow=0; reducedMotion=false; bellColor:number=PALETTE.glass;
  constructor(private readonly scene:Scene,private readonly sparks:Sparks,shared:Record<string,{value:unknown}>){const geo=new TetrahedronGeometry(1,0);geo.setAttribute('aColor',this.colors);geo.setAttribute('aAlpha',this.alpha);this.colors.setUsage(DynamicDrawUsage);this.alpha.setUsage(DynamicDrawUsage);this.mesh=new InstancedMesh(geo,new ShaderMaterial({vertexShader:shader.vertex,fragmentShader:shader.fragment,uniforms:{...shared},transparent:true,depthWrite:true}),1600);this.mesh.instanceMatrix.setUsage(DynamicDrawUsage);this.mesh.frustumCulled=false;scene.add(this.mesh);}

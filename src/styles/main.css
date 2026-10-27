@@ -155,3 +155,16 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid 
 .hymn-line svg { display:block; width:100%; height:auto; }
 
 .pop-text .main { font-size:1em; }
+
+/* W1e finish pass */
+.next-chip { max-width:min(100%, calc(50vw - 40px)); text-wrap:balance; }
+.missions-chip .badge { top:-10px; right:8px; }
+.title-screen .chip span { text-wrap:balance; }
+.pop-text.close .main { padding:3px 8px; border-radius:999px; background:rgba(5,4,12,.55); color:#ffd27a; -webkit-text-stroke:3px #05040c; paint-order:stroke fill; }
+#hud::before { height: min(340px, 40vh); background:linear-gradient(#05040c 0%, rgba(5,4,12,.94) 55%, transparent 100%); }
+.screen-overlay:has(.results) { background:rgba(5,4,12,.5); }
+.screen-panel.results { background:rgba(11,9,32,.72); backdrop-filter:blur(14px); }
+.results-body { gap:24px; align-content:center; }
+.results-footer { border-radius:20px; }
+.pb-gap { color:#f4f1ff; }
+.result-progress .earned { display:block; background:#ffc23f; z-index:1; }

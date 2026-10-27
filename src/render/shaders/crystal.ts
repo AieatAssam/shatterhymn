@@ -12,13 +12,13 @@ void main(){
   vec3 N=normalize(vNormal),V=normalize(vView);
   float ndv=clamp(dot(N,V),0.,1.);
   float light=max(dot(N,uKeyDir),0.);
-  float fres=pow(1.-ndv,2.6);
+  float silhouette=1.-ndv; float fres=smoothstep(.88-fwidth(silhouette),1.,silhouette);
   vec3 body=mix(vDark,vColor,step(.08,light))*(.35+.65*light);
   float lum=dot(body,vec3(.2126,.7152,.0722)); body*=min(1.,.55/max(lum,.0001));
   vec3 color=body;
   float core=smoothstep(.30,0.,length(vLocal.xy));
   vec3 coreColor=vCore;float coreLum=dot(coreColor,vec3(.2126,.7152,.0722));coreColor*=min(1.,.8/max(coreLum,.0001));
-  color=mix(color,coreColor,core*.5);
+  color=mix(color,coreColor,core*.2);
   vec3 H=normalize(uKeyDir+V);
   float glint=pow(max(dot(N,H),0.),48.)*(.55+.45*sin(uTime*7.+vSeed*31.));
   color+=vec3(.62,.85,1.)*fres*1.6+vec3(1.)*glint*2.5;
