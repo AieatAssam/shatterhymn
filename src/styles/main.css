@@ -80,3 +80,6 @@ button:focus-visible { outline: 3px solid #9fd8ff; outline-offset: 2px; }
 .tutorial-hud.tutorial-hearts .hearts { visibility:visible; animation:tutorial-pulse 1s ease-in-out infinite alternate; }
 @keyframes tutorial-pulse { from { transform:scale(1); opacity:.7; } to { transform:scale(1.15); opacity:1; } }
 @media (prefers-reduced-motion: reduce) { .tutorial-hud.tutorial-hearts .hearts { animation:none; } }
+.title-screen .update-banner { position:absolute; top:calc(var(--safe-top) + 130px); left:50%; transform:translateX(-50%); width:min(90%,420px); min-height:44px; font-size:14px; color:#ffd27a; border-color:rgba(255,210,122,.45); pointer-events:auto; }
+.title-screen .update-banner:active { transform:translateX(-50%) scale(.98); }
+.title-screen .update-banner[hidden] { display:none; }

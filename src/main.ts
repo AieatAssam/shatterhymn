@@ -9,3 +9,6 @@ import { Controller } from "./game/controller";
 const canvas = document.querySelector<HTMLCanvasElement>("#gl");
 const surface = document.querySelector<HTMLElement>("#surface");
 if (canvas && surface) new Controller(canvas, surface);
+
+import { registerServiceWorker } from "./pwa/update";
+registerServiceWorker();
