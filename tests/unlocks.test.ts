@@ -1,0 +1,6 @@
+import { expect, it } from "vitest";
+import { checkUnlocks, nextLockedByShards } from "../src/meta/unlocks";
+import { resetSave } from "../src/meta/save";
+import { result } from "./metaHelpers";
+it("unlocks shard items at thresholds and identifies the next", () => { const s = resetSave(); s.progress.lifetimeShards = 149; checkUnlocks(s); expect(s.unlocks.skins).toEqual(["clear"]); expect(nextLockedByShards(s)).toEqual({ kind: "skin", id: "quartz", name: "Smoked Quartz", have: 149, need: 150 }); s.progress.lifetimeShards = 150; checkUnlocks(s); expect(s.unlocks.skins).toContain("quartz"); s.progress.lifetimeShards = 5000; checkUnlocks(s); expect(s.unlocks.skins).toHaveLength(6); expect(nextLockedByShards(s)).toBeNull(); });
+it("awards choir and run titles", () => { const s = resetSave(); s.progress.lifetimeChoirs = 1; checkUnlocks(s, result({ score: 10000, timeMs: 180000 })); expect(s.unlocks.titles).toEqual(["novice", "chorister", "cantor", "bellwright"]); expect(s.unlocks.skins).not.toContain("crown"); s.progress.lifetimeChoirs = 10; checkUnlocks(s, result({ score: 50000 })); expect(s.unlocks.skins).toContain("crown"); expect(s.unlocks.titles).toContain("choirmaster"); expect(s.equipped.title).toBe("cathedral"); });

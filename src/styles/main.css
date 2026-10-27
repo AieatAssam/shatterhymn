@@ -23,6 +23,7 @@ html, body { touch-action: none; user-select: none; overscroll-behavior: none; }
 .hearts svg.broken .heart-crack { opacity: 1; }
 .score-block { text-align: center; font-variant-numeric: tabular-nums; }
 .score { font-size: 44px; line-height: 1; font-weight: 800; color: #f4f1ff; text-shadow: 0 2px 12px #05040c; }
+.best.new-best { color: #FFD27A; }
 .best { margin-top: 3px; font-size: 13px; font-weight: 600; letter-spacing: .1em; color: #a59fc9; }
 .mult { color: #ffd27a; font-size: 20px; font-weight: 800; min-height: 24px; }
 .pause-button { pointer-events: auto; justify-self: end; width: 44px; height: 44px; padding: 10px; border: 1px solid rgba(255,255,255,.12); border-radius: 14px; color: #f4f1ff; background: rgba(18,14,42,.62); }
