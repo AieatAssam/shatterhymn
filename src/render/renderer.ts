@@ -80,6 +80,7 @@ export class GameRenderer {
   }
   reset(): void { this.crystals.reset();this.shards.reset();this.sparks.reset();this.rings.reset();this.threads.reset();this.bell.visible=true;this.gameOverBurst=-1;this.levelSweep=-1;this.chordIds=[];this.bursts.length=0;this.strikeBursts.length=0;this.closeBursts.length=0;this.strikeTime=-10;this.closeFlash=0;this.choirText.style.opacity="0"; }
   setSkin(id:string):void { const styles:Record<string,[number,number,number]>={clear:[0xe8f1ff,0x9fd8ff,.18],quartz:[0x8b7b6e,0xe0c9b0,.35],rosegold:[0xe8a090,0xffd0b8,.30],obsidian:[0x151020,0x8a7cff,.80],aurora:[0x3fe0a0,0xd8fff4,.30],rosewindow:[0xe8f1ff,0xffd27a,.55],crown:[0xe8f1ff,0xffd27a,.18]};const style=styles[id]??styles.clear!;const u=(this.bell.material as ShaderMaterial).uniforms;u.uGlass!.value.setHex(style[0]);u.uRim!.value.setHex(style[1]);u.uAlpha!.value=style[2];u.uSkin!.value=id==="aurora"?1:id==="rosewindow"?2:0;this.shards.bellColor=style[0];for(const gem of this.gems)gem.visible=id==="crown"; }
+  forceHeat(v: number): void { this.juice.heat.target = Math.max(this.juice.heat.target, v); }
   setShake(value:number):void {this.juice.shakeMultiplier=value/100;}
   setReducedMotion(value:boolean):void{this.reducedMotion=value;this.juice.reducedMotion=value;this.shards.reducedMotion=value;if(value){this.juice.ca=CA_OFFSET;this.juice.fov.x=CAMERA_FOV;this.juice.fov.target=CAMERA_FOV;this.juice.fov.v=0;}}
 
