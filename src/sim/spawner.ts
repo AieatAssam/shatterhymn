@@ -17,7 +17,7 @@ export class Spawner {
   private nextId = 1;
   private readonly eventRng: Rng;
   private eventTimer: number;
-  private pendingEvent: { kind: 'golden' | 'chord'; note: number } | null = null;
+  private pendingEvent: { kind: 'golden' | 'chord'; note: number; theta: number } | null = null;
   private lastEvent: 'golden' | 'chord' = 'golden';
   private retryElapsed = 0;
   constructor(private readonly rng: Rng, seed = 0, mode: RunMode = 'run') {
@@ -30,13 +30,13 @@ export class Spawner {
     if (!this.pendingEvent && this.eventTimer <= EVENT_WARN_MS) {
       if (level < GOLDEN_FROM_LEVEL && state.elapsedMs + this.eventTimer < 20000 - 1e-7) { this.eventTimer = this.eventRng.range(...EVENT_GAP_MS); return; }
       const kind = state.mode === 'attract' ? (this.lastEvent === 'golden' ? 'chord' : 'golden') : level < CHORD_FROM_LEVEL || this.lastEvent === 'chord' ? 'golden' : this.eventRng.weighted([{ item: 'golden' as const, w: EVENT_WEIGHTS.golden }, { item: 'chord' as const, w: EVENT_WEIGHTS.chord }]);
-      this.pendingEvent = { kind, note: this.eventRng.int(state.K) };
+      this.pendingEvent = { kind, note: this.eventRng.int(state.K), theta: this.eventRng.range(0, Math.PI * 2) };
       events.push({ type: 'eventWarn', ...this.pendingEvent });
     }
     if (!this.pendingEvent || this.eventTimer > 1e-7) return;
     const { kind, note } = this.pendingEvent, count = kind === 'chord' ? CHORD_COUNT : 1;
     const cap = row.fieldCap + (kind === 'chord' ? CHORD_CAP_SLACK : 1);
-    let theta = this.eventRng.range(0, Math.PI * 2), tries = 0;
+    let theta = this.pendingEvent.theta, tries = 0;
     const blocked = () => { for (let i = 0; i < count; i++) if (this.blocked(state, theta + (count === 1 ? 0 : (i / (count - 1) - 0.5) * CHORD_ARC))) return true; return false; };
     while (blocked() && tries++ < FAIRNESS_TRIES) theta += FAIRNESS_ROTATION;
     if (aliveCount(state) + count > cap || blocked()) {

@@ -133,3 +133,25 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid 
 .hud-top > div:first-child { min-width:0; }
 .next-chip { width:100%; max-width:min(100%, calc(50vw - 64px)); }
 #hud::before { content:""; position:fixed; inset:0 0 auto; height:22vh; background:linear-gradient(rgba(5,4,12,.65),transparent); pointer-events:none; }
+
+.title-screen::before { height:300px; background:linear-gradient(rgba(5,4,12,.7),transparent); }
+.title-screen h1 { filter:drop-shadow(0 0 14px rgba(159,216,255,.35)); }
+.chip .badge { top:8px; right:8px; }
+#hud::before { content:""; position:absolute; inset:0 0 auto; height:22vh; background:linear-gradient(rgba(5,4,12,.65),transparent); pointer-events:none; }
+.hud-top { background:none; }
+.pop-text { -webkit-text-stroke:3px #05040c; }
+.screen-panel.results { background:rgba(11,9,32,.60); backdrop-filter:blur(8px); }
+.screen-overlay:has(.results) { background:transparent; }
+.results-body { padding-bottom:calc(var(--footer-h, 0px) + 24px); }
+.result-progress { position:relative; height:8px; border-radius:8px; background:rgba(255,255,255,.12); }
+.result-progress i { position:absolute; top:0; height:100%; border-radius:8px; background:#ffd27a; }
+.result-progress .before { opacity:.55; }
+.result-progress .earned { width:0; box-shadow:0 0 8px #ffd27a; animation:reward-fill 600ms 700ms ease-out forwards; }
+@keyframes reward-fill { to { width:var(--earned); } }
+.shard-reward svg { width:20px; height:20px; vertical-align:middle; margin-right:4px; }
+.result-stats strong { color:#ffd27a; font-size:1.25em; }
+.hymn-line { flex-wrap:nowrap; min-width:0; }
+.hymn-line span { flex:0 1 min(44px, calc((100% - (var(--glyph-count) - 1) * 4px) / var(--glyph-count))); min-width:0; }
+.hymn-line svg { display:block; width:100%; height:auto; }
+
+.pop-text .main { font-size:1em; }

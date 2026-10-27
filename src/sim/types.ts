@@ -17,7 +17,7 @@ export interface SimState {
   cracks: number; streak: number; mult: number; over: boolean; stats: RunStats; hymn: number[]; slowDial: boolean;
 }
 export type SimEvent =
-  | { type: 'eventWarn'; kind: 'golden' | 'chord'; note: number }
+  | { type: 'eventWarn'; kind: 'golden' | 'chord'; note: number; theta: number }
   | { type: 'chordWave'; note: number; theta: number; ids: number[] }
   | { type: 'golden'; id: number; x: number; y: number; note: number; points: number }
   | { type: 'holdStart' }
