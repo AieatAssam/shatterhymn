@@ -1,0 +1,42 @@
+import type { Kind } from './types';
+
+export const ARENA_R = 10.0, SPAWN_R = 10.6, TARGETABLE_R = 10.2, HALO_R = 1.6;
+export const CRYSTAL_R = 0.55, RUSHER_R = 0.42, GEODE_R = 0.70, CLOSE_GAP = 1.2;
+export const PRISM_BLAST_R = 3.5, CHOIR_N = 7, CHOIR_R = 5.0, FLARE_R = 3.6;
+export const MAX_CRACKS = 3, RECOVERY_MS = 150, JAR_MS = 600, CRACK_GRACE_MS = 1000;
+export const LEVEL_MS = 20000, SLOW_DIAL_FACTOR = 1.35, MAX_CRYSTALS = 64;
+export const SPAWN_FADE_MS = 350, PRISM_CYCLE_MS = 1000, SPLITTER_PUSH_MS = 400, SPLITTER_PUSH_DISTANCE = 1.2, SPLITTER_CHILD_ANGLE = 0.25;
+export const OPENING_SPAWN_MS = 1000, SPAWN_RETRY_MS = 250, SPAWN_COUNT_FACTOR = 0.35;
+export const SWIRL_MIN = 0.04, SWIRL_MAX = 0.16, SPIRAL_SWIRL = 0.12, SPIRAL_INTERVAL_MS = 300, SPIRAL_ANGLE = 0.45;
+export const FAIRNESS_MS = 2000, FAIRNESS_ANGLE = 0.3, FAIRNESS_R = 8, FAIRNESS_ROTATION = 0.6, FAIRNESS_TRIES = 6;
+export const MEND_COOLDOWN_MS = 30000, RUSHER_SPEED_FACTOR = 1.7, RING_SPEED_FACTOR = 0.8;
+export interface LevelRow { K: number; spawnInterval: number; speed: number; fieldCap: number; stepMs: number }
+export const LEVELS: readonly LevelRow[] = [
+  { K: 3, spawnInterval: 1.5, speed: 0.85, fieldCap: 6, stepMs: 420 },
+  { K: 3, spawnInterval: 1.35, speed: 0.95, fieldCap: 8, stepMs: 400 },
+  { K: 4, spawnInterval: 1.25, speed: 1.05, fieldCap: 10, stepMs: 380 },
+  { K: 4, spawnInterval: 1.1, speed: 1.15, fieldCap: 12, stepMs: 360 },
+  { K: 5, spawnInterval: 1, speed: 1.25, fieldCap: 14, stepMs: 340 },
+  { K: 5, spawnInterval: 0.9, speed: 1.35, fieldCap: 16, stepMs: 320 },
+  { K: 5, spawnInterval: 0.8, speed: 1.45, fieldCap: 18, stepMs: 300 },
+  { K: 5, spawnInterval: 0.72, speed: 1.55, fieldCap: 20, stepMs: 280 },
+];
+export function levelRow(L: number): LevelRow {
+  const level = Math.max(0, Math.floor(L));
+  if (level < LEVELS.length) return LEVELS[level]!;
+  const n = level - 7;
+  return { K: 5, spawnInterval: Math.max(0.45, 0.72 - 0.03 * n), speed: Math.min(2.4, 1.55 + 0.06 * n), fieldCap: Math.min(28, 20 + n), stepMs: Math.max(220, 280 - 8 * n) };
+}
+export interface FormationDef { id: 'single' | 'pair' | 'arc' | 'duet' | 'spiral' | 'ring'; fromLevel: number; weight: number }
+export const FORMATIONS: readonly FormationDef[] = [
+  { id: 'single', fromLevel: 0, weight: 5 }, { id: 'pair', fromLevel: 0, weight: 3 },
+  { id: 'arc', fromLevel: 1, weight: 3 }, { id: 'duet', fromLevel: 2, weight: 2 },
+  { id: 'spiral', fromLevel: 3, weight: 2 }, { id: 'ring', fromLevel: 4, weight: 1.5 },
+];
+export interface KindDef { kind: Exclude<Kind, 'normal'>; fromLevel: number; chance: number }
+export const KINDS: readonly KindDef[] = [
+  { kind: 'mend', fromLevel: 5, chance: 0.025 }, { kind: 'prism', fromLevel: 3, chance: 0.05 },
+  { kind: 'geode', fromLevel: 2, chance: 0.08 }, { kind: 'splitter', fromLevel: 4, chance: 0.07 },
+  { kind: 'rusher', fromLevel: 5, chance: 0.1 },
+];
+export const SCORE = { base: 10, shell: 5, close: 20, choirEach: 50, choirFlat: 500, multCap: 8 } as const;
