@@ -38,8 +38,9 @@ export function resolveStrike(state: SimState, note: number, events: SimEvent[],
     }
     if (c.kind === 'splitter') {
       const childNote = (c.note + 1) % state.K;
-      spawnChild(c, childNote, c.theta - SPLITTER_CHILD_ANGLE);
-      spawnChild(c, childNote, c.theta + SPLITTER_CHILD_ANGLE);
+      const theta = c.theta;
+      spawnChild(c, childNote, theta - SPLITTER_CHILD_ANGLE);
+      spawnChild(c, childNote, theta + SPLITTER_CHILD_ANGLE);
     }
   };
   for (const c of targets) {
