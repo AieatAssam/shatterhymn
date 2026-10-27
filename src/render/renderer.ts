@@ -12,7 +12,7 @@ import { Crystals } from "./crystals";
 import { createBackground } from "./background";
 import { createBell, createHalo } from "./bell";
 import { fitCamera } from "./camera";
-import { BLOOM, CAMERA_FOV, CA_MODULATION, CA_OFFSET, KEY_DIR, NOISE_OPACITY, NOTE_COLORS, PALETTE, RESIZE_DEBOUNCE_MS, VIGNETTE } from "./fxConfig";
+import { BLOOM, CAMERA_FOV, CA_MODULATION, CA_OFFSET, KEY_DIR, NOISE_OPACITY, NOTE_COLORS, PALETTE, RESIZE_DEBOUNCE_MS, LEVEL_SWEEP_MS, VIGNETTE } from "./fxConfig";
 import { createFloor } from "./floor";
 import { AutoTier, detectTier, TIERS, type Tier } from "./quality";
 class TierBloomEffect extends BloomEffect {
@@ -28,6 +28,8 @@ export class GameRenderer {
   private readonly tint = [new Spring1D(0,6,1), new Spring1D(0,6,1), new Spring1D(0,6,1)];
   private readonly crystals: Crystals; private readonly sparks: Sparks; private readonly shards: Shards; private readonly rings: Rings; private readonly threads: Threads; private readonly juice: Juice; private readonly caEffect: ChromaticAberrationEffect; private readonly flashOverlay: HTMLDivElement; private readonly choirText: HTMLDivElement; private choirTextDelay=160; private gameOverBurst = -1; private reducedMotion = false;
   private readonly projection = new Vector3();
+  private readonly debug: HTMLDivElement | null;
+  private debugElapsed = 0; private debugFrames = 0; private levelSweep = -1;
   private readonly gems: Mesh[] = [];
   private readonly colors = NOTE_COLORS.map(c => new Color(c));
   private readonly shared = { uTime: { value: 0 }, uKeyDir: { value: new Vector3(...KEY_DIR).normalize() }, uNoteColor: { value: new Color(NOTE_COLORS[0]) }, uNoteGlow: { value: 0 } };
@@ -38,6 +40,8 @@ export class GameRenderer {
     this.flashOverlay=document.createElement("div"); Object.assign(this.flashOverlay.style,{position:"fixed",inset:"0",background:"white",pointerEvents:"none",opacity:"0",zIndex:"5"}); canvas.parentElement?.appendChild(this.flashOverlay);
     this.choirText=document.createElement("div"); Object.assign(this.choirText.style,{position:"fixed",left:"50%",top:"50%",transform:"translate(-50%, -50%)",pointerEvents:"none",textAlign:"center",color:"#ffd27a",textShadow:"0 0 18px #ffd27a",opacity:"0",zIndex:"6"}); canvas.parentElement?.appendChild(this.choirText);
     this.renderer = new WebGLRenderer({ canvas, antialias: false, powerPreference: "high-performance", stencil: false, depth: true, alpha: false });
+    this.debug = new URLSearchParams(location.search).get("debug") === "1" ? document.createElement("div") : null;
+    if (this.debug) { this.debug.className = "debug-overlay"; canvas.parentElement?.appendChild(this.debug); this.renderer.info.autoReset = false; }
     this.renderer.outputColorSpace = SRGBColorSpace; this.renderer.toneMapping = NoToneMapping; this.renderer.setClearColor(PALETTE.void0);
     this.scene.add(this.background, this.floor, this.halo, this.bell);
     for(let i=0;i<5;i++){const gem=new Mesh(new IcosahedronGeometry(.12,0),new ShaderMaterial({vertexShader:`varying vec3 n; void main(){n=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,fragmentShader:`varying vec3 n; void main(){float f=floor((.25+.75*max(dot(normalize(n),normalize(vec3(-.35,.55,.76))),0.))*4.)/4.;gl_FragColor=vec4(vec3(1.,.63,.2)*(1.+f*2.),1.);}`}));gem.visible=false;this.scene.add(gem);this.gems.push(gem);}
@@ -53,6 +57,7 @@ export class GameRenderer {
   }
   event(event: SimEvent): void {
     this.crystals.event(event); this.juice.event(event);
+    if (event.type === "levelUp") this.levelSweep = 0;
     if(event.type === "strike") { if(event.n>=7 && event.closeCount>0)this.choirTextDelay=180; this.rings.launch("strike",event.note); if(event.n>=2)this.threads.burst(event.shattered,event.note,freezeMsForStrike(event.n,event.closeCount>0)); }
     if(event.type === "dud") this.rings.launch("dud",event.note);
     if(event.type === "shellBreak") this.shards.burst(event.x,event.y,event.note,0,true);
@@ -61,14 +66,16 @@ export class GameRenderer {
     if(event.type === "choir") { this.choirText.innerHTML=`<div style="font:700 72px Cinzel,serif">CHOIR!</div><div style="font:600 20px Inter,sans-serif">${event.n} at once</div>`; this.choirTextDelay=160; this.rings.launch("choir",event.note,160);this.rings.launch("choir",event.note,210,0xffffff);this.rings.launch("choir",event.note,260,0xffd27a); }
     if(event.type === "gameOver") this.gameOverBurst=250;
   }
-  reset(): void { this.crystals.reset();this.shards.reset();this.sparks.reset();this.rings.reset();this.threads.reset();this.bell.visible=true;this.gameOverBurst=-1;this.choirText.style.opacity="0"; }
+  reset(): void { this.crystals.reset();this.shards.reset();this.sparks.reset();this.rings.reset();this.threads.reset();this.bell.visible=true;this.gameOverBurst=-1;this.levelSweep=-1;this.choirText.style.opacity="0"; }
   setSkin(id:string):void { const styles:Record<string,[number,number,number]>={clear:[0xe8f1ff,0x9fd8ff,.18],quartz:[0x8b7b6e,0xe0c9b0,.35],rosegold:[0xe8a090,0xffd0b8,.30],obsidian:[0x151020,0x8a7cff,.80],aurora:[0x3fe0a0,0xd8fff4,.30],rosewindow:[0xe8f1ff,0xffd27a,.55],crown:[0xe8f1ff,0xffd27a,.18]};const style=styles[id]??styles.clear!;const u=(this.bell.material as ShaderMaterial).uniforms;u.uGlass!.value.setHex(style[0]);u.uRim!.value.setHex(style[1]);u.uAlpha!.value=style[2];u.uSkin!.value=id==="aurora"?1:id==="rosewindow"?2:0;this.shards.bellColor=style[0];for(const gem of this.gems)gem.visible=id==="crown"; }
   setShake(value:number):void {this.juice.shakeMultiplier=value/100;}
-  setReducedMotion(value:boolean):void{this.reducedMotion=value;this.juice.reducedMotion=value;this.shards.reducedMotion=value;}
+  setReducedMotion(value:boolean):void{this.reducedMotion=value;this.juice.reducedMotion=value;this.shards.reducedMotion=value;if(value){this.juice.ca=CA_OFFSET;this.juice.fov.x=CAMERA_FOV;this.juice.fov.target=CAMERA_FOV;this.juice.fov.v=0;}}
 
   frame(realDtMs: number, simDtMs: number): void {
     this.time += realDtMs / 1000; for(let i=0;i<this.gems.length;i++){const angle=this.time*.4+i*Math.PI*2/5;this.gems[i]!.position.set(Math.cos(angle)*1.2,Math.sin(angle)*1.2,1.35);} this.shared.uTime.value = this.time * (this.reducedMotion ? .25 : 1); this.juice.update(realDtMs);
     if(this.gameOverBurst>=0){this.gameOverBurst-=realDtMs;if(this.gameOverBurst<0){this.shards.burst(0,0,this.getState().dial.note,20,false,true);this.bell.visible=false;}}
+    if (this.levelSweep >= 0) { this.levelSweep += realDtMs; if (this.levelSweep >= LEVEL_SWEEP_MS) this.levelSweep = -1; }
+    const floor = (this.floor.material as ShaderMaterial).uniforms; floor.uSweep!.value = this.levelSweep < 0 ? -1 : this.levelSweep / LEVEL_SWEEP_MS; floor.uReducedMotion!.value = this.reducedMotion ? 1 : 0;
     const state = this.getState(), target = this.colors[state.dial.note]!;
     this.tint[0]!.target = target.r; this.tint[1]!.target = target.g; this.tint[2]!.target = target.b;
     const steps = Math.max(1, Math.ceil(realDtMs / 1000 / (1 / 120))); const dt = realDtMs / 1000 / steps;
@@ -77,7 +84,7 @@ export class GameRenderer {
     this.shared.uNoteGlow.value = Math.min(1,(state.dial.holding ? Math.min(1, 0.5 + state.dial.holdMs / 2000) : 0)+this.shards.glow);
     const halo = (this.halo.material as ShaderMaterial).uniforms; halo.uCurrent!.value = state.dial.note; halo.uActive!.value = state.K;
     let danger = 0; for (const c of state.crystals) if (c.alive && c.rho - c.r < 3.1) { danger = 1; break; } halo.uDanger!.value = danger;
-    const bell = (this.bell.material as ShaderMaterial).uniforms; bell.uCracks!.value = state.cracks; bell.uGrace!.value = state.graceMs > 0 ? 1 : 0;
+    const bell = (this.bell.material as ShaderMaterial).uniforms; bell.uCracks!.value = state.cracks; bell.uGrace!.value = state.graceMs > 0 ? 1 : 0; bell.uDud!.value = this.reducedMotion && this.juice.dudTime < 600 ? Math.sin(Math.PI * this.juice.dudTime / 600) : 0; bell.uCrackFlash!.value = Math.max(0, 1 - this.juice.crackTime / 80);
     const j=this.juice; const anticipation=j.holding?Math.min(1,j.holdTime/90):0; const squash=1-(1-anticipation)**2;
     this.bell.scale.set(j.bellX.x+.06*squash,j.bellY.x-.08*squash,1);
     this.bell.rotation.z=(!this.reducedMotion&&j.holding ? Math.min(3,.6+.4*j.holdTime/1000)*Math.PI/180*Math.sin(j.time*22*Math.PI):0)+(!this.reducedMotion&&j.dudTime<600?8*Math.PI/180*Math.exp(-6*j.dudTime/1000)*Math.sin(14*Math.PI*j.dudTime/1000):0);
@@ -100,7 +107,9 @@ export class GameRenderer {
 
     const now = performance.now(); const frameTime = this.lastFrameTime === null ? 0 : now - this.lastFrameTime; this.lastFrameTime = now;
     const tier = this.quality.update(frameTime); if (tier !== this.tier) this.setTier(tier);
+    if (this.debug) this.renderer.info.reset();
     this.composer.render(realDtMs / 1000);
+    if (this.debug) { this.debugElapsed += realDtMs; this.debugFrames++; if (this.debugElapsed >= 500) { let alive = 0; for (const crystal of state.crystals) if (crystal.alive) alive++; this.debug.textContent = `FPS: ${Math.round(this.debugFrames * 1000 / this.debugElapsed)} · Tier: ${this.tier} · Draw calls: ${this.renderer.info.render.calls} · Alive crystals: ${alive}`; this.debugElapsed = 0; this.debugFrames = 0; } }
   }
   project(x: number, y: number): { sx: number; sy: number } { this.projection.set(x, y, 0).project(this.camera); return { sx: (this.projection.x + 1) * window.innerWidth / 2, sy: (1 - this.projection.y) * window.innerHeight / 2 }; }
   resize(): void { const width = window.innerWidth, height = window.innerHeight; if (!width || !height) return; fitCamera(this.camera, width / height); this.renderer.setSize(width, height, false); this.composer.setSize(width, height); }
@@ -109,7 +118,7 @@ export class GameRenderer {
     window.removeEventListener("resize", this.onResize); window.visualViewport?.removeEventListener("resize", this.onResize); window.clearTimeout(this.resizeTimer);
     for (const mesh of [this.background, this.floor, this.halo, this.bell]) { mesh.geometry.dispose(); const material = mesh.material as ShaderMaterial; if (mesh === this.bell) for (const name of ["uCrack0", "uCrack1", "uCrack2"]) material.uniforms[name]!.value.dispose(); material.dispose(); }
     for(const gem of this.gems){gem.geometry.dispose();(gem.material as ShaderMaterial).dispose();}
-    this.crystals.dispose();this.shards.dispose();this.sparks.dispose();this.rings.dispose();this.threads.dispose();this.flashOverlay.remove();this.choirText.remove();
+    this.crystals.dispose();this.shards.dispose();this.sparks.dispose();this.rings.dispose();this.threads.dispose();this.flashOverlay.remove();this.choirText.remove();this.debug?.remove();
     this.composer.dispose(); this.renderer.dispose();
   }
 }

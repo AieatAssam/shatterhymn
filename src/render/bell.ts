@@ -14,7 +14,7 @@ function crackTexture(seed: number): CanvasTexture {
 }
 export function createBell(shared: Record<string, { value: unknown }>): Mesh {
   const geometry = new LatheGeometry(BELL_PROFILE.map(([x,y]) => new Vector2(x,y)), BELL_SEGMENTS); geometry.rotateX(-Math.PI / 2);
-  const material = new ShaderMaterial({ vertexShader: bellShader.vertex, fragmentShader: bellShader.fragment, side: DoubleSide, transparent: true, depthWrite: false, uniforms: { ...shared, uAlpha: { value: 0.18 }, uSkin: { value: 0 }, uGlass: { value: new Color(PALETTE.glass) }, uRim: { value: new Color(PALETTE.glassRim) }, uCrackColor: { value: new Color(PALETTE.crack) }, uMendColor: { value: new Color(PALETTE.mend) }, uCracks: { value: 0 }, uGrace: { value: 0 }, uMend: { value: 0 }, uMendTime: { value: 0 }, uCrack0: { value: crackTexture(1) }, uCrack1: { value: crackTexture(2) }, uCrack2: { value: crackTexture(3) } } });
+  const material = new ShaderMaterial({ vertexShader: bellShader.vertex, fragmentShader: bellShader.fragment, side: DoubleSide, transparent: true, depthWrite: false, uniforms: { ...shared, uAlpha: { value: 0.18 }, uSkin: { value: 0 }, uGlass: { value: new Color(PALETTE.glass) }, uRim: { value: new Color(PALETTE.glassRim) }, uCrackColor: { value: new Color(PALETTE.crack) }, uMendColor: { value: new Color(PALETTE.mend) }, uDud: { value: 0 }, uCrackFlash: { value: 0 }, uCracks: { value: 0 }, uGrace: { value: 0 }, uMend: { value: 0 }, uMendTime: { value: 0 }, uCrack0: { value: crackTexture(1) }, uCrack1: { value: crackTexture(2) }, uCrack2: { value: crackTexture(3) } } });
   const mesh = new Mesh(geometry, material); mesh.position.z = BELL_Z; return mesh;
 }
 export function createHalo(shared: Record<string, { value: unknown }>): Mesh {
