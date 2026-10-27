@@ -34,7 +34,7 @@ export class GameRenderer {
   private readonly glow: GlowQuads; private readonly crystals: Crystals; private shaftCursor=0; private strikeTime=-10; private readonly bursts: {x:number;y:number;note:number;scale:number;start:number}[]=[]; private rose=0; private warnUntil=0; private warnAngle=0; private warnNote=0; private closeFlash=0; private chordIds:number[]=[]; private chordNote=0; private readonly sparks: Sparks; private readonly shards: Shards; private readonly rings: Rings; private readonly threads: Threads; private readonly juice: Juice; private readonly caEffect: ChromaticAberrationEffect; private readonly feverFrame: HTMLDivElement; private readonly flashOverlay: HTMLDivElement; private readonly choirText: HTMLDivElement; private choirTextDelay=160; private gameOverBurst = -1; private reducedMotion = false;
   private readonly closeBursts: {x:number;y:number;scale:number;start:number}[]=[]; private readonly goldColor=new Color(PALETTE.mend); private readonly projection = new Vector3(); private readonly strikeBursts: {x:number;y:number;note:number;start:number}[] = []; private lastFlash=-10; private flashStart=-10; private flashStrength=0;
   private readonly debug: HTMLDivElement | null;
-  private debugElapsed = 0; private debugFrames = 0; private levelSweep = -1;
+  private debugElapsed = 0; private debugFrames = 0; private levelSweep = -1; private lastNote = 0;
   private readonly gems: Mesh[] = [];
   private readonly fringeColors = [0xff4060,0x40ff90,0x4f80ff].map(c => new Color(c));
   private readonly colors = NOTE_COLORS.map(c => new Color(c)); private readonly discColors = NOTE_COLORS.map(c => new Color(c).lerp(new Color(0xffffff), TELL_FX.discWhite));
@@ -86,21 +86,20 @@ export class GameRenderer {
 
   frame(realDtMs: number, simDtMs: number): void {
     this.time += realDtMs / 1000; for(let i=0;i<this.gems.length;i++){const angle=this.time*.4+i*Math.PI*2/5;this.gems[i]!.position.set(Math.cos(angle)*1.2,Math.sin(angle)*1.2,1.35);} this.shared.uHeat.value=this.juice.heat.x;this.feverFrame.style.boxShadow=`inset 0 0 90px rgba(255,194,63,${.35*Math.max(0,this.juice.heat.x)})`; this.shared.uBeat.value=Math.exp(-7*((this.time*72/60)%1)); this.shared.uTime.value = this.time * (this.reducedMotion ? .25 : 1); this.juice.update(realDtMs);
-    if(this.gameOverBurst>=0){this.gameOverBurst-=realDtMs;if(this.gameOverBurst<0){this.shards.burst(0,0,this.getState().dial.note,20,false,true);this.bell.visible=false;}}
+    if(this.gameOverBurst>=0){this.gameOverBurst-=realDtMs;if(this.gameOverBurst<0){this.shards.burst(0,0,this.lastNote,20,false,true);this.bell.visible=false;}}
     if (this.levelSweep >= 0) { this.levelSweep += realDtMs; if (this.levelSweep >= LEVEL_SWEEP_MS) this.levelSweep = -1; }
     const floor = (this.floor.material as ShaderMaterial).uniforms; floor.uSweep!.value = this.levelSweep < 0 ? -1 : this.levelSweep / LEVEL_SWEEP_MS; floor.uReducedMotion!.value = this.reducedMotion ? 1 : 0; floor.uAttract!.value=this.getState().mode === "attract" ? 1 : 0;
-    const state = this.getState(), target = this.colors[state.dial.note]!;
+    const state = this.getState(), target = this.colors[this.lastNote]!;
     this.tint[0]!.target = target.r; this.tint[1]!.target = target.g; this.tint[2]!.target = target.b;
     const steps = Math.max(1, Math.ceil(realDtMs / 1000 / (1 / 120))); const dt = realDtMs / 1000 / steps;
     for (let i = 0; i < steps; i++) for (const spring of this.tint) spring.step(dt);
     this.shared.uNoteColor.value.setRGB(this.tint[0]!.x, this.tint[1]!.x, this.tint[2]!.x);
-    this.shared.uNoteGlow.value = Math.min(1,Math.max(BELL_IDLE_GLOW, state.dial.holding ? Math.min(1, 0.5 + state.dial.holdMs / 2000) : 0)+this.shards.glow);
-    const halo = (this.halo.material as ShaderMaterial).uniforms; halo.uCurrent!.value = state.dial.note; halo.uActive!.value = state.K;
-    let danger = 0; for (const c of state.crystals) if (c.alive && c.rho - c.r < 3.1) { danger = 1; break; } halo.uDanger!.value = danger;this.closeFlash=Math.max(0,this.closeFlash-realDtMs/150);halo.uCloseFlash!.value=this.closeFlash;
+    this.shared.uNoteGlow.value = Math.min(1, BELL_IDLE_GLOW + this.shards.glow);
+    const halo = (this.halo.material as ShaderMaterial).uniforms; let danger = 0; for (const c of state.crystals) if (c.alive && c.rho - c.r < 3.1) { danger = 1; break; } halo.uDanger!.value = danger;this.closeFlash=Math.max(0,this.closeFlash-realDtMs/150);halo.uCloseFlash!.value=this.closeFlash;
     const bell = (this.bell.material as ShaderMaterial).uniforms; bell.uStrikeDim!.value = this.time-this.strikeTime<SHATTER.bellDimLife?SHATTER.bellDim:Math.min(1,SHATTER.bellDim+(this.time-this.strikeTime-SHATTER.bellDimLife)*3); bell.uCracks!.value = state.cracks; bell.uGrace!.value = state.graceMs > 0 ? 1 : 0; bell.uDud!.value = this.reducedMotion && this.juice.dudTime < 600 ? Math.sin(Math.PI * this.juice.dudTime / 600) : 0; bell.uCrackFlash!.value = Math.max(0, 1 - this.juice.crackTime / 80);
-    const j=this.juice; const anticipation=j.holding?Math.min(1,j.holdTime/90):0; const squash=1-(1-anticipation)**2;
+    const j=this.juice; const squash=0;
     this.bell.scale.set(BELL_SCALE*(j.bellX.x+.06*squash),BELL_SCALE*(j.bellY.x-.08*squash),BELL_SCALE);
-    this.bell.rotation.z=(!this.reducedMotion&&j.holding ? Math.min(3,.6+.4*j.holdTime/1000)*Math.PI/180*Math.sin(j.time*22*Math.PI):0)+(!this.reducedMotion&&j.dudTime<600?8*Math.PI/180*Math.exp(-6*j.dudTime/1000)*Math.sin(14*Math.PI*j.dudTime/1000):0);
+    this.bell.rotation.z=(!this.reducedMotion&&j.dudTime<600?8*Math.PI/180*Math.exp(-6*j.dudTime/1000)*Math.sin(14*Math.PI*j.dudTime/1000):0);
     this.bell.position.x=j.recoilX*Math.exp(-j.crackTime/100);this.bell.position.y=j.recoilY*Math.exp(-j.crackTime/100);
     this.bloom.intensity=(this.tier=== "low"?1.6:BLOOM.intensity)+(j.bloom-BLOOM.intensity)+.15*j.heat.x;this.caEffect.offset.set(j.ca,j.ca);this.flashOverlay.style.opacity=String(this.flashStrength*Math.max(0,1-(this.time-this.flashStart)/SHATTER.flashLife)**2);
     // SG§5 f10 and f102: the Choir label enters at the burst and fades after settling.
@@ -110,7 +109,7 @@ export class GameRenderer {
     const textScale=this.reducedMotion?1:1+.6*Math.exp(-textAge/160)*Math.cos(textAge*2*Math.PI*4/1000);
     this.choirText.style.transform=`translate(-50%, -50%) scale(${textAge<0?1:textScale})`;
 
-    if(j.feverEntered){this.rings.launch("fever",0);this.rose=Math.max(this.rose,.35);j.feverEntered=false;} this.rose=Math.max(0,this.rose-2*realDtMs/1000);const bg=(this.background.material as ShaderMaterial).uniforms;bg.uDialTop!.value=state.mode === "attract" ? 0 : 1-Math.max(0,(document.querySelector<HTMLElement>(".dial-wrap")?.getBoundingClientRect().top ?? window.innerHeight)-24)/window.innerHeight; bg.uViewportHeight!.value=window.innerHeight; bg.uRealTime!.value=this.time; bg.uStrikeAge!.value=this.time-this.strikeTime;bg.uRose!.value=this.rose; bg.uTitle!.value=state.mode === "attract" ? 1 : 0; bg.uShaftCount!.value=(bg.uShafts!.value as Vector4[]).filter(s => s.z>0 && this.time-s.y <= (s.z>1.3?1.4:SHATTER.shaftLife)).length;if(this.time>this.warnUntil)bg.uWarnNote!.value=-1;const ringFlash=floor.uRingFlash!.value as Vector4;for(let i=0;i<4;i++)ringFlash.setComponent(i,Math.max(0,ringFlash.getComponent(i)-4*realDtMs/1000));
+    if(j.feverEntered){this.rings.launch("fever",0);this.rose=Math.max(this.rose,.35);j.feverEntered=false;} this.rose=Math.max(0,this.rose-2*realDtMs/1000);const bg=(this.background.material as ShaderMaterial).uniforms;bg.uPadTop!.value=state.mode === "attract" ? 0 : 1-Math.max(0,(window.innerHeight)-24)/window.innerHeight; bg.uViewportHeight!.value=window.innerHeight; bg.uRealTime!.value=this.time; bg.uStrikeAge!.value=this.time-this.strikeTime;bg.uRose!.value=this.rose; bg.uTitle!.value=state.mode === "attract" ? 1 : 0; bg.uShaftCount!.value=(bg.uShafts!.value as Vector4[]).filter(s => s.z>0 && this.time-s.y <= (s.z>1.3?1.4:SHATTER.shaftLife)).length;if(this.time>this.warnUntil)bg.uWarnNote!.value=-1;const ringFlash=floor.uRingFlash!.value as Vector4;for(let i=0;i<4;i++)ringFlash.setComponent(i,Math.max(0,ringFlash.getComponent(i)-4*realDtMs/1000));
     (this.background.material as ShaderMaterial).uniforms.uChoir!.value=j.choirTime>=0&&j.choirTime<160?1:0;
     fitCamera(this.camera,this.camera.aspect); if(state.mode === "attract") this.camera.setViewOffset(window.innerWidth,window.innerHeight,0,window.innerHeight*.08,window.innerWidth,window.innerHeight); else this.camera.clearViewOffset(); this.camera.position.x+=j.offsetX;this.camera.position.y+=j.offsetY;this.camera.rotation.z+=j.roll;this.camera.fov=j.fov.x;this.camera.updateProjectionMatrix();
     // SG§5 f1–f9 and f10–f24: ghosts animate during freeze and burst in a ripple.

@@ -6,10 +6,10 @@ import { Sim } from '../src/sim/sim';
 import { Spawner } from '../src/sim/spawner';
 import type { SimInput } from '../src/sim/types';
 function bot(sim: Sim): SimInput {
-  const s = sim.state; const c = s.crystals.filter(c => c.alive).sort((a, b) => a.rho - b.rho)[0];
-  return { press: !s.dial.holding && s.jarMs <= 0, release: !!c && s.dial.holding && !s.dial.waitingRecovery && s.dial.note === c.note, cancel: false };
+  const s = sim.state; const c = s.crystals.filter(c => c.alive && c.rho <= 10.2).sort((a, b) => a.rho - b.rho)[0];
+  return { strike: c && s.lockMs <= 0 && s.recoveryMs <= 0 ? c.note : null };
 }
-const none = { press: false, release: false, cancel: false };
+const none = { strike: null };
 describe('spawn director', () => {
   it('opens with a ring of six at one second', () => {
     const sim = new Sim({ seed: 1, mode: 'run', slowDial: false });

@@ -1,4 +1,4 @@
-import { GOLDEN_POINTS, GOLDEN_SHARDS, CHOIR_N, CHOIR_R, CLOSE_GAP, CRYSTAL_R, HALO_R, JAR_MS, PRISM_BLAST_R, RECOVERY_MS, SCORE, SPLITTER_CHILD_ANGLE, TARGETABLE_R } from './config';
+import { GOLDEN_POINTS, GOLDEN_SHARDS, CHOIR_N, CHOIR_R, CLOSE_GAP, CRYSTAL_R, HALO_R, EMPTY_LOCK_MS, PRISM_BLAST_R, RECOVERY_MS, SCORE, SPLITTER_CHILD_ANGLE, TARGETABLE_R } from './config';
 import type { Crystal, ShatterInfo, SimEvent, SimState } from './types';
 
 export type SpawnChild = (parent: Crystal, note: number, theta: number) => void;
@@ -56,7 +56,8 @@ export function resolveStrike(state: SimState, note: number, events: SimEvent[],
   if (n === 0 && shellBreaks === 0) {
     state.streak = 0;
     state.mult = 1;
-    state.jarMs = JAR_MS;
+    state.lockMs = EMPTY_LOCK_MS;
+    state.queuedNote = null;
     state.stats.duds++;
     events.push({ type: 'dud', note });
     return;

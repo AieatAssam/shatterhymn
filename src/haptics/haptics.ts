@@ -3,7 +3,7 @@ export type HapticId = 'fever' | 'ui' | 'tick' | 'dud' | 'close' | 'shatter1' | 
 export const PATTERNS: Record<HapticId, { pattern: number[]; priority: number }> = {
   fever: { pattern: [8, 30, 8, 30, 12], priority: 5 },
   ui: { pattern: [6], priority: 1 }, tick: { pattern: [8], priority: 2 },
-  dud: { pattern: [10, 40, 10], priority: 3 }, close: { pattern: [6, 30, 6], priority: 4 },
+  dud: { pattern: [28], priority: 3 }, close: { pattern: [6, 30, 6], priority: 4 },
   shatter1: { pattern: [14], priority: 5 }, shatter2: { pattern: [14, 30, 16], priority: 5 },
   shatter4: { pattern: [16, 24, 18, 24, 20], priority: 5 }, shell: { pattern: [10], priority: 5 },
   mend: { pattern: [10, 40, 14, 40, 18], priority: 6 },

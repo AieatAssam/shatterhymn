@@ -12,8 +12,8 @@ describe("sharing", () => {
  it("formats the daily template exactly", () => {
   expect(shareText(run,{dailyNo:12,url:shareUrl("https://example.com/",run)})).toBe("Shatterhymn Daily #12 — 18,420\n🟥🟥🟨🟦✨🟩🟪\nMost at once: 9 · Streak: 14 · 2:14\nPlay: https://example.com/?daily=1");
  });
- it("formats a seed and slow dial for a normal run", () => {
+ it("formats a seed and slower crystals for a normal run", () => {
   const normal = {...run, mode:"run" as const, slowDial:true};
-  expect(shareText(normal,{url:shareUrl("https://example.com/?daily=1#old",normal)})).toBe("Shatterhymn Run — 18,420\n🟥🟥🟨🟦✨🟩🟪\nMost at once: 9 · Streak: 14 · 2:14\nSlow dial · Play: https://example.com/?seed=3F9A12C0");
+  expect(shareText(normal,{url:shareUrl("https://example.com/?daily=1#old",normal)})).toBe("Shatterhymn Run — 18,420\n🟥🟥🟨🟦✨🟩🟪\nMost at once: 9 · Streak: 14 · 2:14\nSlower crystals · Play: https://example.com/?seed=3F9A12C0");
  });
 });

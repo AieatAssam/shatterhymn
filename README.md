@@ -2,12 +2,12 @@
 
 <p align="center">
   <a href="https://aieatassam.github.io/shatterhymn/">
-    <img src="docs/media/gameplay.gif" alt="Shatterhymn gameplay — hold to dial a colour, release to shatter matching crystals" width="300" />
+    <img src="docs/media/gameplay.gif" alt="Shatterhymn gameplay — tap a colour to shatter matching crystals" width="300" />
   </a>
 </p>
 
 <p align="center">
-  <strong>Hold to pick a colour. Let go to shatter every crystal that matches.</strong><br/>
+  <strong>Tap a colour button to shatter every crystal that matches.</strong><br/>
   A free one-thumb browser game — endless runs, freeze-frame juice, a daily seed, and a cathedral that sings when you play.
 </p>
 
@@ -35,8 +35,8 @@ Works in a modern mobile or desktop browser. No account, no ads, no purchases. S
 
 ## How to play
 
-1. **Hold** anywhere on the screen. The dial cycles through colours (and matching crystal shapes).
-2. **Let go** when the dial matches the crystals you want to break. Every crystal of that colour shatters at once — bigger chords score far more.
+1. **Tap a colour button** to strike that note right away.
+2. Every targetable crystal of that colour shatters at once — bigger chords score far more.
 3. **Protect the bell.** Crystals that touch it crack the glass. **Three cracks** and the run ends.
 4. Chase your personal best, the **Daily Hymn** (same seeded cathedral for everyone that day), unlocks, and a share line you can send to a friend.
 
@@ -46,13 +46,13 @@ Tip: greed pays — wait for a fuller field — but waiting too long loses a lif
 
 ## Features
 
-- **One-thumb** controls — hold and release; learnable in a single try
+- **One-thumb** controls — tap a colour; learnable in a single try
 - **Procedural endless** runs with rising speed, density and crystal kinds
 - **Choir / Fever** multipliers and freeze-frame shatter juice
 - **Daily Hymn** seed + optional friend seeds (`?seed=`)
 - **Unlocks** — bell skins, musical scales, titles (earned with shards, never bought)
 - **PWA** — installable, works offline after first load
-- **Accessibility** — colour + shape + pitch for every note, Slow dial, Reduce motion, readable UI
+- **Accessibility** — colour + shape + pitch for every note, Slower crystals, Reduce motion, readable UI
 - **No dark patterns** — no ads, loot boxes, timers that take things away, or analytics
 
 ---
@@ -79,11 +79,11 @@ Ethics hard rules live in `docs/design.md` §17: no purchases, ads, gacha, rigge
 
 | Input | Action |
 |---|---|
-| Hold | Start / keep the colour dial moving |
+| Tap colour / 1–5 | Strike that colour |
 | Release | Shatter every crystal matching the current note |
 | Pause | Top-right pause (run pauses when the tab is hidden too) |
 
-Settings: Slow dial, Reduce motion, volumes, haptics (where supported).
+Settings: Slower crystals, Reduce motion, volumes, haptics (where supported).
 
 ---
 

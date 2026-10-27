@@ -1,5 +1,5 @@
 import { CanvasTexture, Color, DoubleSide, LatheGeometry, Mesh, PlaneGeometry, ShaderMaterial, Vector2 } from "three";
-import { BELL_PROFILE, BELL_SEGMENTS, BELL_Z, DIAL_RADIUS, NOTE_COLORS, PALETTE } from "./fxConfig";
+import { BELL_PROFILE, BELL_SEGMENTS, BELL_Z, HALO_RADIUS, PALETTE } from "./fxConfig";
 import * as bellShader from "./shaders/bell";
 import * as haloShader from "./shaders/halo";
 function crackTexture(seed: number): CanvasTexture {
@@ -18,6 +18,6 @@ export function createBell(shared: Record<string, { value: unknown }>): Mesh {
   const mesh = new Mesh(geometry, material); mesh.position.z = BELL_Z; return mesh;
 }
 export function createHalo(shared: Record<string, { value: unknown }>): Mesh {
-  const material = new ShaderMaterial({ vertexShader: haloShader.vertex, fragmentShader: haloShader.fragment, transparent: true, depthWrite: false, uniforms: { ...shared, uInk: { value: new Color(PALETTE.ink) }, uCrackColor: { value: new Color(PALETTE.crack) }, uNotes: { value: NOTE_COLORS.map(color => new Color(color)) }, uDanger: { value: 0 }, uCloseFlash: { value: 0 }, uActive: { value: 3 }, uCurrent: { value: 0 } } });
-  const mesh = new Mesh(new PlaneGeometry((DIAL_RADIUS + 0.2)*2,(DIAL_RADIUS + 0.2)*2), material); mesh.position.z = 0.01; return mesh;
+  const material = new ShaderMaterial({ vertexShader: haloShader.vertex, fragmentShader: haloShader.fragment, transparent: true, depthWrite: false, uniforms: { ...shared, uInk: { value: new Color(PALETTE.ink) }, uCrackColor: { value: new Color(PALETTE.crack) }, uDanger: { value: 0 }, uCloseFlash: { value: 0 } } });
+  const mesh = new Mesh(new PlaneGeometry((HALO_RADIUS + 0.2)*2,(HALO_RADIUS + 0.2)*2), material); mesh.position.z = 0.01; return mesh;
 }

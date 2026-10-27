@@ -15,5 +15,5 @@ export function shareUrl(base: string, r: RunResult): string {
 }
 export function shareText(r: RunResult, opts: { dailyNo?: number; url: string }): string {
  const label = r.mode === "daily" ? `Daily #${opts.dailyNo}` : "Run";
- return `Shatterhymn ${label} — ${r.stats.score.toLocaleString("en-US")}\n${hymnLine(r.hymn)}\nMost at once: ${r.stats.biggestN} · Streak: ${r.stats.longestStreak} · ${msToClock(r.stats.timeMs)}\n${r.slowDial ? "Slow dial · " : ""}Play: ${opts.url}`;
+ return `Shatterhymn ${label} — ${r.stats.score.toLocaleString("en-US")}\n${hymnLine(r.hymn)}\nMost at once: ${r.stats.biggestN} · Streak: ${r.stats.longestStreak} · ${msToClock(r.stats.timeMs)}\n${r.slowDial ? "Slower crystals · " : ""}Play: ${opts.url}`;
 }

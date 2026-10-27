@@ -1,16 +1,16 @@
 import type { SimEvent } from "../sim/types";
 export const TIPS: Record<string, string> = {
  golden: "New: Golden crystal. Break it with its colour for a bonus: 250 points × your multiplier and 5 shards.",
- chord: "Chord wave: 7 crystals of one colour. Break all 7 with one note for a Choir.",
- dud: "No crystals of that colour were on screen. Picking a colour with none makes the bell wobble for a moment.",
+ chord: "Chord wave: 7 crystals of one colour. Break all 7 with one tap for a Choir.",
+ dud: "You tapped a colour with no crystals on screen. That resets your combo and pauses the buttons for a moment.",
  crack: "A crystal hit the bell. Two more hits and the run ends. Nearby crystals were cleared.",
  geode: "New: Geode. Hit it twice with its colour. The first hit breaks the rock shell.",
  prism: "New: Prism. It keeps changing colour. Break it and it breaks everything near it.",
  splitter: "New: Splitter. It breaks into two small crystals of the next colour.",
  rusher: "New: Rusher. Small and fast. Deal with it first.",
  mend: "New: Mend crystal (white glow). Break it to repair one crack.",
- blue: "New colour: Blue star. The dial now has 4 colours.",
- purple: "New colour: Purple circle. The dial now has 5 colours.",
+ blue: "New colour: Blue star. You now have 4 colour buttons.",
+ purple: "New colour: Purple circle. You now have 5 colour buttons.",
 };
 export class BannerQueue {
  private readonly pending: string[] = []; private current: string | null = null; private until = 0;

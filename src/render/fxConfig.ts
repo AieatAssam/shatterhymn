@@ -2,7 +2,7 @@ export const PALETTE = { void0: 0x05040c, void1: 0x0b0920, void2: 0x151033, fog:
 export const NOTE_COLORS = [0xff4f6e, 0xffc23f, 0x3fe0a0, 0x4fa8ff, 0xc77dff] as const;
 export const KEY_DIR = [-0.35, 0.55, 0.76] as const;
 export const CAMERA_FOV = 30, CAMERA_TILT = 10, ARENA_RADIUS = 10.3, ARENA_WIDTH = 0.94, ARENA_HEIGHT = 0.66;
-export const FLOOR_RADIUS = 12, HALO_RADIUS = 2.0, HALO_WIDTH = 0.06, DIAL_RADIUS = 2.6, DIAL_WIDTH = 0.14, DIAL_ARC_DEG = 64, DIAL_GAP_DEG = 8;
+export const FLOOR_RADIUS = 12, HALO_RADIUS = 2.0, HALO_WIDTH = 0.06;
 export const BELL_PROFILE = [[0,1.30],[0.32,1.28],[0.52,1.15],[0.62,0.90],[0.66,0.55],[0.74,0.20],[0.92,-0.12],[1.08,-0.30],[1.12,-0.38],[1,-0.40]] as const;
 export const BELL_SCALE = 1.3, BELL_IDLE_GLOW = 0.18, BEAM_MAX = 0.12, SHARD_HARVEST_DELAY = 1.5;
 export const BELL_SEGMENTS = 48, BELL_Z = 0.9, GLASS_ALPHA = 0.18, BELL_RIM = 1.4, CRACK_GLOW = 2.2, MEND_GLOW = 1.8, MEND_SHIMMER_MS = 600;

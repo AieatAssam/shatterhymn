@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { Sim } from '../src/sim/sim';
 import type { SimInput } from '../src/sim/types';
-const none: SimInput = { press: false, release: false, cancel: false };
+const none: SimInput = { strike: null };
 function bot(sim: Sim): SimInput {
   const s = sim.state;
-  const nearest = s.crystals.filter(c => c.alive).sort((a, b) => a.rho - b.rho)[0];
-  return { press: !s.dial.holding && s.jarMs <= 0, release: !!nearest && s.dial.holding && !s.dial.waitingRecovery && s.dial.note === nearest.note, cancel: false };
+  const nearest = s.crystals.filter(c => c.alive && c.rho <= 10.2).sort((a, b) => a.rho - b.rho)[0];
+  return { strike: nearest && s.lockMs <= 0 && s.recoveryMs <= 0 ? nearest.note : null };
 }
 function run(seed: number, useBot: boolean): Sim {
   const sim = new Sim({ seed, mode: 'run', slowDial: false });
@@ -36,7 +36,7 @@ describe('simulation', () => {
     expect(sim.state.over).toBe(true);
     expect(events.map(e => e.type)).toEqual(expect.arrayContaining(['crack', 'gameOver']));
     Object.assign(c, { alive: true, note: 0, rho: 5 });
-    expect(sim.step({ press: true, release: true, cancel: false })).toEqual([]);
+    expect(sim.step({ strike: 0 })).toEqual([]);
     expect(c.alive).toBe(true);
   });
   it('levels at 20, 40 and 80 seconds', () => {
@@ -49,9 +49,9 @@ describe('simulation', () => {
     for (let seed = 0; seed < 20; seed++) { const s = run(seed, false).state; expect(s.over).toBe(true); expect(s.elapsedMs).toBeGreaterThanOrEqual(12000); expect(s.elapsedMs).toBeLessThanOrEqual(40000); }
   });
   it('measures urgent bot survival over 20 seeds', () => {
-    const times = Array.from({ length: 20 }, (_, seed) => { const s = run(seed, true).state; expect(s.over).toBe(true); return s.elapsedMs / 1000; }).sort((a, b) => a - b);
+    const times = Array.from({ length: 20 }, (_, seed) => { const s = run(seed, true).state; return s.elapsedMs / 1000; }).sort((a, b) => a - b);
     const median = (times[9]! + times[10]!) / 2;
     console.log('Urgent bot median survival:', median);
-    expect(median).toBeGreaterThanOrEqual(60);
+    expect(median).toBeGreaterThanOrEqual(890); // Direct strikes survive the 900 s measurement cap; threshold is measured median minus 10 s.
   });
 });

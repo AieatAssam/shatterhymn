@@ -3,7 +3,7 @@ import { hash32 } from '../src/core/rng';
 import { Sim } from '../src/sim/sim';
 function record(seed: number) {
   const sim = new Sim({ seed, mode: 'attract', slowDial: false });
-  for (let i = 0; i < 3600; i++) sim.step({ press: i % 55 === 0, release: i % 55 === 35, cancel: false });
+  for (let i = 0; i < 3600; i++) sim.step({ strike: i % 55 === 0 ? i % 3 : null });
   expect(sim.state.tick).toBe(3600);
   return { stats: sim.state.stats, hymn: sim.state.hymn, hash: hash32(JSON.stringify(sim.state.crystals)) };
 }

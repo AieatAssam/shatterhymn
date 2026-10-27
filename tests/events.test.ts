@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Sim } from '../src/sim/sim';
 import { SIM_DT_MS } from '../src/core/loop';
 import type { SimEvent } from '../src/sim/types';
-const idle = { press: false, release: false, cancel: false };
+const idle = { strike: null };
 function timeline(seed: number, mode: 'run' | 'attract', seconds: number): { time: number; event: SimEvent }[] {
   const sim = new Sim({ seed, mode, slowDial: false });
   const out: { time: number; event: SimEvent }[] = [];

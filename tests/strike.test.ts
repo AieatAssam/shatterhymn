@@ -13,9 +13,9 @@ describe('strike', () => {
     const s = state([crystal(1), crystal(2), crystal(3), crystal(4, 1)]); const r = strike(s);
     expect(r.hit).toMatchObject({ n: 3, points: 90, mult: 1 }); expect(s.crystals[3]!.alive).toBe(true);
   });
-  it('jars and resets the streak on a dud', () => {
-    const s = state(); s.streak = 4; const r = strike(s);
-    expect(r.events).toContainEqual({ type: 'dud', note: 0 }); expect(s.streak).toBe(0); expect(s.jarMs).toBe(600);
+  it('locks out and resets the streak on a dud', () => {
+    const s = state(); s.streak = 5; s.mult = 3; const r = strike(s);
+    expect(r.events).toContainEqual({ type: 'dud', note: 0 }); expect(s.streak).toBe(0); expect(s.lockMs).toBe(400);
   });
   it('follows the multiplier ladder', () => {
     const s = state(); const mults = [];

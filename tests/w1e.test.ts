@@ -24,8 +24,8 @@ describe("W1e finish",()=>{
  it("uses the balanced chip width for the Rose Gold label",()=>{const css=readFileSync('src/styles/main.css','utf8');expect(css).toMatch(/max-width:min\(100%, calc\(50vw - 40px\)\); text-wrap:balance/);expect('Next: Rose Gold bell'.split(' ').slice(-2).join(' ')).toBe('Gold bell');});
  it("drives the fever target through three scripted strikes",()=>{
   const sim=new Sim({seed:1,mode:'run',slowDial:false,events:false});const juice=new Juice(new Loop({now:()=>0,tick:()=>{},frame:()=>{}}));
-  for(let i=0;i<3;i++){while(sim.state.recoveryMs>0)sim.step({press:false,release:false,cancel:false});Object.assign(sim.state.crystals[i]!,crystal(i+1,0,6));sim.step({press:true,release:false,cancel:false});for(const event of sim.step({press:false,release:true,cancel:false}))juice.event(event);}
+  for(let i=0;i<3;i++){while(sim.state.recoveryMs>0)sim.step({strike:null});Object.assign(sim.state.crystals[i]!,crystal(i+1,0,6));for(const event of sim.step({strike:0}))juice.event(event);}
   expect(sim.state.mult).toBe(2);expect(sim.state.streak).toBe(3);expect(heatForStreak(3)).toBe(.6);expect(juice.heat.target).toBe(.6);
-  for(let i=3;i<5;i++){while(sim.state.recoveryMs>0)sim.step({press:false,release:false,cancel:false});Object.assign(sim.state.crystals[i]!,crystal(i+1,0,6));sim.step({press:true,release:false,cancel:false});for(const event of sim.step({press:false,release:true,cancel:false}))juice.event(event);}expect(sim.state.mult).toBe(3);expect(juice.heat.target).toBe(.6);
+  for(let i=3;i<5;i++){while(sim.state.recoveryMs>0)sim.step({strike:null});Object.assign(sim.state.crystals[i]!,crystal(i+1,0,6));for(const event of sim.step({strike:0}))juice.event(event);}expect(sim.state.mult).toBe(3);expect(juice.heat.target).toBe(.6);
  });
 });
