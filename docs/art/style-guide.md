@@ -297,7 +297,7 @@ iOS Safari has no Vibration API, but iOS 18+ plays a system haptic when an `<inp
 │       △    ╰──╯              │
 │              ◇               │
 │                              │
-│  Hold anywhere · let go to sing  ← hint (first 3 runs, hidden while holding)
+│  Hold to pick a colour. Let go when it matches a crystal to shatter it.  ← hint (first 3 runs, hidden while holding)
 │   [▲] [◆] [⬢] [★] [●]        │  bottom dial: 5 glyphs 48px, gap 12, caret under active
 └──────────────────────────────┘  ← safe-area-inset-bottom + 16px
 ```

@@ -1,7 +1,7 @@
 import type { SimEvent } from "../sim/types";
 export const TIPS: Record<string, string> = {
- dud: "No crystals of that note were on screen. Wrong notes make the bell wobble for a moment.",
- crack: "Cracked! Two more and the run ends. Crystals near the bell were pushed away.",
+ dud: "No crystals of that colour were on screen. Picking a colour with none makes the bell wobble for a moment.",
+ crack: "A crystal hit the bell. Two more hits and the run ends. Nearby crystals were cleared.",
  geode: "New: Geode. Hit it twice with its note. The first hit breaks the rock shell.",
  prism: "New: Prism. It keeps changing colour. Break it and it breaks everything near it.",
  splitter: "New: Splitter. It breaks into two small crystals of the next note.",

@@ -270,7 +270,7 @@ Three missions per local day, chosen from the deck below by `mulberry32(hash32("
 |---|---|---|---|
 | m_n4 | Break 4 crystals with one note | best-in-run N | 4 |
 | m_n6 | Break 6 crystals with one note | best-in-run N | 6 |
-| m_choir | Sing a Choir (7 or more with one note) | count | 1 |
+| m_choir | Break 7 or more crystals with one note (a Choir) | count | 1 |
 | m_t60 | Survive for 1 minute in one run | best-in-run time | 60 s |
 | m_t120 | Survive for 2 minutes in one run | best-in-run time | 120 s |
 | m_x4 | Reach a ×4 multiplier | best-in-run mult | 4 |
@@ -287,18 +287,18 @@ Plain, concrete English. One instruction at a time, large text, centred above th
 
 | Step | Setup | Text shown | Advances when |
 |---|---|---|---|
-| 1 | Empty arena, dial visible (3 notes) | **Hold your finger anywhere on the screen.** | pointerdown |
-| 2 | While holding: dial climbs | **Keep holding. The bell climbs through its notes: red, yellow, green.** Then after 2 full cycles, or on release: | release |
-| 3 | 2 red triangles fly in and stop at rho 5 | **Two red triangles. Hold, then let go while the dial is on red.** | release on red with both alive → both shatter |
+| 1 | Empty arena, dial visible (3 notes) | **Hold anywhere to pick a colour. Coloured crystals drift in — match a colour to shatter them.** | pointerdown |
+| 2 | While holding: dial climbs | **Keep holding. The dial moves through red, yellow, green. That is the colour you will break.** Then after 2 full cycles, or on release: | release |
+| 3 | 2 red triangles fly in and stop at rho 5 | **Two red triangles. Hold, then let go while the dial is on red to shatter both.** | release on red with both alive → both shatter |
 | 3-fail | released on another note | **That was {Yellow}. Let go while the dial is on red.** (crystals stay) | retry |
-| 4 | Show success | **Both broke at once. One note breaks every crystal of its colour.** (1.6 s) | auto |
-| 5 | 1 yellow diamond + 1 green hexagon stop at rho 5 | **Now break the yellow diamond. Hold until the dial reaches yellow, then let go.** | yellow struck |
-| 6 | 3 heart-bell icons pulse at the top | **If a crystal touches the bell, the bell cracks. Three cracks and the run ends.** Button: `Got it` | button |
-| 7 | Mini table | **More of one colour at once = far more points. 1 crystal: 10 · 3 at once: 90 · 5 at once: 250.** Button: `Start` | button → first real run |
+| 4 | Show success | **Both broke. One colour breaks every crystal of that colour at once.** (1.6 s) | auto |
+| 5 | 1 yellow diamond + 1 green hexagon stop at rho 5 | **Now shatter the yellow diamond. Hold until the dial reaches yellow, then let go.** | yellow struck |
+| 6 | 3 heart-bell icons pulse at the top | **Stop crystals touching the bell. Each touch cracks it. Three cracks and the run ends.** Button: `Got it` | button |
+| 7 | Mini table | **Break more of one colour at once for far more points. 1 crystal: 10 · 3 at once: 90 · 5 at once: 250.** Button: `Start` | button → first real run |
 
 Contextual tips (shown once each, ever, as a 3 s banner under the score, non-blocking):
-- First dud: `No crystals of that note were on screen. Wrong notes make the bell wobble for a moment.`
-- First crack: `Cracked! Two more and the run ends. Crystals near the bell were pushed away.`
+- First dud: `No crystals of that colour were on screen. Picking a colour with none makes the bell wobble for a moment.`
+- First crack: `A crystal hit the bell. Two more hits and the run ends. Nearby crystals were cleared.`
 - First time a special kind appears:
   - Geode: `New: Geode. Hit it twice with its note. The first hit breaks the rock shell.`
   - Prism: `New: Prism. It keeps changing colour. Break it and it breaks everything near it.`
@@ -342,8 +342,8 @@ Settings save immediately. Audio sliders preview with a dial tick.
 
 ## 14. Screens
 
-1. **Title:** logo `SHATTERHYMN`, tagline `Sing one note. Break everything tuned to it.` Buttons: **Play** (primary), **Daily Hymn #N** (shows today's best), **Missions 1 / 3**, **Collection**, **Settings**. The live arena idles in the background (slow attract mode: crystals drift and an auto-singer strikes every 2.5 s, no sound until first input).
-2. **Play (HUD).**
+1. **Title:** logo `SHATTERHYMN`, tagline `Sing one note. Break everything tuned to it.` (branding only — never used as an in-run instruction). Buttons: **Play** (primary), **Daily Hymn #N** (shows today's best), **Missions 1 / 3**, **Collection**, **Settings**. The live arena idles in the background (slow attract mode: crystals drift and an auto-singer strikes every 2.5 s, no sound until first input).
+2. **Play (HUD).** First-run hint (under the dial, first 3 runs while not holding): `Hold to pick a colour. Let go when it matches a crystal to shatter it.` Locked dial slots show `Locked for now` (not "Unlocks soon").
 3. **Pause.**
 4. **Results.**
 5. **Collection:** tabs `Bells`, `Sounds`, `Titles`. Locked items show the requirement in plain text (`Unlocks at 1,200 shards — you have 412`). Sounds tab plays a 5-note preview when tapped.

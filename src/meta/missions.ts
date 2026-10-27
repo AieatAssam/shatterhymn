@@ -5,7 +5,7 @@ type MissionType = "biggestN" | "choirs" | "timeMs" | "maxMult" | "score" | "pri
 export const MISSIONS: readonly { id: string; text: string; type: MissionType; target: number; best: boolean }[] = [
  { id: "m_n4", text: "Break 4 crystals with one note", type: "biggestN", target: 4, best: true },
  { id: "m_n6", text: "Break 6 crystals with one note", type: "biggestN", target: 6, best: true },
- { id: "m_choir", text: "Sing a Choir (7 or more with one note)", type: "choirs", target: 1, best: false },
+ { id: "m_choir", text: "Break 7 or more crystals with one note (a Choir)", type: "choirs", target: 1, best: false },
  { id: "m_t60", text: "Survive for 1 minute in one run", type: "timeMs", target: 60000, best: true },
  { id: "m_t120", text: "Survive for 2 minutes in one run", type: "timeMs", target: 120000, best: true },
  { id: "m_x4", text: "Reach a ×4 multiplier", type: "maxMult", target: 4, best: true },

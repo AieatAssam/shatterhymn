@@ -1,4 +1,4 @@
-import { Color, HalfFloatType, NoToneMapping, PerspectiveCamera, Scene, ShaderMaterial, SRGBColorSpace, Vector2, Vector3, WebGLRenderer } from "three";
+import { Color, IcosahedronGeometry, Mesh, HalfFloatType, NoToneMapping, PerspectiveCamera, Scene, ShaderMaterial, SRGBColorSpace, Vector2, Vector3, WebGLRenderer } from "three";
 import { BloomEffect, ChromaticAberrationEffect, EffectComposer, EffectPass, NoiseEffect, RenderPass, ToneMappingEffect, ToneMappingMode, VignetteEffect } from "postprocessing";
 import type { Loop } from "../core/loop";
 import { Shards } from "./shards";
@@ -28,6 +28,7 @@ export class GameRenderer {
   private readonly tint = [new Spring1D(0,6,1), new Spring1D(0,6,1), new Spring1D(0,6,1)];
   private readonly crystals: Crystals; private readonly sparks: Sparks; private readonly shards: Shards; private readonly rings: Rings; private readonly threads: Threads; private readonly juice: Juice; private readonly caEffect: ChromaticAberrationEffect; private readonly flashOverlay: HTMLDivElement; private readonly choirText: HTMLDivElement; private choirTextDelay=160; private gameOverBurst = -1; private reducedMotion = false;
   private readonly projection = new Vector3();
+  private readonly gems: Mesh[] = [];
   private readonly colors = NOTE_COLORS.map(c => new Color(c));
   private readonly shared = { uTime: { value: 0 }, uKeyDir: { value: new Vector3(...KEY_DIR).normalize() }, uNoteColor: { value: new Color(NOTE_COLORS[0]) }, uNoteGlow: { value: 0 } };
   private readonly background = createBackground(this.shared); private readonly floor = createFloor(this.shared); private readonly halo = createHalo(this.shared); private readonly bell = createBell(this.shared);
@@ -39,6 +40,7 @@ export class GameRenderer {
     this.renderer = new WebGLRenderer({ canvas, antialias: false, powerPreference: "high-performance", stencil: false, depth: true, alpha: false });
     this.renderer.outputColorSpace = SRGBColorSpace; this.renderer.toneMapping = NoToneMapping; this.renderer.setClearColor(PALETTE.void0);
     this.scene.add(this.background, this.floor, this.halo, this.bell);
+    for(let i=0;i<5;i++){const gem=new Mesh(new IcosahedronGeometry(.12,0),new ShaderMaterial({vertexShader:`varying vec3 n; void main(){n=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,fragmentShader:`varying vec3 n; void main(){float f=floor((.25+.75*max(dot(normalize(n),normalize(vec3(-.35,.55,.76))),0.))*4.)/4.;gl_FragColor=vec4(vec3(1.,.63,.2)*(1.+f*2.),1.);}`}));gem.visible=false;this.scene.add(gem);this.gems.push(gem);}
     this.crystals = new Crystals(this.scene, this.shared); this.sparks=new Sparks(this.scene); this.shards=new Shards(this.scene,this.sparks,this.shared); this.shards.reducedMotion=this.reducedMotion; this.rings=new Rings(this.scene); this.threads=new Threads(this.scene);
     this.crystals.onBurst=(x,y,note,choir)=>this.shards.burst(x,y,note,choir?6:0);
     this.composer = new EffectComposer(this.renderer, { frameBufferType: HalfFloatType });
@@ -60,10 +62,12 @@ export class GameRenderer {
     if(event.type === "gameOver") this.gameOverBurst=250;
   }
   reset(): void { this.crystals.reset();this.shards.reset();this.sparks.reset();this.rings.reset();this.threads.reset();this.bell.visible=true;this.gameOverBurst=-1;this.choirText.style.opacity="0"; }
+  setSkin(id:string):void { const styles:Record<string,[number,number,number]>={clear:[0xe8f1ff,0x9fd8ff,.18],quartz:[0x8b7b6e,0xe0c9b0,.35],rosegold:[0xe8a090,0xffd0b8,.30],obsidian:[0x151020,0x8a7cff,.80],aurora:[0x3fe0a0,0xd8fff4,.30],rosewindow:[0xe8f1ff,0xffd27a,.55],crown:[0xe8f1ff,0xffd27a,.18]};const style=styles[id]??styles.clear!;const u=(this.bell.material as ShaderMaterial).uniforms;u.uGlass!.value.setHex(style[0]);u.uRim!.value.setHex(style[1]);u.uAlpha!.value=style[2];u.uSkin!.value=id==="aurora"?1:id==="rosewindow"?2:0;this.shards.bellColor=style[0];for(const gem of this.gems)gem.visible=id==="crown"; }
+  setShake(value:number):void {this.juice.shakeMultiplier=value/100;}
   setReducedMotion(value:boolean):void{this.reducedMotion=value;this.juice.reducedMotion=value;this.shards.reducedMotion=value;}
 
   frame(realDtMs: number, simDtMs: number): void {
-    this.time += realDtMs / 1000; this.shared.uTime.value = this.time * (this.reducedMotion ? .25 : 1); this.juice.update(realDtMs);
+    this.time += realDtMs / 1000; for(let i=0;i<this.gems.length;i++){const angle=this.time*.4+i*Math.PI*2/5;this.gems[i]!.position.set(Math.cos(angle)*1.2,Math.sin(angle)*1.2,1.35);} this.shared.uTime.value = this.time * (this.reducedMotion ? .25 : 1); this.juice.update(realDtMs);
     if(this.gameOverBurst>=0){this.gameOverBurst-=realDtMs;if(this.gameOverBurst<0){this.shards.burst(0,0,this.getState().dial.note,20,false,true);this.bell.visible=false;}}
     const state = this.getState(), target = this.colors[state.dial.note]!;
     this.tint[0]!.target = target.r; this.tint[1]!.target = target.g; this.tint[2]!.target = target.b;
@@ -104,6 +108,7 @@ export class GameRenderer {
   dispose(): void {
     window.removeEventListener("resize", this.onResize); window.visualViewport?.removeEventListener("resize", this.onResize); window.clearTimeout(this.resizeTimer);
     for (const mesh of [this.background, this.floor, this.halo, this.bell]) { mesh.geometry.dispose(); const material = mesh.material as ShaderMaterial; if (mesh === this.bell) for (const name of ["uCrack0", "uCrack1", "uCrack2"]) material.uniforms[name]!.value.dispose(); material.dispose(); }
+    for(const gem of this.gems){gem.geometry.dispose();(gem.material as ShaderMaterial).dispose();}
     this.crystals.dispose();this.shards.dispose();this.sparks.dispose();this.rings.dispose();this.threads.dispose();this.flashOverlay.remove();this.choirText.remove();
     this.composer.dispose(); this.renderer.dispose();
   }
