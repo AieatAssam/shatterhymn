@@ -176,3 +176,16 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid 
 .result-progress .before { display:block; background:#b47a26; opacity:.55; border-radius:8px 0 0 8px; }
 .result-progress .earned { display:block; width:var(--earned); background:#ffc23f; opacity:1; border-radius:0 8px 8px 0; box-shadow:0 0 8px #ffd27a; animation:reward-fill 600ms 700ms ease-out backwards; }
 @keyframes reward-fill { from { width:0; } to { width:var(--earned); } }
+
+
+.results .next-label { color:#fff; font:600 14px Inter,sans-serif; margin:8px 0 4px; }
+.results .pb-gap { color:#f4f1ff; font:500 13px Inter,sans-serif; opacity:1; }
+.result-progress { position:relative; height:10px; border-radius:8px; background:rgba(255,255,255,.14); margin:0 0 12px; overflow:visible; }
+.result-progress .before { position:absolute; top:0; left:0; height:100%; background:#b47a26; opacity:.55; border-radius:8px 0 0 8px; }
+.result-progress .earned { position:absolute; top:0; height:100%; min-width:10px; background:#ffc23f; opacity:1; border-radius:0 8px 8px 0; box-shadow:0 0 8px #ffd27a; width:var(--earned,10px); animation:reward-fill 600ms 700ms ease-out both; }
+@keyframes reward-fill { from { width:0; } to { width:max(10px, var(--earned, 10px)); } }
+.results-footer, .panel-footer, .results .footer { border-radius:16px; }
+.results { justify-content:safe center; gap:10px; }
+.title-chips button, .title-chip, .chip-row button { min-height:64px; align-items:flex-start; padding-top:10px; }
+.title-chips button span, .chip-row .chip-label { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.15; min-height:2.3em; }
+.hud-backing { height:28vh; background:linear-gradient(180deg, rgba(7,5,18,.88), rgba(7,5,18,0)); }
