@@ -27,6 +27,7 @@ export class GameRenderer {
   private readonly bloom = new TierBloomEffect(BLOOM); private readonly post: EffectPass; private readonly quality: AutoTier; private tier: Tier; private resizeTimer: number | undefined; private time = 0; private lastFrameTime: number | null = null;
   private readonly tint = [new Spring1D(0,6,1), new Spring1D(0,6,1), new Spring1D(0,6,1)];
   private readonly crystals: Crystals; private readonly sparks: Sparks; private readonly shards: Shards; private readonly rings: Rings; private readonly threads: Threads; private readonly juice: Juice; private readonly caEffect: ChromaticAberrationEffect; private readonly flashOverlay: HTMLDivElement; private readonly choirText: HTMLDivElement; private choirTextDelay=160; private gameOverBurst = -1; private reducedMotion = false;
+  private readonly projection = new Vector3();
   private readonly colors = NOTE_COLORS.map(c => new Color(c));
   private readonly shared = { uTime: { value: 0 }, uKeyDir: { value: new Vector3(...KEY_DIR).normalize() }, uNoteColor: { value: new Color(NOTE_COLORS[0]) }, uNoteGlow: { value: 0 } };
   private readonly background = createBackground(this.shared); private readonly floor = createFloor(this.shared); private readonly halo = createHalo(this.shared); private readonly bell = createBell(this.shared);
@@ -97,6 +98,7 @@ export class GameRenderer {
     const tier = this.quality.update(frameTime); if (tier !== this.tier) this.setTier(tier);
     this.composer.render(realDtMs / 1000);
   }
+  project(x: number, y: number): { sx: number; sy: number } { this.projection.set(x, y, 0).project(this.camera); return { sx: (this.projection.x + 1) * window.innerWidth / 2, sy: (1 - this.projection.y) * window.innerHeight / 2 }; }
   resize(): void { const width = window.innerWidth, height = window.innerHeight; if (!width || !height) return; fitCamera(this.camera, width / height); this.renderer.setSize(width, height, false); this.composer.setSize(width, height); }
   setTier(tier: Tier): void { this.tier = tier; this.quality.tier = tier; this.renderer.setPixelRatio(tier === "low" ? 1 : Math.min(window.devicePixelRatio || 1, TIERS[tier].dpr)); this.bloom.scale = TIERS[tier].bloom; this.post.enabled = tier !== "low"; this.shards.setTier(tier);this.sparks.setTier(tier,this.renderer.getPixelRatio()); this.resize(); }
   dispose(): void {

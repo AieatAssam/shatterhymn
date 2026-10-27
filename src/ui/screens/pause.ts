@@ -1,0 +1,4 @@
+import { h } from "../dom";
+export function mount(root: HTMLElement, actions: { resume: () => void; restart: () => void }): { countdown: (value: string) => void; unmount: () => void } {
+ const overlay=h(`<div class="pause-overlay"><div class="pause-panel"><button class="primary" type="button">Resume</button><button type="button">Restart</button><button type="button" disabled>Settings</button><button type="button" disabled>Quit to menu</button></div><div class="countdown" aria-live="polite"></div></div>`); root.append(overlay); const buttons=overlay.querySelectorAll("button"); buttons[0]!.addEventListener("click",actions.resume); buttons[1]!.addEventListener("click",actions.restart); buttons[0]!.focus(); return {countdown(value) { overlay.classList.toggle("counting",!!value); overlay.querySelector(".countdown")!.textContent=value; }, unmount() { overlay.remove(); }};
+}
