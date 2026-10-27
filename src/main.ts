@@ -5,6 +5,7 @@ import '@fontsource/inter/600.css';
 import '@fontsource/inter/800.css';
 import './styles/main.css';
 
-import { startArena } from "./render/renderer";
+import { Controller } from "./game/controller";
 const canvas = document.querySelector<HTMLCanvasElement>("#gl");
-if (canvas) startArena(canvas);
+const surface = document.querySelector<HTMLElement>("#surface");
+if (canvas && surface) new Controller(canvas, surface);

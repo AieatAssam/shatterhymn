@@ -10,3 +10,5 @@ html, body, #app { width: 100%; height: 100%; margin: 0; overflow: hidden; }
 html, body { touch-action: none; user-select: none; overscroll-behavior: none; }
 #app { position: relative; }
 #gl, #surface, #hud, #screens { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+#hud, #screens { pointer-events: none; }
