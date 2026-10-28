@@ -1,29 +1,20 @@
-import { applyUpdate, onUpdateReady } from "../../pwa/update";
-import { dailyNumber, localDateISO } from "../../core/date";
-import { playIcon, dailyIcon, missionsIcon, collectionIcon, settingsIcon } from "../icons";
-import { button, type ScreenContext } from "./common";
-
-export function titleModel(ctx: Pick<ScreenContext, "save" | "friend">, iso: string) {
-  const label = `Daily Hymn #${dailyNumber(iso)}`, day = ctx.save.daily[iso], played = !!day?.plays;
-  const badge = played ? day.best.toLocaleString("en-US") : null;
-  const done = ctx.save.missions.done.length, missionBadge = `${done} / 3`;
-  return { friend: ctx.friend ? `Friend's seed ${ctx.friend}` : null, daily: { label, played, badge, aria: `${label} — ${played ? `Today's best: ${badge}` : "Not played yet"}` }, missions: { label: "Missions", badge: missionBadge, aria: `Missions ${missionBadge}`, complete: done === 3 } };
+import { applyUpdate, onUpdateReady } from '../../pwa/update';
+import { dailyNumber, localDateISO } from '../../core/date';
+import { missionsIcon, collectionIcon, settingsIcon } from '../icons';
+import { button, type ScreenContext } from './common';
+export function titleModel(ctx: Pick<ScreenContext,'save'|'friend'>, iso: string) {
+ const day=ctx.save.modes.tap.daily[iso], played=!!day?.plays, badge=played?day.best.toLocaleString('en-US'):null, label=`Daily #${dailyNumber(iso)}`, done=ctx.save.missions.done.length, missionBadge=`${done} / 3`, score=ctx.save.modes.tap.bests.score;
+ return {meta:ctx.save.progress.runs>=3, settings:true, friend:ctx.friend?`Friend's seed ${ctx.friend}`:null, best:ctx.save.modes.tap.runs?`Best ${score.toLocaleString('en-US')}`:'Not played yet', daily:{label,played,badge,aria:`Tap ${label}. ${played?`Today's best: ${badge}`:'Not played yet'}`},missions:{label:'Missions',badge:missionBadge,aria:`Missions ${missionBadge}`,complete:done===3}};
 }
-export function mount(root: HTMLElement, ctx: ScreenContext): { unmount: () => void } {
-  const model = titleModel(ctx, localDateISO(new Date()));
-  const el = document.createElement("section"); el.className = "title-screen";
-  const header = document.createElement("div"); header.className = "title-header"; el.append(header);
-  const logo = document.createElement("h1"); logo.textContent = "SHATTERHYMN"; logo.dataset.text = "SHATTERHYMN";
-  const tagline = document.createElement("p"); tagline.className = "tagline"; tagline.textContent = "Sing one note. Break everything tuned to it."; header.append(logo, tagline);
-  if (model.friend) { const friend = document.createElement("p"); friend.className = "friend-pill"; friend.textContent = model.friend; header.append(friend); }
-  const menu = document.createElement("div"); menu.className = "title-buttons"; el.append(menu);
-  const play = button(menu, "Play", () => ctx.play("run"), true); play.classList.add("play-hero"); play.innerHTML = `${playIcon}<span>Play</span>`;
-  const row = document.createElement("div"); row.className = "chip-row"; menu.append(row);
-  const chip = (label: string, icon: string, action: () => void, aria = label) => { const b = button(row, label, action); b.className = "chip"; b.setAttribute("aria-label", aria); b.innerHTML = `${icon}<span>${label}</span>`; return b; };
-  const daily = chip(model.daily.label, dailyIcon, () => ctx.play("daily"), model.daily.aria); daily.classList.add("daily"); if (!model.daily.played) daily.classList.add("unplayed");
-  const dailyBadge = document.createElement("i"); dailyBadge.className = model.daily.played ? "badge done" : "dot"; dailyBadge.textContent = model.daily.badge; daily.append(dailyBadge);
-  const missions = chip(model.missions.label, missionsIcon, () => ctx.open("missions"), model.missions.aria); missions.classList.add("missions-chip"); const missionBadge = document.createElement("i"); missionBadge.className = `badge${model.missions.complete ? " done" : ""}`; missionBadge.textContent = model.missions.badge; missions.append(missionBadge);
-  chip("Collection", collectionIcon, () => ctx.open("collection")); chip("Settings", settingsIcon, () => ctx.open("settings"));
-  const update = document.createElement("button"); update.className = "update-banner"; update.textContent = "Update ready. Tap to refresh."; update.hidden = true; update.addEventListener("click", applyUpdate); header.append(update);
-  const unsubscribe = onUpdateReady(ready => { update.hidden = !ready; }); root.append(el); return { unmount: () => { unsubscribe(); el.remove(); } };
+const tapArt='<svg class="mode-art" viewBox="0 0 120 72" aria-hidden="true"><defs><filter id="tap-glow"><feGaussianBlur stdDeviation="2"/></filter></defs><g fill="#ff536c" filter="url(#tap-glow)"><path d="M12 52 26 19 40 52Z M39 49 60 5 81 49Z M80 52 94 19 108 52Z"/></g><g fill="#ff536c" stroke="white"><path d="M12 52 26 19 40 52Z M39 49 60 5 81 49Z M80 52 94 19 108 52Z"/></g><g stroke="white" stroke-width="2"><path d="M60 0v4 M34 13l4 4 M86 13l-4 4 M30 34h5 M85 34h5 M60 53v5"/></g><path d="M60 66V45a4 4 0 0 1 8 0v8h4a8 8 0 0 1 8 8v8" fill="#ffffff44" stroke="white" stroke-width="2"/></svg>';
+const sliceArt='<svg class="mode-art" viewBox="0 0 120 72" aria-hidden="true"><defs><filter id="slice-glow"><feGaussianBlur stdDeviation="2"/></filter></defs><g fill="#55e6ad" filter="url(#slice-glow)"><path d="M17 35 28 16 47 16 47 54 28 54Z M54 16 64 35 54 54Z"/></g><g fill="#55e6ad" stroke="white"><path d="M17 35 28 16 47 16 47 54 28 54Z M54 16 64 35 54 54Z"/></g><path fill="#ffd85f" stroke="white" d="M90 16 105 35 90 54 75 35Z"/><path fill="white" d="M5 61 Q46 32 91 12 L98 8 95 16 Q47 38 5 63Z"/></svg>';
+export function mount(root:HTMLElement,ctx:ScreenContext):{unmount:()=>void}{
+ const model=titleModel(ctx,localDateISO(new Date())),el=document.createElement('section');el.className='title-screen';const header=document.createElement('div');header.className='title-header';el.append(header);const logo=document.createElement('h1');logo.textContent='SHATTERHYMN';const line=document.createElement('p');line.className='tagline';line.textContent='Pick a game!';header.append(logo,line);
+ const gear=button(header,'Settings',()=>ctx.open('settings'));gear.className='chip settings-chip';gear.setAttribute('aria-label','Settings');gear.innerHTML=settingsIcon;
+ if(model.friend){const f=document.createElement('p');f.className='friend-pill';f.textContent=model.friend;header.append(f);}
+ const update=document.createElement('button');update.className='update-banner';update.textContent='Update ready. Tap to refresh.';update.hidden=true;update.addEventListener('click',applyUpdate);header.append(update);const unsubscribe=onUpdateReady(ready=>{update.hidden=!ready;});
+ const menu=document.createElement('div');menu.className='title-buttons';el.append(menu);const cards=document.createElement('div');cards.className='mode-cards';menu.append(cards);
+ for(const mode of ['tap','slice'] as const){const card=document.createElement('article');card.className='mode-card';card.dataset.mode=mode;cards.append(card);const play=button(card,mode==='tap'?'Tap':'Slice',()=>ctx.play('run'));play.className=`mode-play${mode==='tap'?' play-hero':''}`;play.dataset.mode=mode;const how=mode==='tap'?'Tap crystals to smash them':'Swipe fast to slice crystals';play.innerHTML=`${mode==='tap'?tapArt:sliceArt}<span class="mode-copy"><span class="mode-name">${mode==='tap'?'Tap':'Slice'}</span><span class="mode-how">${how}</span>${mode==='tap'?`<span class="mode-best">${model.best}</span>`:''}</span>`;play.setAttribute('aria-label',`Play ${mode==='tap'?'Tap':'Slice'}. ${how}${mode==='tap'?`. ${model.best}`:''}`);play.disabled=mode==='slice';if(mode==='tap'&&model.meta){const daily=button(card,model.daily.label,()=>ctx.play('daily'));daily.className='chip daily';daily.dataset.mode='tap';daily.setAttribute('aria-label',model.daily.aria);const badge=document.createElement('i');badge.className=model.daily.played?'badge done':'dot';badge.textContent=model.daily.badge;daily.append(badge);}}
+ if(model.meta){const row=document.createElement('div');row.className='chip-row';menu.append(row);const missions=button(row,'Missions',()=>ctx.open('missions'));missions.className='chip missions-chip';missions.setAttribute('aria-label',model.missions.aria);missions.innerHTML=`${missionsIcon}<span>Missions</span><i class="badge">${model.missions.badge}</i>`;const collection=button(row,'Collection',()=>ctx.open('collection'));collection.className='chip';collection.setAttribute('aria-label','Collection');collection.innerHTML=`${collectionIcon}<span>Collection</span>`;}
+ root.append(el);const params=new URLSearchParams(location.search);if(params.get('qa')!=='1'){const selected=params.get('mode');if(selected==='tap'||selected==='slice'){const target=el.querySelector<HTMLButtonElement>(`.mode-play[data-mode="${selected}"]`);target?.classList.add('highlight');target?.focus();}}return {unmount:()=>{unsubscribe();el.remove();}};
 }

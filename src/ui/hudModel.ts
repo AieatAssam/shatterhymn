@@ -1,7 +1,7 @@
-import type { SaveV1 } from '../meta/save';
+import type { SaveV2 } from '../meta/save';
 import { SKINS, SCALE_UNLOCKS, nextLockedByShards } from '../meta/unlocks';
 
-export function nextChipModel(save: SaveV1, runShards: number, celebrateId?: string | null): { line: string; have: number; need: number; unlocked: boolean } | null {
+export function nextChipModel(save: SaveV2, runShards: number, celebrateId?: string | null): { line: string; have: number; need: number; unlocked: boolean } | null {
   const total = save.progress.lifetimeShards + runShards;
   if (celebrateId) {
     const item = [...SKINS, ...SCALE_UNLOCKS].find(x => x.id === celebrateId);

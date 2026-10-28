@@ -1,2 +1,2 @@
 export const vertex = `attribute vec3 aColor; attribute float aAlpha; attribute float aSize; varying vec3 vColor; varying float vAlpha; uniform float uDpr; void main(){vColor=aColor;vAlpha=aAlpha;vec4 mv=modelViewMatrix*vec4(position,1.);gl_PointSize=aSize*uDpr;gl_Position=projectionMatrix*mv;}`;
-export const fragment = `uniform float uPadTopPx; varying vec3 vColor; varying float vAlpha; void main(){float d=length(gl_PointCoord-0.5)*2.;gl_FragColor=vec4(vColor*2.,vAlpha*smoothstep(1.,0.,d)*step(uPadTopPx,gl_FragCoord.y));}`;
+export const fragment = `varying vec3 vColor; varying float vAlpha; void main(){float d=length(gl_PointCoord-0.5)*2.;gl_FragColor=vec4(vColor*2.,vAlpha*smoothstep(1.,0.,d));}`;

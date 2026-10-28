@@ -21,7 +21,7 @@ export class Sim {
     this.script = opts.script;
     this.eventsEnabled = opts.events !== false;
     this.spawner = new Spawner(new Rng(opts.seed), opts.seed, opts.mode);
-    this.state = { mode: opts.mode, seed: opts.seed, tick: 0, elapsedMs: 0, level: 0, K: opts.mode === 'attract' ? ATTRACT_K : 3, crystals: Array.from({ length: MAX_CRYSTALS }, emptyCrystal), recoveryMs: 0, lockMs: 0, queuedNote: null, graceMs: 0, cracks: 0, streak: 0, mult: 1, over: false, stats: { score: 0, timeMs: 0, biggestN: 0, longestStreak: 0, crystalsBroken: 0, choirs: 0, closeCalls: 0, prismsBroken: 0, duds: 0, strikes: 0, maxMult: 1, shards: 0, goldens: 0 }, hymn: [], slowDial: opts.slowDial };
+    this.state = { mode: opts.mode, seed: opts.seed, tick: 0, elapsedMs: 0, level: 0, K: opts.mode === 'attract' ? ATTRACT_K : 3, crystals: Array.from({ length: MAX_CRYSTALS }, emptyCrystal), recoveryMs: 0, queuedNote: null, graceMs: 0, cracks: 0, streak: 0, mult: 1, over: false, stats: { score: 0, timeMs: 0, biggestN: 0, longestStreak: 0, crystalsBroken: 0, choirs: 0, closeCalls: 0, prismsBroken: 0, misses: 0, strikes: 0, maxMult: 1, shards: 0, goldens: 0 }, hymn: [], slowDial: opts.slowDial };
     if (opts.mode === 'tutorial' && this.script) this.setTutorialStep(0);
   }
   setTutorialStep(index: number): void {
@@ -30,7 +30,7 @@ export class Sim {
     const step = this.script[index];
     if (!step) return;
     for (const crystal of this.state.crystals) crystal.alive = false;
-    this.state.lockMs = 0; this.state.queuedNote = null; this.state.recoveryMs = 0;
+    this.state.queuedNote = null; this.state.recoveryMs = 0;
     for (const spawn of step.spawns) this.spawner.spawn(this.state, spawn.note, spawn.theta, 'normal', levelRow(0).speed, 0, this.events);
   }
   private fireStrike(note: number, events: SimEvent[]): void {
@@ -38,19 +38,21 @@ export class Sim {
     resolveStrike(this.state, note, events, (parent, childNote, theta) => this.spawner.spawnChild(this.state, parent, childNote, theta, events));
     if (this.state.mode === 'tutorial') { this.state.stats.score = score; this.state.stats.shards = 0; }
   }
+  forceGameOver(): void { this.state.cracks = MAX_CRACKS; this.forced = true; }
+  private forced = false;
   step(input: SimInput): readonly SimEvent[] {
     const s = this.state, dt = SIM_DT_MS, events = this.events;
     events.length = 0;
     if (s.over) return events;
-    s.recoveryMs = Math.max(0, s.recoveryMs - dt); s.lockMs = Math.max(0, s.lockMs - dt); s.graceMs = Math.max(0, s.graceMs - dt);
+    if (this.forced) { this.forced = false; s.over = true; events.push({type: 'gameOver', stats: s.stats, hymn: s.hymn}); return events; }
+    s.recoveryMs = Math.max(0, s.recoveryMs - dt); s.graceMs = Math.max(0, s.graceMs - dt);
     const tutorialExpect = this.script?.[this.tutorialStep]?.expect;
     const tutorialCanStrike = s.mode !== 'tutorial' || (typeof tutorialExpect === 'object' && tutorialExpect !== null);
-    if (s.lockMs > 0) s.queuedNote = null;
-    else if (input.strike !== null && input.strike >= 0 && input.strike < s.K && tutorialCanStrike) {
+    if (input.strike !== null && input.strike >= 0 && input.strike < s.K && tutorialCanStrike) {
       if (s.recoveryMs > 0 || s.queuedNote !== null) s.queuedNote = input.strike;
       else this.fireStrike(input.strike, events);
     }
-    if (!s.over && s.lockMs === 0 && s.recoveryMs === 0 && s.queuedNote !== null && tutorialCanStrike) {
+    if (!s.over && s.recoveryMs === 0 && s.queuedNote !== null && tutorialCanStrike) {
       const note = s.queuedNote; s.queuedNote = null; this.fireStrike(note, events);
     }
     if (s.mode !== 'tutorial' && s.mode !== 'attract') {

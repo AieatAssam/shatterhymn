@@ -21,7 +21,7 @@ describe('WOW models', () => {
   });
   it('gates friend seed and models daily and missions chips', () => {
     const save = resetSave(), ctx = { save, friend: null as string | null };
-    expect(titleModel(ctx, '2026-10-27')).toMatchObject({ friend: null, daily: { label: 'Daily Hymn #1', aria: 'Daily Hymn #1 — Not played yet', badge: null }, missions: { badge: '0 / 3' } });
+    expect(titleModel(ctx, '2026-10-27')).toMatchObject({ friend: null, daily: { label: 'Daily #1', aria: 'Tap Daily #1. Not played yet', badge: null }, missions: { badge: '0 / 3' } });
     ctx.friend = 'A1B2C3D4'; expect(titleModel(ctx, '2026-10-27').friend).toBe("Friend's seed A1B2C3D4");
   });
   it('awards golden bonuses and counts the crystal in the strike', () => {

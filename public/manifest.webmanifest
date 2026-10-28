@@ -1,6 +1,6 @@
 {
   "name": "Shatterhymn", "short_name": "Shatterhymn",
-  "description": "Sing one note. Break everything tuned to it.",
+  "description": "Tap or slice glowing crystals and keep the singing bell safe.",
   "start_url": "./", "scope": "./", "display": "standalone", "orientation": "portrait",
   "background_color": "#05040C", "theme_color": "#05040C",
   "icons": [

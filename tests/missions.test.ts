@@ -1,8 +1,7 @@
-import { expect, it } from "vitest";
-import { pickMissions, updateMissions } from "../src/meta/missions";
-import { applyRunResult } from "../src/meta/runEnd";
-import { resetSave } from "../src/meta/save";
-import { result } from "./metaHelpers";
-it("picks stable varied distinct missions", () => { const day = "2026-10-27"; expect(pickMissions(day)).toEqual(pickMissions(day)); expect(new Set(pickMissions(day)).size).toBe(3); const all = new Set<string>(); for (let i=0;i<30;i++) for (const id of pickMissions(new Date(Date.UTC(2026, 9, 27+i)).toISOString().slice(0,10))) all.add(id); expect(all.size).toBeGreaterThanOrEqual(10); });
-it("takes maxima and sums counts", () => { const s = resetSave(); s.missions.ids = ["m_n6", "m_prism"]; updateMissions(s, result({ biggestN: 3, prismsBroken: 1 })); updateMissions(s, result({ biggestN: 2, prismsBroken: 1 })); expect(s.missions.progress).toEqual({ m_n6: 3, m_prism: 2 }); });
-it("awards each mission and the bonus once, and rolls over", () => { const s = resetSave(); s.missions = { date: "2026-10-27", ids: ["m_n4", "m_n6", "m_prism"], progress: {}, done: [], bonusGiven: false }; let o = applyRunResult(s, result({ biggestN: 4 }), "2026-10-27"); expect(o.missionShards).toBe(40); o = applyRunResult(s, result({ biggestN: 6, prismsBroken: 3 }), "2026-10-27"); expect(o.missionShards).toBe(180); expect(o.allMissionsBonus).toBe(true); expect(applyRunResult(s, result({ biggestN: 6, prismsBroken: 3 }), "2026-10-27").missionShards).toBe(0); applyRunResult(s, result(), "2026-10-28"); expect(s.progress.lifetimeShards).toBe(220); expect(s.missions.date).toBe("2026-10-28"); });
+import {expect,it} from 'vitest';
+import {MISSIONS,pickMissions} from '../src/meta/missions';
+import {resetSave} from '../src/meta/save';
+import {applyRunResult} from '../src/meta/runEnd';
+import {result} from './metaHelpers';
+it('picks three distinct missions including an any mission deterministically',()=>{for(let i=1;i<=28;i++){const day=`2026-01-${String(i).padStart(2,'0')}`,ids=pickMissions(day);expect(ids).toEqual(pickMissions(day));expect(new Set(ids).size).toBe(3);expect(ids.some(id=>MISSIONS.find(m=>m.id===id)?.mode==='any')).toBe(true);}});
+it('counts modes together and restricts mode-specific missions',()=>{const s=resetSave();s.missions={date:'2026-01-01',ids:['m_any_both','m_tap_n6'],progress:{},done:[],bonusGiven:false,modesToday:[]};applyRunResult(s,result({biggest:10},'slice'),'2026-01-01');expect(s.missions.progress.m_tap_n6).toBeUndefined();applyRunResult(s,result({biggest:6}),'2026-01-01');expect(s.missions.done).toEqual(expect.arrayContaining(['m_any_both','m_tap_n6']));});

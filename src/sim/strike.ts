@@ -1,4 +1,4 @@
-import { GOLDEN_POINTS, GOLDEN_SHARDS, CHOIR_N, CHOIR_R, CLOSE_GAP, CRYSTAL_R, HALO_R, EMPTY_LOCK_MS, PRISM_BLAST_R, RECOVERY_MS, SCORE, SPLITTER_CHILD_ANGLE, TARGETABLE_R } from './config';
+import { GOLDEN_POINTS, GOLDEN_SHARDS, CHOIR_N, CHOIR_R, CLOSE_GAP, CRYSTAL_R, HALO_R, PRISM_BLAST_R, RECOVERY_MS, SCORE, SPLITTER_CHILD_ANGLE, TARGETABLE_R } from './config';
 import type { Crystal, ShatterInfo, SimEvent, SimState } from './types';
 
 export type SpawnChild = (parent: Crystal, note: number, theta: number) => void;
@@ -8,9 +8,10 @@ function info(c: Crystal): ShatterInfo {
 }
 
 export function resolveStrike(state: SimState, note: number, events: SimEvent[], spawnChild: SpawnChild): void {
+  const targets = state.crystals.filter(c => c.alive && c.rho <= TARGETABLE_R && c.note === note);
+  if (targets.length === 0) return;
   state.recoveryMs = RECOVERY_MS;
   state.stats.strikes++;
-  const targets = state.crystals.filter(c => c.alive && c.rho <= TARGETABLE_R && c.note === note);
   let shellBreaks = 0;
   const shelled = new Set<Crystal>();
   const shattered: ShatterInfo[] = [];
@@ -53,15 +54,6 @@ export function resolveStrike(state: SimState, note: number, events: SimEvent[],
     }
   }
   const n = shattered.length;
-  if (n === 0 && shellBreaks === 0) {
-    state.streak = 0;
-    state.mult = 1;
-    state.lockMs = EMPTY_LOCK_MS;
-    state.queuedNote = null;
-    state.stats.duds++;
-    events.push({ type: 'dud', note });
-    return;
-  }
   state.streak++;
   state.mult = Math.min(SCORE.multCap, 1 + Math.floor((state.streak - 1) / 2));
   const mult = state.mult;

@@ -5,7 +5,7 @@ export class Input {
   private enabled = true;
   private first = false;
   private label: HTMLLabelElement | null = null;
-  constructor(private readonly surface: HTMLElement, private readonly opts: { onFirstGesture: () => void; iosSwitch: boolean; onPause?: () => void }) {
+  constructor(private readonly surface: HTMLElement, private readonly opts: { onFirstGesture: () => void; onTap?: (x: number, y: number) => void; iosSwitch: boolean; onPause?: () => void }) {
     if (opts.iosSwitch) {
       const doc = surface.ownerDocument;
       const label = doc.createElement("label"), toggle = doc.createElement("input");
@@ -15,6 +15,7 @@ export class Input {
       surface.replaceWith(label); label.after(toggle); this.surface = label; this.label = label;
     }
     this.surface.addEventListener("contextmenu", this.prevent);
+    this.surface.addEventListener("pointerdown", e => { if (!this.enabled || (e.pointerType === "mouse" && e.button !== 0)) return; this.gesture(); this.opts.onTap?.(e.clientX,e.clientY); });
     const target = this.surface.ownerDocument?.defaultView ?? this.surface;
     target.addEventListener("keydown", this.keyDown as EventListener);
   }

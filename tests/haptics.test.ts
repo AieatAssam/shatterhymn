@@ -5,7 +5,7 @@ describe('haptics', () => {
   it('uses the specified patterns and priorities', () => {
     expect(PATTERNS).toEqual({
       shatter1: { pattern: [10], priority: 5 }, shatter2: { pattern: [14], priority: 5 }, shatter4: { pattern: [18], priority: 5 },
-      choir: { pattern: [22, 60, 18], priority: 8 }, dud: { pattern: [28], priority: 3 }, crack: { pattern: [26], priority: 7 },
+      choir: { pattern: [22, 60, 18], priority: 8 }, crack: { pattern: [26], priority: 7 },
       fever: { pattern: [12, 40, 16], priority: 5 }, mend: { pattern: [10, 40, 14], priority: 6 }, shell: { pattern: [8], priority: 5 },
       ui: { pattern: [6], priority: 1 }, tick: { pattern: [8], priority: 2 }, newBest: { pattern: [12, 50, 18], priority: 7 },
       gameOver: { pattern: [20, 40, 20, 80, 24], priority: 9 },

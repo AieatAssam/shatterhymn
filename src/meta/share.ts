@@ -9,11 +9,12 @@ export function hymnLine(hymn: number[]): string {
 }
 export function shareUrl(base: string, r: RunResult): string {
  const url = new URL(base);
- url.search = r.mode === "daily" ? "?daily=1" : `?seed=${seedToHex(r.seed)}`;
+ url.search = r.daily ? `?daily=1&mode=${r.mode}` : `?seed=${seedToHex(r.seed)}&mode=${r.mode}`;
  url.hash = "";
  return url.toString();
 }
 export function shareText(r: RunResult, opts: { dailyNo?: number; url: string }): string {
- const label = r.mode === "daily" ? `Daily #${opts.dailyNo}` : "Run";
- return `Shatterhymn ${label} — ${r.stats.score.toLocaleString("en-US")}\n${hymnLine(r.hymn)}\nMost at once: ${r.stats.biggestN} · Streak: ${r.stats.longestStreak} · ${msToClock(r.stats.timeMs)}\n${r.slowDial ? "Slower crystals · " : ""}Play: ${opts.url}`;
+ const label = r.mode === "tap" ? "Tap" : "Slice";
+ const detail = r.mode === "tap" ? `Most at once: ${r.stats.biggest} · Streak: ${r.stats.longestChain}` : `Most in one swipe: ${r.stats.biggest} · Chain: ${r.stats.longestChain}`;
+ return `Shatterhymn ${label}${r.daily ? ` · Daily #${opts.dailyNo}` : ""}: ${r.stats.score.toLocaleString("en-US")}\n${hymnLine(r.hymn)}\n${detail} · ${msToClock(r.stats.timeMs)}\n${r.slowDial ? "Slower crystals · " : ""}Play: ${opts.url}`;
 }

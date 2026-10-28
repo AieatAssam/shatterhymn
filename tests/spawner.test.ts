@@ -7,7 +7,7 @@ import { Spawner } from '../src/sim/spawner';
 import type { SimInput } from '../src/sim/types';
 function bot(sim: Sim): SimInput {
   const s = sim.state; const c = s.crystals.filter(c => c.alive && c.rho <= 10.2).sort((a, b) => a.rho - b.rho)[0];
-  return { strike: c && s.lockMs <= 0 && s.recoveryMs <= 0 ? c.note : null };
+  return { strike: c && s.recoveryMs <= 0 ? c.note : null };
 }
 const none = { strike: null };
 describe('spawn director', () => {

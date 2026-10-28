@@ -153,6 +153,8 @@ async function openScreen(page, name) {
   if (name === "pause") { await click(".pause-button"); await page.waitForTimeout(400); }
   if (name === "results") {
     await click(".title-screen .play-hero");
+    await page.waitForTimeout(1000);
+    await page.evaluate(() => window.__shatterhymnQA.forceGameOver());
     await page.waitForSelector('button:has-text("Play again")', { timeout: 120000 });
     await page.waitForTimeout(3000);
   }

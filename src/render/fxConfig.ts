@@ -1,4 +1,14 @@
-export const BOARD = { lead: 0x07080c, glassDark: 0x161b26, glassLight: 0x252c3a, tint: 0x9fb0cc, tintMix: .10, satMax: .12, petalJitter: .035, ringL: [.30,.27,.24,.20], hubYMax: 45, lancetGain: .10, idleShaftGain: .015, beam: 0xc2cad8 } as const;
+export const BOARD = {
+  skyTop: 0x1e1446, skyBottom: 0x0b2a38, glassDark: 0x1c2250, glassLight: 0x2c3a78, lead: 0x0a0716,
+  ringL: [.36, .33, .30, .26], petalJitter: .035,
+  shaftWarm: 0xffc89a, shaftCool: 0x9fe3ff, shaftCount: 4, shaftGain: .10, shaftSweepDeg: 6,
+  shaftPeriodS: 18, shaftBreath: [.6, 1.0], shaftBreathPeriodS: 11,
+  boardSat: .60, satMax: .55, breathPeriodS: 7, breathAmt: .08, hueDriftDeg: 12, hueDriftPeriodS: 24,
+  yMaxArena: 48, yMaxShaft: 72, hubYMax: 50, crystalYMin: 120, crystalOverBoard: 2.5,
+  moteColor: 0xffe6c4, moteCount: { high: 48, medium: 32, low: 16 }, moteSizePx: [2, 5], moteAlpha: .35,
+  moteRiseHps: [.008, .025], moteSwayPx: 6, moteSwayPeriodS: 5, moteFadeS: 2.5, bakeScale: .5, leadSoftness: 3,
+  beam: 0x9fe3ff, idleShaftGain: .015,
+} as const;
 export const PALETTE = { void0: 0x05040c, void1: 0x0b0920, void2: 0x151033, fog: 0x2a2163, beam: 0xb9c6ff, floorLine: 0x262b38, glass: 0xe8f1ff, glassRim: 0x9fd8ff, crack: 0xff3b5c, mend: 0xffd27a, ink: 0xf4f1ff } as const;
 export const NOTE_COLORS = [0xff4f6e, 0xffc23f, 0x3fe0a0, 0x4fa8ff, 0xc77dff] as const;
 export const KEY_DIR = [-0.35, 0.55, 0.76] as const;
@@ -20,7 +30,7 @@ export function crystalVisualScale(rho: number): number {
 
 export const CRYSTAL_GLOW = { poolRadius: 1.15, lowMaxRho: 8.5, shadowRadius: .9, shadowAlpha: .5 } as const;
 
-export const SHATTER = { counts: { low: 22, medium: 30, high: 40 }, speed: 11, speedRandom: 13, drag: 1.5, size: .4, sizeRandom: .5, largeChance: .15, largeSize: 1, largeSizeRandom: .6, largeSpin: 1, largeSpinRandom: 2, life: 2.6, ringRadius: 9, ringLife: .9, fringeLife: .3, fringeOffset: .35, fringeAlpha: .6, discRadius: 6, discAlpha: .55, flashLife: .20, flashOpacity: [.08,.12,.16,.22], flashInterval: 1/3, bellDim: .35, bellDimLife: .6, shaftLife: .45 } as const;
+export const SHATTER = { counts: { low: 22, medium: 30, high: 40 }, speed: 11, speedRandom: 13, drag: 1.5, size: .4, sizeRandom: .5, largeChance: .15, largeSize: 1, largeSizeRandom: .6, largeSpin: 1, largeSpinRandom: 2, life: 2.6, ringRadius: 9, ringLife: .9, fringeLife: .3, fringeOffset: .35, fringeAlpha: .6, discRadius: 6, discAlpha: .55, flashLife: .28, flashOpacity: [.12,.18,.24,.32], flashInterval: 1/3, bellDim: .35, bellDimLife: .6, shaftLife: .45 } as const;
 
 export const TITLE_FX = { goldenScale: 1.25, orbitRadius: 1.3, sparkles: 6, poolAlpha: .55, tickSpeed: .35, discardRadius: 11.5 } as const;
 export const TELL_FX = { closeScale: 1.6, closeLife: .25, goldShards: 12, ringWidth: .35, discWhite: .3 } as const;

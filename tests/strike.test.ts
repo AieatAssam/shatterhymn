@@ -13,10 +13,7 @@ describe('strike', () => {
     const s = state([crystal(1), crystal(2), crystal(3), crystal(4, 1)]); const r = strike(s);
     expect(r.hit).toMatchObject({ n: 3, points: 90, mult: 1 }); expect(s.crystals[3]!.alive).toBe(true);
   });
-  it('locks out and resets the streak on a dud', () => {
-    const s = state(); s.streak = 5; s.mult = 3; const r = strike(s);
-    expect(r.events).toContainEqual({ type: 'dud', note: 0 }); expect(s.streak).toBe(0); expect(s.lockMs).toBe(400);
-  });
+  it('ignores an empty strike', () => { const s=state(); s.streak=5; s.mult=3; expect(strike(s).events).toEqual([]); expect(s.streak).toBe(5); });
   it('follows the multiplier ladder', () => {
     const s = state(); const mults = [];
     for (let i = 0; i < 16; i++) { s.crystals = [crystal(i)]; strike(s); mults.push(s.mult); }
@@ -59,6 +56,6 @@ describe('strike', () => {
   });
   it('does not target crystals outside the targetable radius', () => {
     const c = crystal(1, 0, TARGETABLE_R + 0.1); const s = state([c]);
-    expect(strike(s).events).toContainEqual({ type: 'dud', note: 0 }); expect(c.alive).toBe(true);
+    expect(strike(s).events).toEqual([]); expect(c.alive).toBe(true);
   });
 });

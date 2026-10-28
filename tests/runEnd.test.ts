@@ -1,5 +1,5 @@
-import { expect, it } from "vitest";
-import { applyRunResult } from "../src/meta/runEnd";
-import { resetSave } from "../src/meta/save";
-import { result } from "./metaHelpers";
-it("records first best, daily attempts, shards and distinct dates", () => { const s = resetSave(); const first = applyRunResult(s, result({ score: 100, shards: 12 }, "daily"), "2026-10-27"); expect(first.newBest).toBe(true); expect(first.prevBest).toBe(0); expect(first.shardsEarned).toBe(12); applyRunResult(s, result({ score: 50 }, "daily"), "2026-10-27"); expect(s.daily["2026-10-27"]).toEqual({ best: 100, plays: 2 }); expect(s.progress.daysPlayed).toBe(1); applyRunResult(s, result({ score: 200 }, "daily"), "2026-10-28"); expect(s.progress.daysPlayed).toBe(2); expect(s.daily["2026-10-28"]?.best).toBe(200); });
+import {expect,it} from 'vitest';
+import {resetSave} from '../src/meta/save';
+import {applyRunResult} from '../src/meta/runEnd';
+import {result} from './metaHelpers';
+it('updates per-mode bests and daily independently and shares shards',()=>{const s=resetSave();const tap=result({score:50,shards:12});tap.daily=true;applyRunResult(s,tap,'2026-01-01');expect(s.modes.tap.daily['2026-01-01']).toEqual({best:50,plays:1});expect(s.modes.slice.daily).toEqual({});const slice=result({score:70,shards:8},'slice');expect(applyRunResult(s,slice,'2026-01-01')).toMatchObject({mode:'slice',prevBest:0,newBest:true});expect(s.modes.tap.bests.score).toBe(50);expect(s.modes.slice.bests.score).toBe(70);expect(s.progress.lifetimeShards).toBe(20);});

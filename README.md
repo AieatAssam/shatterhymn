@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <strong>Tap a colour button to shatter every crystal that matches.</strong><br/>
+  <strong>Tap a crystal to shatter every crystal of its colour.</strong><br/>
   A free one-thumb browser game — endless runs, freeze-frame juice, a daily seed, and a cathedral that sings when you play.
 </p>
 
@@ -35,10 +35,10 @@ Works in a modern mobile or desktop browser. No account, no ads, no purchases. S
 
 ## How to play
 
-1. **Tap a colour button** to strike that note right away.
+1. **Tap a crystal** to shatter crystals of the same colour.
 2. Every targetable crystal of that colour shatters at once — bigger chords score far more.
 3. **Protect the bell.** Crystals that touch it crack the glass. **Three cracks** and the run ends.
-4. Chase your personal best, the **Daily Hymn** (same seeded cathedral for everyone that day), unlocks, and a share line you can send to a friend.
+4. Chase your personal best, the **Daily** (same seeded cathedral for everyone that day), unlocks, and a share line you can send to a friend.
 
 Tip: greed pays — wait for a fuller field — but waiting too long loses a life.
 
@@ -49,7 +49,7 @@ Tip: greed pays — wait for a fuller field — but waiting too long loses a lif
 - **One-thumb** controls — tap a colour; learnable in a single try
 - **Procedural endless** runs with rising speed, density and crystal kinds
 - **Choir / Fever** multipliers and freeze-frame shatter juice
-- **Daily Hymn** seed + optional friend seeds (`?seed=`)
+- **Daily** seed + optional friend seeds (`?seed=`)
 - **Unlocks** — bell skins, musical scales, titles (earned with shards, never bought)
 - **PWA** — installable, works offline after first load
 - **Accessibility** — colour + shape + pitch for every note, Slower crystals, Reduce motion, readable UI
@@ -67,7 +67,7 @@ Shatterhymn is shaped by Malone & Lepper’s seven motivations for learning game
 | **Fantasy** | The bell *sings*, singing *breaks* glass — cathedral, choir language and materials serve one image. |
 | **Curiosity** | New scales change the sound; new crystal kinds arrive on a schedule; locked unlocks show exactly what’s next. |
 | **Control** | You choose when, which note and how greedy. Strike results are fully predictable from the screen. |
-| **Cooperation** | Daily Hymn is the same cathedral for everyone; friend seeds let you send a run. |
+| **Cooperation** | Daily is the same cathedral for everyone; friend seeds let you send a run. |
 | **Competition** | Personal / daily bests and a share line — player-to-player, no fake leaderboards. |
 | **Recognition** | Share card, titles, New best! moments, Choir counts. |
 

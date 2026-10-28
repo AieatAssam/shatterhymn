@@ -8,11 +8,11 @@ export interface Crystal {
 export interface ShatterInfo { id: number; x: number; y: number; note: number; kind: Kind; close: boolean; dist: number }
 export interface RunStats {
   score: number; timeMs: number; biggestN: number; longestStreak: number; crystalsBroken: number;
-  choirs: number; closeCalls: number; prismsBroken: number; duds: number; strikes: number; maxMult: number; shards: number; goldens: number;
+  choirs: number; closeCalls: number; prismsBroken: number; misses: number; strikes: number; maxMult: number; shards: number; goldens: number;
 }
 export interface SimState {
   mode: RunMode; seed: number; tick: number; elapsedMs: number; level: number; K: number;
-  crystals: Crystal[]; recoveryMs: number; lockMs: number; queuedNote: number | null; graceMs: number;
+  crystals: Crystal[]; recoveryMs: number; queuedNote: number | null; graceMs: number;
   cracks: number; streak: number; mult: number; over: boolean; stats: RunStats; hymn: number[]; slowDial: boolean;
 }
 export type SimEvent =
@@ -23,7 +23,6 @@ export type SimEvent =
   | { type: 'shellBreak'; id: number; x: number; y: number; note: number }
   | { type: 'prismBlast'; x: number; y: number; radius: number }
   | { type: 'choir'; note: number; n: number; swept: ShatterInfo[]; points: number }
-  | { type: 'dud'; note: number }
   | { type: 'crack'; cracks: number; x: number; y: number; flared: ShatterInfo[] }
   | { type: 'graceHit'; x: number; y: number; id: number }
   | { type: 'mend'; cracks: number }

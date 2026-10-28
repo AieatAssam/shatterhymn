@@ -1,5 +1,5 @@
-export type Family = "glass-light" | "glass-medium" | "glass-heavy" | "bell-heavy" | "ui-glass" | "ui-click" | "ui-back" | "dud";
-const names = [ ...["glass-light", "glass-medium", "glass-heavy", "bell-heavy"].flatMap(f => Array.from({length: 5}, (_, i) => `${f}-${i}.mp3`)), ...[1, 2, 3].map(i => `ui-glass-${i}.mp3`), "ui-click.mp3", "ui-back.mp3", "dud.mp3" ];
+export type Family = "glass-light" | "glass-medium" | "glass-heavy" | "bell-heavy" | "ui-glass" | "ui-click" | "ui-back";
+const names = [ ...["glass-light", "glass-medium", "glass-heavy", "bell-heavy"].flatMap(f => Array.from({length: 5}, (_, i) => `${f}-${i}.mp3`)), ...[1, 2, 3].map(i => `ui-glass-${i}.mp3`), "ui-click.mp3", "ui-back.mp3" ];
 export class Samples {
  private readonly buffers = new Map<string, AudioBuffer>(); private readonly indices = new Map<Family, number>();
  async load(ctx: AudioContext, baseUrl: string): Promise<void> { await Promise.all(names.map(async name => { const response = await fetch(baseUrl + "audio/" + name); if (!response.ok) throw new Error(`Failed to load ${name}`); this.buffers.set(name, await ctx.decodeAudioData(await response.arrayBuffer())); })); }

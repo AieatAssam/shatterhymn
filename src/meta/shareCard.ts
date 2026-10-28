@@ -2,14 +2,14 @@ import { msToClock, dailyNumber, localDateISO } from "../core/date";
 import { seedToHex } from "../core/rng";
 import { glyphShape } from "../render/glyphs";
 import type { RunOutcome, RunResult } from "./runEnd";
-import type { SaveV1 } from "./save";
+import type { SaveV2 } from "./save";
 import { SKINS, TITLES } from "./unlocks";
 import { shareUrl } from "./share";
 
 const COLORS = ["#FF4F6E", "#FFC23F", "#3FE0A0", "#4FA8FF", "#C77DFF"];
 const FRAMES: Record<string, string> = { clear: "#C9D6F2", quartz: "#B49A80", rosegold: "#E8A090", obsidian: "#5A4FA0", rosewindow: "#FFD27A", crown: "#FFD27A" };
 const WIDTH = 1080, HEIGHT = 1350;
-export async function renderShareCard(r: RunResult, outcome: RunOutcome, save: SaveV1, dailyNo = dailyNumber(localDateISO(new Date())), base = location.href): Promise<Blob> {
+export async function renderShareCard(r: RunResult, outcome: RunOutcome, save: SaveV2, dailyNo = dailyNumber(localDateISO(new Date())), base = location.href): Promise<Blob> {
  await document.fonts.ready;
  const canvas = document.createElement("canvas"); canvas.width = WIDTH; canvas.height = HEIGHT;
  const ctx = canvas.getContext("2d"); if (!ctx) throw new Error("Canvas unavailable");
@@ -21,12 +21,13 @@ export async function renderShareCard(r: RunResult, outcome: RunOutcome, save: S
  if (save.equipped.skin === "crown") for (let i=0;i<5;i++) { ctx.fillStyle = COLORS[i]!; ctx.beginPath(); ctx.arc(480+i*30, 24, 7, 0, Math.PI*2); ctx.fill(); }
  ctx.textAlign = "center"; ctx.textBaseline = "middle";
  const logo = ctx.createLinearGradient(0, 50, 0, 120); logo.addColorStop(0, "#FFFFFF"); logo.addColorStop(1, "#BFD9FF"); ctx.fillStyle = logo; ctx.font = "700 64px Cinzel"; ctx.letterSpacing = "0.12em"; ctx.fillText("SHATTERHYMN", 540, 90); ctx.letterSpacing = "0px";
- ctx.fillStyle = "#A59FC9"; ctx.font = "600 30px Inter"; ctx.fillText(r.mode === "daily" ? `Daily Hymn #${dailyNo}` : `Run · Seed ${seedToHex(r.seed)}`, 540, 150);
+ ctx.fillStyle = "#A59FC9"; ctx.font = "600 30px Inter"; ctx.fillText(r.daily ? `Daily #${dailyNo}` : `Run · Seed ${seedToHex(r.seed)}`, 540, 150);
  const score = r.stats.score.toLocaleString("en-US"); let size = 180; ctx.font = `800 ${size}px Inter`; while (ctx.measureText(score).width > 900 && size > 1) { size--; ctx.font = `800 ${size}px Inter`; } ctx.fillStyle = "#F4F1FF"; ctx.shadowColor = "#9FD8FF"; ctx.shadowBlur = 32; ctx.fillText(score, 540, 420); ctx.shadowBlur = 0;
+ ctx.fillStyle="#F4F1FF"; ctx.font="800 44px Inter"; ctx.fillText(r.mode === "tap" ? "Tap" : "Slice", 540, 480);
  if (outcome.newBest) { ctx.fillStyle = "#FFD27A"; ctx.beginPath(); ctx.roundRect(435, 510, 210, 52, 26); ctx.fill(); ctx.fillStyle = "#1A1030"; ctx.font = "700 24px Inter"; ctx.fillText("NEW BEST", 540, 536); }
  const symbols = r.hymn.length > 30 ? [...r.hymn.slice(0, 12), ...r.hymn.slice(-18)] : r.hymn;
  symbols.forEach((note, i) => { const x = 176 + (i % 15) * 52, y = 645 + Math.floor(i / 15) * 100; if (note === 10 || note === 20) { ctx.fillStyle = note === 10 ? "#FFD27A" : "#FF3B5C"; ctx.font = "700 42px Inter"; ctx.fillText(note === 10 ? "★" : "ϟ", x, y); return; } if (note < 0 || note > 4) return; const points = glyphShape(note).getPoints(); ctx.save(); ctx.translate(x, y); ctx.beginPath(); points.forEach((p, index) => { if (index === 0) ctx.moveTo(p.x*23, -p.y*23); else ctx.lineTo(p.x*23, -p.y*23); }); ctx.closePath(); const gem = ctx.createRadialGradient(-5, -7, 1, 0, 0, 28); gem.addColorStop(0, "#FFFFFF"); gem.addColorStop(.25, COLORS[note]!); gem.addColorStop(1, "#151033"); ctx.fillStyle = gem; ctx.shadowColor = COLORS[note]!; ctx.shadowBlur = 12; ctx.fill(); ctx.shadowBlur = 0; ctx.strokeStyle = COLORS[note]!; ctx.lineWidth = 2; ctx.stroke(); ctx.restore(); });
- const labels = ["MOST AT ONCE", "STREAK", "TIME"], values = [String(r.stats.biggestN), String(r.stats.longestStreak), msToClock(r.stats.timeMs)]; for (let i=0;i<3;i++) { const x=190+i*350; ctx.fillStyle="#A59FC9"; ctx.font="600 24px Inter"; ctx.fillText(labels[i]!,x,880); ctx.fillStyle="#F4F1FF"; ctx.font="800 64px Inter"; ctx.fillText(values[i]!,x,945,320); }
+ const labels = r.mode === "tap" ? ["MOST AT ONCE", "STREAK", "TIME"] : ["MOST IN ONE SWIPE", "CHAIN", "TIME"], values = [String(r.stats.biggest), String(r.stats.longestChain), msToClock(r.stats.timeMs)]; for (let i=0;i<3;i++) { const x=190+i*350; ctx.fillStyle="#A59FC9"; ctx.font="600 24px Inter"; ctx.fillText(labels[i]!,x,880); ctx.fillStyle="#F4F1FF"; ctx.font="800 64px Inter"; ctx.fillText(values[i]!,x,945,320); }
  const title = TITLES.find(item => item.id === save.equipped.title)?.name ?? "Novice Bell"; const skin = SKINS.find(item => item.id === save.equipped.skin)?.name ?? "Clear Glass"; ctx.fillStyle="#F4F1FF"; ctx.font="600 30px Inter"; ctx.fillText(`${title} · ${skin} bell`,540,1180,940); if(r.slowDial) { ctx.fillStyle="#FFD27A"; ctx.font="600 26px Inter"; ctx.fillText("Slower crystals",540,1230); } ctx.fillStyle="#A59FC9"; ctx.font="600 24px Inter"; ctx.fillText(shareUrl(base,r),540,1280,940);
  return new Promise((resolve,reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("PNG export failed")), "image/png"));
 }

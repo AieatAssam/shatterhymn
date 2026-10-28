@@ -5,7 +5,7 @@ const none: SimInput = { strike: null };
 function bot(sim: Sim): SimInput {
   const s = sim.state;
   const nearest = s.crystals.filter(c => c.alive && c.rho <= 10.2).sort((a, b) => a.rho - b.rho)[0];
-  return { strike: nearest && s.lockMs <= 0 && s.recoveryMs <= 0 ? nearest.note : null };
+  return { strike: nearest && s.recoveryMs <= 0 ? nearest.note : null };
 }
 function run(seed: number, useBot: boolean): Sim {
   const sim = new Sim({ seed, mode: 'run', slowDial: false });

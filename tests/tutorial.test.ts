@@ -11,8 +11,8 @@ describe('direct-strike tutorial script', () => {
   });
   it('ignores strikes on button and auto steps and exposes the new retry copy', () => {
     const sim = new Sim({ seed: 1, mode: 'tutorial', slowDial: false, script: TUTORIAL_SCRIPT });
-    sim.setTutorialStep(1); expect(sim.step({strike:0}).some(e=>e.type==='strike'||e.type==='dud')).toBe(false);
-    sim.setTutorialStep(3); expect(sim.step({strike:0}).some(e=>e.type==='strike'||e.type==='dud')).toBe(false);
+    sim.setTutorialStep(1); expect(sim.step({strike:0}).some(e=>e.type==='strike')).toBe(false);
+    sim.setTutorialStep(3); expect(sim.step({strike:0}).some(e=>e.type==='strike')).toBe(false);
     expect(TUTORIAL_RETRY.replace('{Yellow}', 'Yellow')).toBe('That was Yellow. Tap red ▲ to break the red triangles.');
     expect(sim.step(idle)).toEqual([]);
   });
