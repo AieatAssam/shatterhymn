@@ -12,15 +12,21 @@ export class TutorialOverlay {
     this.action.className = 'tutorial-action';
     this.action.type = 'button';
     this.action.addEventListener('click', onAction);
-    this.element.append(this.text, this.action);
+    const bar = document.createElement('div');
+    bar.className = 'tutorial-bar';
+    this.element.append(bar);
     if (canSkip) {
       const skip = document.createElement('button');
       skip.className = 'tutorial-skip';
       skip.type = 'button';
       skip.textContent = 'Skip';
       skip.addEventListener('click', onSkip);
-      this.element.append(skip);
+      bar.append(skip);
     }
+    const content = document.createElement('div');
+    content.className = 'tutorial-content';
+    content.append(this.text, this.action);
+    this.element.append(content);
     root.append(this.element);
   }
   show(text: string, button?: string): void {

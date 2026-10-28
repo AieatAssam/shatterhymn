@@ -12,9 +12,10 @@ export function titleModel(ctx: Pick<ScreenContext, "save" | "friend">, iso: str
 export function mount(root: HTMLElement, ctx: ScreenContext): { unmount: () => void } {
   const model = titleModel(ctx, localDateISO(new Date()));
   const el = document.createElement("section"); el.className = "title-screen";
+  const header = document.createElement("div"); header.className = "title-header"; el.append(header);
   const logo = document.createElement("h1"); logo.textContent = "SHATTERHYMN"; logo.dataset.text = "SHATTERHYMN";
-  const tagline = document.createElement("p"); tagline.className = "tagline"; tagline.textContent = "Sing one note. Break everything tuned to it."; el.append(logo, tagline);
-  if (model.friend) { const friend = document.createElement("p"); friend.className = "friend-pill"; friend.textContent = model.friend; el.append(friend); }
+  const tagline = document.createElement("p"); tagline.className = "tagline"; tagline.textContent = "Sing one note. Break everything tuned to it."; header.append(logo, tagline);
+  if (model.friend) { const friend = document.createElement("p"); friend.className = "friend-pill"; friend.textContent = model.friend; header.append(friend); }
   const menu = document.createElement("div"); menu.className = "title-buttons"; el.append(menu);
   const play = button(menu, "Play", () => ctx.play("run"), true); play.classList.add("play-hero"); play.innerHTML = `${playIcon}<span>Play</span>`;
   const row = document.createElement("div"); row.className = "chip-row"; menu.append(row);
@@ -23,6 +24,6 @@ export function mount(root: HTMLElement, ctx: ScreenContext): { unmount: () => v
   const dailyBadge = document.createElement("i"); dailyBadge.className = model.daily.played ? "badge done" : "dot"; dailyBadge.textContent = model.daily.badge; daily.append(dailyBadge);
   const missions = chip(model.missions.label, missionsIcon, () => ctx.open("missions"), model.missions.aria); missions.classList.add("missions-chip"); const missionBadge = document.createElement("i"); missionBadge.className = `badge${model.missions.complete ? " done" : ""}`; missionBadge.textContent = model.missions.badge; missions.append(missionBadge);
   chip("Collection", collectionIcon, () => ctx.open("collection")); chip("Settings", settingsIcon, () => ctx.open("settings"));
-  const update = document.createElement("button"); update.className = "update-banner"; update.textContent = "Update ready. Tap to refresh."; update.hidden = true; update.addEventListener("click", applyUpdate); el.append(update);
+  const update = document.createElement("button"); update.className = "update-banner"; update.textContent = "Update ready. Tap to refresh."; update.hidden = true; update.addEventListener("click", applyUpdate); header.append(update);
   const unsubscribe = onUpdateReady(ready => { update.hidden = !ready; }); root.append(el); return { unmount: () => { unsubscribe(); el.remove(); } };
 }

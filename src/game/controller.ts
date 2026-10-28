@@ -7,7 +7,7 @@ import { Haptics, hapticForStrike } from "../haptics/haptics";
 import { GameRenderer } from "../render/renderer";
 import { Sim } from "../sim/sim";
 import { BannerQueue, TIPS } from "../ui/banners";
-import { ColorPad } from "../ui/colorPad";
+import { ColorPad, padVisible, type PadState } from "../ui/colorPad";
 import { Hud } from "../ui/hud";
 import { PopText } from "../ui/popText";
 import { dailyNumber, localDateISO } from "../core/date";
@@ -33,7 +33,7 @@ import { mount as mountPause } from "../ui/screens/pause";
 
 export class Controller {
  private readonly haptics: Haptics; private readonly bus = new EventBus<GameEvent | SimEvent>(); private readonly audio = new AudioEngine(this.bus, import.meta.env.BASE_URL); private sim!: Sim; private readonly input: Input; private readonly renderer: GameRenderer; private readonly loop: Loop; private restartMs = 0;
- private readonly hud: Hud; private readonly pad: ColorPad; private readonly pops: PopText; private readonly banners: BannerQueue; private readonly save: SaveV1; private readonly storage: StorageLike; private choirClose = false; private liveBest = false; private readonly initialMode: "run" | "daily"; private nextSeed: number | null; private runs: number; private pauseScreen: ReturnType<typeof mountPause> | null = null; private countMs = 0; private state: "title" | "tutorial" | "run" | "daily" | "paused" | "over" = "title"; private activeScreen: {unmount:()=>void} | null = null; private readonly pilot = new AttractPilot(); private outcome: RunOutcome | null = null; private resultStats: RunStats | null = null; private resultHymn: number[] = []; private resultMode: "run" | "daily" = "run"; private result: RunResult | null = null; private runDailyNo = 1; private forceFeverCapture = new URLSearchParams(location.search).get("qa")==="1" && new URLSearchParams(location.search).get("fever")==="1"; private settingsFromPause = false; private currentScreen = "title"; private hasGesture = false; private readonly ios: boolean; private readonly vibrationSupported: boolean; private tutorial: TutorialOverlay | null = null; private tutorialStep = 0; private tutorialAge = 0; private tutorialMode: "run" | "daily" = "run";
+ private readonly hud: Hud; private readonly pad: ColorPad; private readonly pops: PopText; private readonly banners: BannerQueue; private readonly save: SaveV1; private readonly storage: StorageLike; private choirClose = false; private liveBest = false; private readonly initialMode: "run" | "daily"; private nextSeed: number | null; private runs: number; private pauseScreen: ReturnType<typeof mountPause> | null = null; private countMs = 0; private currentState: PadState = "title"; private get state(): PadState { return this.currentState; } private set state(value: PadState) { this.currentState = value; this.syncPad(); } private activeScreen: {unmount:()=>void} | null = null; private readonly pilot = new AttractPilot(); private outcome: RunOutcome | null = null; private resultStats: RunStats | null = null; private resultHymn: number[] = []; private resultMode: "run" | "daily" = "run"; private result: RunResult | null = null; private runDailyNo = 1; private forceFeverCapture = new URLSearchParams(location.search).get("qa")==="1" && new URLSearchParams(location.search).get("fever")==="1"; private settingsFromPause = false; private currentScreen = "title"; private hasGesture = false; private readonly ios: boolean; private readonly vibrationSupported: boolean; private tutorial: TutorialOverlay | null = null; private tutorialStep = 0; private tutorialAge = 0; private tutorialMode: "run" | "daily" = "run";
  constructor(canvas: HTMLCanvasElement, surface: HTMLElement) {
   if (new URLSearchParams(location.search).get("qa") === "1") (window as Window & { __shatterhymnQA?: () => unknown }).__shatterhymnQA = () => { const s=this.sim.state; return { dialNote:null, mult:s.mult, streak:s.streak, score:s.stats.score, cracks:s.cracks, over:s.over, crystals:s.crystals.filter(c=>c.alive).map(c=>({note:c.note,rho:c.rho,kind:c.kind})) }; };
   this.storage = { getItem: key => localStorage.getItem(key), setItem: (key, value) => localStorage.setItem(key, value) };
@@ -62,6 +62,7 @@ export class Controller {
   document.addEventListener("visibilitychange", () => { if (document.hidden) { this.audio.suspend(); if (this.pauseScreen && this.countMs > 0) { this.countMs = 0; this.pauseScreen.countdown(""); } this.pause(); this.loop.stop(); } else { this.audio.resume(); this.loop.start(); } });
   this.showTitle(); this.applySettings(); this.loop.start();
  }
+ private syncPad(): void { if (!this.pad) return; this.pad.element.hidden = !padVisible(this.state, typeof TUTORIAL_SCRIPT[this.tutorialStep]?.expect === "object"); this.pad.element.classList.toggle("tutorial-pad", this.state === "tutorial"); }
  private writeSave(): void { writeSave(this.storage, this.save); }
  private newSim(mode: "run" | "daily"): Sim { this.runDailyNo = dailyNumber(localDateISO(new Date())); const seed = mode === "daily" ? dailySeed(localDateISO(new Date())) : this.nextSeed ?? randomSeed(); this.nextSeed = null; return new Sim({ seed, mode, slowDial: this.save.settings.slowDial }); }
  private rollover(): void { const iso=localDateISO(new Date()); if(this.save.missions.date!==iso){this.save.missions={date:iso,ids:pickMissions(iso),progress:{},done:[],bonusGiven:false};this.writeSave();} }
@@ -81,7 +82,7 @@ export class Controller {
   this.tutorial=new TutorialOverlay(document.querySelector<HTMLElement>("#screens")!,this.save.progress.tutorialDone,()=>this.finishTutorial(),()=>this.advanceTutorial());
   this.showTutorialStep(); this.input.setEnabled(true); this.loop.paused=false;
  }
- private showTutorialStep(): void { const step=TUTORIAL_SCRIPT[this.tutorialStep]!; this.tutorialAge=0; this.tutorial?.show(step.text,step.button); document.querySelector<HTMLElement>("#hud")!.classList.toggle("tutorial-hearts",this.tutorialStep===4); }
+ private showTutorialStep(): void { this.syncPad(); const step=TUTORIAL_SCRIPT[this.tutorialStep]!; this.tutorialAge=0; this.tutorial?.show(step.text,step.button); document.querySelector<HTMLElement>("#hud")!.classList.toggle("tutorial-hearts",this.tutorialStep===4); }
  private advanceTutorial(): void { if(this.tutorialStep===5){this.finishTutorial();return;} this.tutorialStep++; this.sim.setTutorialStep(this.tutorialStep); this.showTutorialStep(); }
  private finishTutorial(): void { this.save.progress.tutorialDone=true; this.writeSave(); this.clearTutorial(); this.startRun(this.tutorialMode); }
  private tickTutorial(): void {

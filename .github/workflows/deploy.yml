@@ -20,6 +20,17 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+      - name: Layout check (no overlaps at 6 phones x portrait/landscape x chrome/notch/130% text)
+        run: npm run layout -- --json layout-report.json --shots layout-shots
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: layout-report
+          path: |
+            layout-report.json
+            layout-shots
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
