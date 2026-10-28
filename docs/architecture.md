@@ -452,3 +452,109 @@ Everything under `core`, `sim` and `meta`, plus `haptics.ts` and `audio/scales.t
 When the URL contains `?qa=1`, the controller exposes a read-only `window.__shatterhymnQA()` that returns
 `{ dialNote: number | null, mult: number, streak: number, score: number, crystals: { note: number, rho: number, kind: string }[] }`.
 No visible UI. No writes into `src/sim`. Used only by the lead's screenshot harness to hold until the dial matches a common near crystal so ×3 and fever can be captured. Absent without the query flag.
+
+## 20. Two modes (recovery, 2026-10-28)
+
+Normative. Rules and numbers are in `docs/MODES.md`, which wins on conflicts. This section says where the code goes.
+
+### 20.1 Layout changes
+
+```
+src/
+  sim/      config.ts            Tap numbers: TAP_OPENING, TAP_HIT (pure numbers only), beginner profile, SCORE v2; EMPTY_LOCK_MS removed
+            types.ts             RunMode = 'run' | 'daily' | 'attract' | 'intro'; SimInput { strike: number | null; miss: {x,y} | null };
+                                 SimEvent: 'dud' removed, 'miss' added; SimState: lockMs removed, profile + gentleMiss added; stats.duds -> misses
+            sim.ts               Tap sim: Crown + follow-up, intro mode, gentle miss, forceGameOver()
+            strike.ts            MODES.md §4.3 scoring; empty strike is a no-op
+            spawner.ts           spawnerStartMs, beginner weights and speed, beginner chord wave at 15 s
+            attract.ts           rho 8, >= 3
+            tutorial.ts          DELETED
+            sliceConfig.ts       NEW: SLICE_BLADE, SLICE_TOSS, SLICE_SCORE, SLICE_RULES, SLICE_WAVES (beginner table)
+            sliceTypes.ts        NEW: MODES.md §6.7
+            sliceSim.ts          NEW: SliceSim (toss physics, capsule cuts, chains, Choir, falls, cracks, game over)
+            sliceWaves.ts        NEW: wave director (seeded Rng, tone bag, profiles)
+            blade.ts             NEW: Blade state machine (MODES.md §7.4), pure; times are passed in, never read
+  modes/    mode.ts              NEW: ModeId, GameMode interface, MetaStats mappers
+            tap/tapMode.ts       NEW: owns the Tap Sim, attract pilot, tap routing, Tap HUD wiring, demo script
+            tap/tapHit.ts        NEW: pickCrystal() (pure, unit-tested)
+            slice/sliceMode.ts   NEW: owns SliceSim + Blade, pointer routing, Slice HUD wiring, demo script
+            slice/playArea.ts    NEW: viewport <-> H mapping with letterbox (pure)
+  game/     controller.ts        screen state machine only (intro, title, run, pause, results, menus); delegates to the active GameMode
+            intro.ts             NEW: 5 s intro sequence (MODES.md §2.1)
+            qa.ts                NEW: window.__shatterhymnQA and URL flags (MODES.md §19), only when qa=1
+  input/    input.ts             pointer router: onTap(clientX, clientY, pointerType) for Tap; stroke samples with coalesced events for Slice;
+                                 digits for Tap; injectStroke() for QA; the old tap(note) API is removed
+  render/   renderer.ts          setMode('tap' | 'slice'), projectRadius(x, y, r), unproject(sx, sy) -> z = 0 plane, slice world mapping
+            camera.ts            fitSliceCamera()
+            face.ts + shaders/face.ts     NEW: bell face quad (MODES.md §5)
+            blade.ts + shaders/blade.ts   NEW: ribbon mesh (MODES.md §8.2)
+            motes.ts             NEW: drifting motes Points (MODES.md §9)
+            crystals.ts          aCut attribute + halves pool (48) + slice placement; dark burr glyph
+            shaders/crystal.ts   cut-plane discard, glowing back faces, dark kind
+            glyphs.ts            glyphShape(5) = 8-point burr
+            background.ts, shaders/background.ts, fxConfig.ts   living board (MODES.md §9); uPadTop / uPadTopPx removed
+            juice.ts             sliceHitstopMs(), slice freeze window cap 160 ms, face triggers forwarded
+  ui/       colorPad.ts          DELETED
+            tutorialOverlay.ts   replaced by demo.ts (ghost hand + one line)
+            hud.ts               data-mode, .combo chip for Slice
+            banners.ts           MODES.md §4.7 texts, Slice one-time lines
+            screens/title.ts     mode cards, per-mode Daily, gear, chip row (MODES.md §3)
+            screens/results.ts   resultsModel per mode (MODES.md §12)
+            screens/settings.ts  How to play Tap / Slice
+  meta/     save.ts              SaveV2 + migrate from v1 (MODES.md §10)
+            runEnd.ts            RunResult { mode, daily, seed, stats: MetaStats, hymn, slowDial }
+            missions.ts          shared deck with per-mission mode (MODES.md §11)
+            daily.ts             dailySeed(mode, iso)
+            share.ts, shareCard.ts   per-mode text and card
+  audio/    audio.ts             playCut, playWhoosh, playDark (MODES.md §8.8)
+  haptics/  haptics.ts           slice1..4, combo; play(id, extraMs)
+scripts/    layout-check.mjs     new screens (MODES.md §19.5)
+            bundle-check.mjs     NEW (MODES.md §17)
+```
+
+### 20.2 Mode abstraction
+
+```ts
+export type ModeId = 'tap' | 'slice';
+export interface ModeStart { seed: number; daily: boolean; profile: 'beginner' | 'standard'; slow: boolean; demo: boolean; gentleMiss: boolean }
+export interface GameMode {
+  readonly id: ModeId;
+  start(opts: ModeStart): void;           // builds a new sim, resets render pools for this mode, shows its HUD
+  tick(): void;                           // one fixed 60 Hz tick: drain input -> sim.step -> forward events to bus, renderer, HUD
+  frame(realDtMs: number, simDtMs: number): void;
+  setInputEnabled(on: boolean): void;
+  readonly over: boolean;
+  result(): { stats: MetaStats; hymn: number[]; seed: number } | null;
+  qa(): QAModeState;                      // used by game/qa.ts only
+  forceGameOver(): void;
+  dispose(): void;
+}
+```
+
+- The controller holds `active: GameMode | null` plus the attract `TapMode` used on the title. It handles screens, pause (3-2-1), game over → `applyRunResult` → results after 1.4 s, and the intro hand-over. It no longer touches `Sim` directly.
+- Both sims emit events on the shared `EventBus`. Slice events use their own type names (`toss`, `cut`, `darkHit`, `strokeEnd`, `fall`); shared names (`choir`, `crack`, `levelUp`, `gameOver`) carry a `mode` field added by the mode when forwarding, so audio, haptics and the face can branch.
+- `game/qa.ts` is imported only when `qa=1` (dynamic `import()`), so it is not in the normal path.
+
+### 20.3 Input
+
+- `#surface` receives `pointerdown/move/up/cancel` and `lostpointercapture`. In Tap, each `pointerdown` calls `onTap`; TapMode does the hit test in screen space (projection from the renderer) and queues a `SimInput`. In Slice, the first pointer opens a stroke; samples (coalesced) are normalised by `playArea.ts` and fed to `Blade`. On every tick SliceMode drains `Blade` into `SliceInput`.
+- Timestamps come from `PointerEvent.timeStamp`. `Blade` and `SliceSim` receive them as numbers. Nothing in `src/sim` calls `performance`, `Date`, `window`, `document` or `Math.random` (the source test covers every file in `src/sim`).
+- Title: pointer input goes to the DOM cards; the canvas does not take taps, except during the intro (any tap strikes).
+
+### 20.4 Renderer
+
+- `setMode('tap')`: tilted camera (§9), floor, halo, bell at the origin with face. `setMode('slice')`: `fitSliceCamera`, floor and halo hidden, bell at slice (W/2, .09) scaled to radius .075 H, face follows, blade ribbon on, halves pool on.
+- New draw calls: face 1, motes 1, blade 1. Halves reuse the five crystal meshes through `aCut`.
+- The renderer keeps reading the active mode's state through a getter; Tap state and Slice state are different types, so `GameRenderer` takes `getView(): RenderView` (a small union with `mode` and the fields the renderer needs).
+
+### 20.5 Save and meta
+
+`SaveV2` (MODES.md §10). `loadSave` always returns v2. `writeSave` writes v2 and, the first time a v1 text is replaced, copies it to `shatterhymn:save:v1`. `applyRunResult` updates the mode block and the shared parts.
+
+### 20.6 Tests added or replaced
+
+Added: `tapHit.test.ts`, `tap.test.ts`, `blade.test.ts`, `slice.test.ts`, `sliceWaves.test.ts`, `face.test.ts` (pure face-state selector `faceState(inputs) -> state` with priorities and hold times), `playArea.test.ts`, `bundle` check script. Replaced: `save.test.ts`, `runEnd.test.ts`, `missions.test.ts`, `share.test.ts`, `results.test.ts`, `results-copy.test.ts`, `copy.test.ts`, `strike.test.ts` (scoring), `spawner.test.ts` (Crown, profiles), `haptics.test.ts` (new ids). Deleted: `padVisibility.test.ts`, `direct-strike.test.ts` (lockout parts move into `tap.test.ts` as "empty strike is a no-op"), `tutorial.test.ts`, the tutorial half of `tutorial-attract.test.ts`.
+
+### 20.7 QA hook
+
+§19 (`?qa=1`) is superseded by MODES.md §19. `__shatterhymnQA` stays a callable function for backward compatibility and gains the methods listed there.

@@ -277,3 +277,94 @@ and a normal run uses `Run` and `?seed=3F9A12C0`; `slowDial` adds `Slow dial · 
 - [ ] `npm run check` passes.
 
 **Tests:** `tests/copy.test.ts`: import the string tables (missions, tips, tutorial steps, results model, settings labels) and assert that none contains `TODO`, `TBD`, `lorem` or a double space, and that each is ≤ 120 characters.
+
+---
+
+# Recovery milestones (R1 ... R4), 2026-10-28
+
+Read `docs/MODES.md` first; it wins over every other doc. Do R1 to R4 in order, one per session unless the lead says otherwise. Every milestone ends with `timeout 300 npm run check` passing. "Lead check" items are verified by the lead with Playwright (`scripts/layout-check.mjs` and the QA hooks in MODES.md §19); the implementer never runs a browser, but must make every lead check reachable through the hooks.
+
+## R1: Foundation and living board
+
+**Files:** `src/meta/{save,runEnd,missions,daily,share}.ts`, `src/modes/{mode.ts,tap/tapMode.ts,slice/playArea.ts}`, `src/game/{controller,qa}.ts`, `src/ui/screens/{title,results,settings}.ts`, `src/ui/{hud,icons}.ts`, `src/styles/main.css`, `src/render/{fxConfig,background,motes,renderer}.ts`, `src/render/shaders/background.ts`, `src/input/input.ts`, `index.html`, `public/manifest.webmanifest`, `scripts/layout-check.mjs`, tests.
+
+**Do:**
+1. Save v2 and migration exactly as MODES.md §10, including the `:v1` backup. `RunResult` / `MetaStats` / per-mode bests and dailies (§10). Per-mode daily seeds. Shared mission deck (§11).
+2. `GameMode` abstraction and `TapMode` wrapping the existing Tap sim (architecture §20.2). Controller delegates to it.
+3. Delete the colour pad and everything listed in MODES.md §4.8 that belongs to the pad and the lockout (`colorPad.ts`, CSS, `padVisible`, `uPadTop*`, `EMPTY_LOCK_MS`, `lockMs`, `dud`). Tap mode in R1: a `pointerdown` on `#surface` strikes the colour of the nearest projected targetable crystal within 48 px (the full hit-test rules come in R2); empty taps do nothing.
+4. Title with two mode cards, per-mode Daily chips, gear, chip row and visibility rules (§3). Until R3 the Slice card is rendered with its art, name and how-to line, but its `.mode-play` button is `disabled` (opacity .55, no best line, no Daily chip) and has no extra text. R3 enables it. Do not write "Coming soon" or any other placeholder text.
+5. Results per mode (§12) with `data-mode`, `Try Slice` hidden while Slice is disabled. Share text per mode (§12).
+6. Living background (§9): new `BOARD`, animated shafts, motes, breathing, hue drift, half-res bake, bigger event tints and flashes.
+7. QA hooks §19 for everything that exists in R1 (`state`, `crystals`, `start('tap')`, `forceGameOver`, `tapCrystal`, `screen`, `mode=tap`, `intro=0`). Body/element `data-*` hooks (§19.3).
+8. layout-check: title selectors still work (Tap card button has `.play-hero`, Tap Daily chip has `.daily`); `results` uses `forceGameOver`. Fixture stays the v1 save (it tests the migration too).
+
+**Done when:**
+- [ ] A v1 save loads as v2 with Tap bests, daily map and runs intact, Slice empty, `introDone` true (test).
+- [ ] No file under `src/` mentions `colorPad`, `color-pad`, `lockMs`, `EMPTY_LOCK_MS` or `uPadTop` (copy/source test).
+- [ ] Title shows two `.mode-card` elements with `data-mode="tap"` and `data-mode="slice"`; Tap card shows `Best 18,420` with the fixture save (lead check).
+- [ ] Daily, Missions, Collection hidden with `runs < 3`, shown with `runs >= 3`; Settings always (unit test on the pure `titleModel`).
+- [ ] A Tap Daily run updates only `modes.tap.daily[today]` (test).
+- [ ] Results show `Tap` and `Your Tap best: 18,420` (resultsModel test; lead check via `forceGameOver`).
+- [ ] `BOARD.satMax` .55 and `boardSat` .60; motes draw call exists; arena board Y ≤ 48 and crystal core ≥ 2.5 × board Y (lead check at 780 x 1688).
+- [ ] layout-check: all 432 original combinations clean (lead check).
+- [ ] `npm run check` passes.
+
+**Tests:** `save.test.ts` (MODES.md §10 list), `runEnd.test.ts`, `missions.test.ts` (§11), `share.test.ts` (both templates), `results.test.ts` (Tap strings), `title.test.ts` (titleModel visibility and strings), `copy.test.ts` (§21 rules for what exists), delete `padVisibility.test.ts` and the lockout tests.
+
+## R2: Tap mode complete (ship)
+
+**Files:** `src/modes/tap/{tapMode,tapHit}.ts`, `src/sim/{config,types,sim,strike,spawner,attract}.ts`, delete `src/sim/tutorial.ts` and `src/ui/tutorialOverlay.ts`, add `src/ui/demo.ts`, `src/game/intro.ts`, `src/render/face.ts`, `src/render/shaders/face.ts`, `src/render/{renderer,juice}.ts`, `src/ui/banners.ts`, `src/audio/audio.ts`, `src/haptics/haptics.ts`, tests.
+
+**Do:** MODES.md §2.1, §2.2, §4 (all), §5 (face), §14 for Tap and intro, §15 (`How to play Tap`; `How to play Slice` button hidden until R3), §19 hooks `intro=hold`, `skipIntro`, `demo=1`. layout-check adds the `intro` screen.
+
+**Done when:**
+- [ ] Fresh save: boot shows the intro, not the title (`body[data-screen="intro"]`), and the title mounts by 4800 ms with no input (lead check with `intro` timings; unit test on the intro timeline function).
+- [ ] With no input, the intro auto-strikes at 3500 ms and a `choir` event with n = 8 fires (test on intro sequence with a fake clock).
+- [ ] Every Tap run has the Crown of 8 at 300 ms; a strike on it is a Choir (test).
+- [ ] `pickCrystal` passes MODES.md §4.9 case 1 (test); `tapCrystal(id)` on any crystal breaks its colour group (lead check).
+- [ ] Empty taps in runs 1-5 change nothing (test); gentle miss only from run 6 and only with streak ≥ 2 (test).
+- [ ] Scoring: MODES.md §4.9 case 4 (test).
+- [ ] Face: `faceState()` priority and hold times match §5.2 (test); face quad renders (lead check).
+- [ ] Demo: `Tap a crystal!` line visible in the first Tap run until the first strike, ≤ 6 words, font-size ≥ 16 px computed (lead check), never again after `demoDone`.
+- [ ] layout-check: 480 combinations clean (432 + `intro`) (lead check).
+- [ ] `npm run check` passes. Lead ships.
+
+**Tests:** `tap.test.ts`, `tapHit.test.ts`, `face.test.ts`, `intro.test.ts`, updated `strike.test.ts`, `spawner.test.ts`, `sim.test.ts` (14-70 s no-input bound), `tutorial-attract.test.ts` (attract part only: ≥ 1 strike in 60 s, never an empty strike), `haptics.test.ts`, `copy.test.ts`. Delete `tutorial.test.ts`, `direct-strike.test.ts`.
+
+## R3: Slice mode complete (ship)
+
+**Files:** `src/sim/{sliceConfig,sliceTypes,sliceSim,sliceWaves,blade}.ts`, `src/modes/slice/{sliceMode,playArea}.ts`, `src/input/input.ts`, `src/render/{blade,crystals,camera,renderer,juice,shards,glyphs}.ts`, `src/render/shaders/{blade,crystal}.ts`, `src/audio/audio.ts`, `src/haptics/haptics.ts`, `src/ui/{hud,demo,banners}.ts`, `src/ui/screens/{title,results,settings}.ts`, `scripts/layout-check.mjs`, tests.
+
+**Do:** MODES.md §2.3, §6, §7, §8, §13 (Slice HUD), §14 (Slice script), §15 (`How to play Slice`), §19 (all Slice hooks: `mode=slice`, `waves=0`, `swipe`, `sliceTestBoard`, `blade`). Enable the Slice card and `Try Slice` / `Try Tap`. layout-check adds `slice` and `sliceresults`.
+
+**Done when:**
+- [ ] All 18 blade cases and the Slice rules tests in MODES.md §7.5 pass, including: slow drag at 0.5 H/s cuts 0; fast swipe at 3 H/s cuts the 3 crystals on its path; a 5 s continuous fast wiggle over 24 crystals cuts **at most 6**; re-acceleration after a 250 ms slow-down cuts; after a 120 ms slow-down it does not; lift and a new stroke cuts.
+- [ ] `SLICE_BLADE` values equal MODES.md §7.1 (config test).
+- [ ] Lead e2e (§19.4): slow mouse drag and slow touch drag cut nothing; fast ones cut 3; `swipe()` agrees.
+- [ ] A cut crystal shows two halves separating along the swipe line (lead check from video); halves pool ≤ 48; draw calls ≤ 20 with `?debug=1` (lead check).
+- [ ] `sliceHitstopMs` = MODES.md §8.5 for k = 1..10, never over 120 (test).
+- [ ] Haptic ids `slice1..4`, `combo` match §8.7 (test).
+- [ ] Beginner waves match the table; no dark crystal before 25 s (beginner) / 12 s (standard) for 20 seeds (test).
+- [ ] Slice results show `Slice`, `Your Slice best: ...`, Slice stats (test + lead check).
+- [ ] layout-check: 576 combinations clean (lead check).
+- [ ] `npm run check` passes. Lead ships.
+
+**Tests:** `blade.test.ts`, `slice.test.ts`, `sliceWaves.test.ts`, `playArea.test.ts`, `haptics.test.ts`, `results.test.ts` (Slice), `copy.test.ts`, `determinism.test.ts` (Slice same seed + same input → same events), source purity test covers the new `src/sim` files.
+
+## R4: Polish and docs
+
+**Files:** `README.md`, `CREDITS.md`, `src/ui/screens/credits.ts` (only if layout needs it), `tests/copy.test.ts`, `scripts/bundle-check.mjs`, `package.json` (`check` script), `src/meta/shareCard.ts`.
+
+**Do:**
+1. README: rewrite the top. Hero line `Tap or slice glowing crystals and keep the singing bell safe.` Media placeholders exactly: `<img src="shots/modes/title.png" alt="Pick Tap or Slice" width="220" />`, `<img src="shots/modes/tap.gif" alt="Tap mode" width="220" />`, `<img src="shots/modes/slice.gif" alt="Slice mode" width="220" />` (the lead commits these files; do not create them). Sections: "Two ways to play" with **Tap** (`Tap a crystal. Every crystal of that colour smashes too. Keep crystals away from the bell.`) and **Slice** (`Swipe fast through crystals as they fly up. Slice the same colour in one swipe for a chain. Don't hit dark crystals, and don't let crystals fall.`), controls table (Tap: tap a crystal, keys 1-5; Slice: fast swipe or fast mouse drag; P / Esc pause), Daily per mode, then the existing build/deploy/credits parts with "Slow dial" and colour-button text removed. Add the inspiration line: `Slice mode is inspired by Fruit Ninja by Halfbrick Studios. Shatterhymn is not affiliated with or endorsed by Halfbrick Studios.`
+2. CREDITS.md additions exactly as MODES.md §16; the in-game Credits panel shows them (it renders `CREDITS.md`).
+3. Copy test: every MODES.md §21 rule over every table, README and `CREDITS.md` included in the forbidden-words scan.
+4. `scripts/bundle-check.mjs` and `"check": "npm run typecheck && npm run lint && npm run test && npm run build && node scripts/bundle-check.mjs"`. Budgets: MODES.md §17.
+5. Share card shows the mode name (§12).
+
+**Done when:**
+- [ ] README contains the two mode sections, the three `shots/modes/*` image paths and the no-affiliation sentence (copy test reads README).
+- [ ] CREDITS.md contains `Slice mode is inspired by Fruit Ninja by Halfbrick Studios.` and `It is not made by, endorsed by, sponsored by or affiliated with Halfbrick Studios.` (test).
+- [ ] Credits panel shows the Halfbrick lines without overlap at all layouts (lead check, `credits` screen).
+- [ ] `bundle-check` prints sizes and passes: JS ≤ 225 KB gzip and ≤ 860 KB raw, CSS ≤ 10 KB gzip.
+- [ ] `npm run check` passes.
