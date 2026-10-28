@@ -1,5 +1,5 @@
 export type Kind = 'normal' | 'geode' | 'prism' | 'splitter' | 'rusher' | 'mend' | 'golden';
-export type RunMode = 'run' | 'daily' | 'tutorial' | 'attract';
+export type RunMode = 'run' | 'daily' | 'intro' | 'attract';
 export interface Crystal {
   id: number; alive: boolean; kind: Kind; note: number;
   rho: number; theta: number; r: number; speed: number; swirl: number;
@@ -13,7 +13,7 @@ export interface RunStats {
 export interface SimState {
   mode: RunMode; seed: number; tick: number; elapsedMs: number; level: number; K: number;
   crystals: Crystal[]; recoveryMs: number; queuedNote: number | null; graceMs: number;
-  cracks: number; streak: number; mult: number; over: boolean; stats: RunStats; hymn: number[]; slowDial: boolean;
+  cracks: number; streak: number; mult: number; over: boolean; stats: RunStats; hymn: number[]; slowDial: boolean; profile: 'beginner' | 'standard'; gentleMiss: boolean;
 }
 export type SimEvent =
   | { type: 'eventWarn'; kind: 'golden' | 'chord'; note: number; theta: number }
@@ -25,8 +25,9 @@ export type SimEvent =
   | { type: 'choir'; note: number; n: number; swept: ShatterInfo[]; points: number }
   | { type: 'crack'; cracks: number; x: number; y: number; flared: ShatterInfo[] }
   | { type: 'graceHit'; x: number; y: number; id: number }
+  | { type: 'miss'; x: number; y: number }
   | { type: 'mend'; cracks: number }
   | { type: 'spawn'; id: number; kind: Kind; note: number }
   | { type: 'levelUp'; level: number; K: number; newNote: number | null }
   | { type: 'gameOver'; stats: RunStats; hymn: number[] };
-export interface SimInput { strike: number | null }
+export interface SimInput { strike: number | null; miss?: {x: number; y: number} | null }

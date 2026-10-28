@@ -6,7 +6,7 @@ export const PRISM_BLAST_R = 3.5, CHOIR_N = 7, CHOIR_R = 5.0, FLARE_R = 3.6;
 export const MAX_CRACKS = 3, RECOVERY_MS = 150, CRACK_GRACE_MS = 1000;
 export const LEVEL_MS = 20000, SLOW_SPEED_FACTOR = 0.8, MAX_CRYSTALS = 64;
 export const SPAWN_FADE_MS = 350, PRISM_CYCLE_MS = 1000, SPLITTER_PUSH_MS = 400, SPLITTER_PUSH_DISTANCE = 1.2, SPLITTER_CHILD_ANGLE = 0.25;
-export const OPENING_SPAWN_MS = 1000, SPAWN_RETRY_MS = 250, SPAWN_COUNT_FACTOR = 0.35;
+export const SPAWN_RETRY_MS = 250, SPAWN_COUNT_FACTOR = 0.35;
 export const SWIRL_MIN = 0.04, SWIRL_MAX = 0.16, SPIRAL_SWIRL = 0.12, SPIRAL_INTERVAL_MS = 300, SPIRAL_ANGLE = 0.45;
 export const FAIRNESS_MS = 2000, FAIRNESS_ANGLE = 0.3, FAIRNESS_R = 8, FAIRNESS_ROTATION = 0.6, FAIRNESS_TRIES = 6;
 export const MEND_COOLDOWN_MS = 30000, RUSHER_SPEED_FACTOR = 1.7, RING_SPEED_FACTOR = 0.8;
@@ -39,10 +39,13 @@ export const KINDS: readonly KindDef[] = [
   { kind: 'geode', fromLevel: 2, chance: 0.08 }, { kind: 'splitter', fromLevel: 4, chance: 0.07 },
   { kind: 'rusher', fromLevel: 5, chance: 0.1 },
 ];
-export const SCORE = { base: 10, shell: 5, close: 20, choirEach: 50, choirFlat: 500, multCap: 8 } as const;
+export const SCORE = { perCrystal: 10, shell: 5, choirEach: 50, choirFlat: 500, multCap: 8 } as const;
 
 export const EVENT_FIRST_MS = [20000, 26000] as const, EVENT_GAP_MS = [20000, 40000] as const, EVENT_WARN_MS = 1000;
 export const ATTRACT_FIRST_EVENT_MS = 4000, ATTRACT_EVENT_GAP_MS = [9000, 14000] as const, ATTRACT_LEVEL = 3, ATTRACT_K = 5, ATTRACT_RHO = 6;
 export const GOLDEN_FROM_LEVEL = 1, GOLDEN_SPEED = 0.8, GOLDEN_SWIRL = 0.08, GOLDEN_POINTS = 250, GOLDEN_SHARDS = 5;
 export const CHORD_FROM_LEVEL = 2, CHORD_COUNT = 7, CHORD_ARC = 1.5, CHORD_SPEED = 0.75, CHORD_CAP_SLACK = 3;
 export const EVENT_RETRY_MS = 250, EVENT_GIVE_UP_MS = 6000, EVENT_WEIGHTS = { golden: 3, chord: 2 } as const, EVENT_SEED_SALT = 0x5eede7e7;
+
+export const TAP_HIT = { minPx: 48, scale: 1.25, tieEps: 0.02, bellScale: 1.3 } as const;
+export const TAP_OPENING = { crownAtMs: 300, crownCount: 8, crownRho: 7.0, crownSpeed: 0.35, crownSwirl: 0.10, followAtMs: 3000, followCount: 5, followArc: 1.0, followSpeedFactor: 0.85, followCapSlack: 5, spawnerStartMs: 5000 } as const;

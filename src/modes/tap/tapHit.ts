@@ -1,7 +1,8 @@
-export interface TapCandidate { id:number; note:number; sx:number; sy:number }
-/** R1 uses a fixed 48 CSS pixel radius. */
-export function nearestCrystal(candidates: readonly TapCandidate[], x:number, y:number): TapCandidate | null {
- let winner:TapCandidate|null=null, distance=48;
- for(const candidate of candidates){const d=Math.hypot(candidate.sx-x,candidate.sy-y);if(d<=distance){distance=d;winner=candidate;}}
- return winner;
+import { TAP_HIT } from '../../sim/config';
+export interface TapCandidate { id:number; note:number; sx:number; sy:number; visPx:number; rho:number }
+export function pickCrystal(cands: readonly TapCandidate[], x:number, y:number, groupCount:(note:number)=>number): number | null {
+ let winner: TapCandidate | null = null, best = Infinity;
+ for (const c of cands) { const hit = Math.max(TAP_HIT.minPx,TAP_HIT.scale*c.visPx), distance = Math.hypot(c.sx-x,c.sy-y); if (distance > hit) continue; const d = distance/hit;
+  if (!winner || d < best-TAP_HIT.tieEps || (Math.abs(d-best)<=TAP_HIT.tieEps && (groupCount(c.note)>groupCount(winner.note) || (groupCount(c.note)===groupCount(winner.note) && (c.rho<winner.rho || (c.rho===winner.rho && c.id<winner.id)))))) {winner=c;best=d;}
+ } return winner?.id ?? null;
 }

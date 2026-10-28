@@ -1,5 +1,5 @@
 import { Rng } from '../core/rng';
-import { CRYSTAL_R, FAIRNESS_ANGLE, FAIRNESS_MS, FAIRNESS_R, FAIRNESS_ROTATION, FAIRNESS_TRIES, FORMATIONS, GEODE_R, KINDS, MAX_CRYSTALS, MEND_COOLDOWN_MS, OPENING_SPAWN_MS, PRISM_CYCLE_MS, RING_SPEED_FACTOR, RUSHER_R, RUSHER_SPEED_FACTOR, SPAWN_COUNT_FACTOR, SPAWN_R, SPAWN_RETRY_MS, SPIRAL_ANGLE, SPIRAL_INTERVAL_MS, SPIRAL_SWIRL, SPLITTER_PUSH_MS, SWIRL_MAX, SWIRL_MIN, levelRow } from './config';
+import { CRYSTAL_R, FAIRNESS_ANGLE, FAIRNESS_MS, FAIRNESS_R, FAIRNESS_ROTATION, FAIRNESS_TRIES, FORMATIONS, GEODE_R, KINDS, MAX_CRYSTALS, MEND_COOLDOWN_MS, PRISM_CYCLE_MS, RING_SPEED_FACTOR, RUSHER_R, RUSHER_SPEED_FACTOR, SPAWN_COUNT_FACTOR, SPAWN_R, SPAWN_RETRY_MS, SPIRAL_ANGLE, SPIRAL_INTERVAL_MS, SPIRAL_SWIRL, SPLITTER_PUSH_MS, SWIRL_MAX, SWIRL_MIN, levelRow } from './config';
 import { ATTRACT_LEVEL, ATTRACT_FIRST_EVENT_MS, ATTRACT_EVENT_GAP_MS, EVENT_FIRST_MS, EVENT_GAP_MS, EVENT_WARN_MS, EVENT_RETRY_MS, EVENT_GIVE_UP_MS, EVENT_SEED_SALT, EVENT_WEIGHTS, GOLDEN_FROM_LEVEL, GOLDEN_SPEED, GOLDEN_SWIRL, CHORD_FROM_LEVEL, CHORD_COUNT, CHORD_ARC, CHORD_SPEED, CHORD_CAP_SLACK } from './config';
 import type { Crystal, Kind, RunMode, SimEvent, SimState } from './types';
 
@@ -8,8 +8,8 @@ function effectiveLevel(state: SimState): number { return state.mode === 'attrac
 type Formation = typeof FORMATIONS[number]['id'];
 interface Pending { note: number; theta: number; delay: number }
 export class Spawner {
-  private timer = OPENING_SPAWN_MS;
-  private opening = true;
+  private timer = 0;
+
   private bag: number[] = [];
   private bagK = 0;
   private pending: Pending[] = [];
@@ -20,26 +20,30 @@ export class Spawner {
   private pendingEvent: { kind: 'golden' | 'chord'; note: number; theta: number } | null = null;
   private lastEvent: 'golden' | 'chord' = 'golden';
   private retryElapsed = 0;
+  private beginnerEventSet = false;
+  private beginnerChordDone = false;
   constructor(private readonly rng: Rng, seed = 0, mode: RunMode = 'run') {
     this.eventRng = new Rng((seed ^ EVENT_SEED_SALT) >>> 0);
     this.eventTimer = mode === 'attract' ? ATTRACT_FIRST_EVENT_MS : this.eventRng.range(...EVENT_FIRST_MS);
   }
   updateEvents(state: SimState, dt: number, events: SimEvent[]): void {
+    if (state.profile === 'beginner' && !this.beginnerEventSet) { this.eventTimer = 15000; this.beginnerEventSet = true; }
     this.eventTimer -= dt;
     const level = effectiveLevel(state), row = levelRow(level);
     if (!this.pendingEvent && this.eventTimer <= EVENT_WARN_MS) {
-      if (level < GOLDEN_FROM_LEVEL && state.elapsedMs + this.eventTimer < 20000 - 1e-7) { this.eventTimer = this.eventRng.range(...EVENT_GAP_MS); return; }
-      const kind = state.mode === 'attract' ? (this.lastEvent === 'golden' ? 'chord' : 'golden') : level < CHORD_FROM_LEVEL || this.lastEvent === 'chord' ? 'golden' : this.eventRng.weighted([{ item: 'golden' as const, w: EVENT_WEIGHTS.golden }, { item: 'chord' as const, w: EVENT_WEIGHTS.chord }]);
+      if (!(state.profile === 'beginner' && !this.beginnerChordDone) && level < GOLDEN_FROM_LEVEL && state.elapsedMs + this.eventTimer < 20000 - 1e-7) { this.eventTimer = this.eventRng.range(...EVENT_GAP_MS); return; }
+      const kind = state.profile === 'beginner' && !this.beginnerChordDone ? 'chord' : state.mode === 'attract' ? (this.lastEvent === 'golden' ? 'chord' : 'golden') : level < CHORD_FROM_LEVEL || this.lastEvent === 'chord' ? 'golden' : this.eventRng.weighted([{ item: 'golden' as const, w: EVENT_WEIGHTS.golden }, { item: 'chord' as const, w: EVENT_WEIGHTS.chord }]);
       this.pendingEvent = { kind, note: this.eventRng.int(state.K), theta: this.eventRng.range(0, Math.PI * 2) };
       events.push({ type: 'eventWarn', ...this.pendingEvent });
     }
     if (!this.pendingEvent || this.eventTimer > 1e-7) return;
     const { kind, note } = this.pendingEvent, count = kind === 'chord' ? CHORD_COUNT : 1;
-    const cap = row.fieldCap + (kind === 'chord' ? CHORD_CAP_SLACK : 1);
+    const firstBeginnerChord = state.profile === 'beginner' && !this.beginnerChordDone && kind === 'chord';
+    const cap = firstBeginnerChord ? MAX_CRYSTALS : row.fieldCap + (kind === 'chord' ? CHORD_CAP_SLACK : 1);
     let theta = this.pendingEvent.theta, tries = 0;
     const blocked = () => { for (let i = 0; i < count; i++) if (this.blocked(state, theta + (count === 1 ? 0 : (i / (count - 1) - 0.5) * CHORD_ARC))) return true; return false; };
     while (blocked() && tries++ < FAIRNESS_TRIES) theta += FAIRNESS_ROTATION;
-    if (aliveCount(state) + count > cap || blocked()) {
+    if (aliveCount(state) + count > cap || (!firstBeginnerChord && blocked())) {
       this.retryElapsed += EVENT_RETRY_MS;
       if (this.retryElapsed < EVENT_GIVE_UP_MS) { this.eventTimer = EVENT_RETRY_MS; return; }
     } else {
@@ -50,6 +54,7 @@ export class Spawner {
       }
       if (kind === 'chord') events.push({ type: 'chordWave', note, theta, ids });
     }
+    this.beginnerChordDone = true;
     this.lastEvent = kind; this.pendingEvent = null; this.retryElapsed = 0;
     this.eventTimer = state.mode === 'attract' ? this.eventRng.range(...ATTRACT_EVENT_GAP_MS) : this.eventRng.range(...EVENT_GAP_MS);
   }
@@ -89,7 +94,7 @@ export class Spawner {
     if (this.timer > 1e-7) return;
     const row = levelRow(effectiveLevel(state));
     const unlocked = FORMATIONS.filter(f => f.fromLevel <= effectiveLevel(state));
-    const formation: Formation = this.opening ? 'ring' : this.rng.weighted(unlocked.map(f => ({ item: f.id, w: f.weight })));
+    const formation: Formation = state.profile === 'beginner' && effectiveLevel(state) < 2 ? this.rng.weighted([{item:'single' as const,w:1},{item:'pair' as const,w:4},{item:'arc' as const,w:4}]) : this.rng.weighted(unlocked.map(f => ({ item: f.id, w: f.weight }))); 
     const count = formation === 'single' ? 1 : formation === 'pair' ? 2 : formation === 'arc' ? Math.min(5, 3 + Math.floor(effectiveLevel(state) / 3)) : formation === 'duet' ? 4 : formation === 'spiral' ? state.K : 6;
     if (aliveCount(state) + this.pending.length + count > Math.min(row.fieldCap, MAX_CRYSTALS)) { this.timer = SPAWN_RETRY_MS; return; }
     let theta = this.rng.range(0, Math.PI * 2);
@@ -106,12 +111,10 @@ export class Spawner {
       const note = formation === 'spiral' ? (first + i) % state.K : formation === 'ring' && i > 0 ? this.drawTone(state.K) : formation === 'duet' && i % 2 ? second : first;
       if (formation === 'spiral' && i > 0) { this.pending.push({ note, theta: theta + offsets[i]!, delay: i * SPIRAL_INTERVAL_MS }); continue; }
       const kind = formation === 'spiral' || formation === 'ring' ? 'normal' : this.kind(state);
-      const speed = row.speed * (formation === 'ring' ? RING_SPEED_FACTOR : kind === 'rusher' ? RUSHER_SPEED_FACTOR : 1);
+      const speed = row.speed * (state.profile === 'beginner' ? 0.85 : 1) * (formation === 'ring' ? RING_SPEED_FACTOR : kind === 'rusher' ? RUSHER_SPEED_FACTOR : 1);
       this.spawn(state, note, theta + offsets[i]!, kind, speed, swirl, events);
     }
-    const wasOpening = this.opening;
-    this.opening = false;
     const fillFast = aliveCount(state) < Math.min(row.fieldCap, 8);
-    this.timer = (wasOpening || fillFast) ? Math.min(500, row.spawnInterval * 1000 * 0.4) : row.spawnInterval * 1000 * (1 + SPAWN_COUNT_FACTOR * (count - 1));
+    this.timer = fillFast ? Math.min(500, row.spawnInterval * 1000 * 0.4) : row.spawnInterval * 1000 * (1 + SPAWN_COUNT_FACTOR * (count - 1));
   }
 }

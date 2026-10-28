@@ -58,7 +58,7 @@ export function resolveStrike(state: SimState, note: number, events: SimEvent[],
   state.mult = Math.min(SCORE.multCap, 1 + Math.floor((state.streak - 1) / 2));
   const mult = state.mult;
   const closeCount = shattered.filter(c => c.close).length;
-  let points = (SCORE.base * n * n + SCORE.shell * shellBreaks + SCORE.close * closeCount) * mult;
+  let points = (SCORE.perCrystal * n + SCORE.shell * shellBreaks) * mult;
   const swept: ShatterInfo[] = [];
   if (n >= CHOIR_N) {
     for (const c of state.crystals) {

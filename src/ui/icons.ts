@@ -10,3 +10,5 @@ export const dailyIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M
 export const missionsIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>`;
 export const collectionIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12l4 6-10 12L2 9z M2 9h20 M12 21 8 9l4-6 4 6z"/></svg>`;
 export const settingsIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`;
+
+export const handIcon = `<svg viewBox="0 0 24 24" fill="rgba(255,255,255,.18)" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V4.5a1.5 1.5 0 0 1 3 0V10m0-1.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v4.5c0 3.6-2.7 6.5-6.2 6.5h-.6c-2 0-3.5-.9-4.6-2.4L4.4 15a1.6 1.6 0 0 1 2.4-2l2.2 2"/></svg>`;

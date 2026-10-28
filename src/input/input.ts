@@ -2,6 +2,7 @@ import type { SimInput } from "../sim/types";
 
 export class Input {
   private strike: number | null = null;
+  private missPoint: {x:number;y:number}|null = null;
   private enabled = true;
   private first = false;
   private label: HTMLLabelElement | null = null;
@@ -30,8 +31,10 @@ export class Input {
     const note = Number(match[1]) - 1; e.preventDefault(); this.tap(note);
   };
   tap(note: number): void { if (!this.enabled) return; this.strike = note; this.gesture(); }
-  consume(): SimInput { const result = { strike: this.strike }; this.strike = null; return result; }
+  injectStrike(note:number):void {if(this.enabled)this.strike=note;}
+  miss(x:number,y:number):void {if(this.enabled)this.missPoint={x,y};}
+  consume(): SimInput { const result = { strike: this.strike, miss:this.missPoint }; this.strike = null; this.missPoint=null; return result; }
   setEnabled(on: boolean): void { this.enabled = on; if (!on) this.reset(); }
   setVibration(on: boolean): void { if (this.label) { if (on) this.label.htmlFor = "hx"; else this.label.removeAttribute("for"); } }
-  reset(): void { this.strike = null; }
+  reset(): void { this.strike = null; this.missPoint=null; }
 }

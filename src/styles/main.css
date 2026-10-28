@@ -171,7 +171,9 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid 
 .title-screen { display:flex; flex-direction:column; }
 .title-screen h1 { font-size:clamp(22px, min(8vw, 6dvh), 48px); }
 .title-screen .tagline { color:#f4f1ff; font:600 18px Inter,sans-serif; }
-.title-screen .settings-chip { position:absolute; right:0; top:0; width:44px; height:44px; min-height:44px; padding:8px; }
+.title-top { display:grid; grid-template-columns:minmax(0,1fr) 44px; align-items:center; gap:8px; }
+.title-screen .title-top h1 { min-width:0; font-size:clamp(12px, min(6vw, 6dvh), 48px); }
+.title-screen .settings-chip { position:static; width:44px; height:44px; min-height:44px; padding:8px; }
 .title-screen .settings-chip svg { width:26px; height:26px; }
 .title-buttons { width:min(100%, 440px); }
 .mode-cards { display:grid; gap:12px; }
@@ -193,3 +195,5 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid 
 .mode-art { animation:mode-art-float 3s ease-in-out infinite; }
 .mode-play.highlight { animation:mode-focus-pulse 1.2s ease-in-out infinite; }
 @media (prefers-reduced-motion:reduce) { .mode-art,.mode-play.highlight { animation:none; } }
+
+.demo { position:fixed; inset:0; pointer-events:none; z-index:8; } .demo-line { position:absolute; top:22%; left:50%; transform:translateX(-50%); white-space:nowrap; color:#f4f1ff; font:600 clamp(18px,5vw,26px) Inter,sans-serif; text-shadow:0 2px 12px #05040c; } .demo-hand { position:fixed; width:64px; height:64px; opacity:.85; filter:drop-shadow(0 3px 8px #05040c); animation:demo-tap 1.1s infinite; } .demo-hand svg { width:100%; height:100%; } @keyframes demo-tap { 0%,45%,100% { transform:scale(1); } 23% { transform:scale(.85); } } @media (prefers-reduced-motion:reduce) { .demo-hand { animation:none; } }

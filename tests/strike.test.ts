@@ -11,10 +11,13 @@ function strike(s: ReturnType<typeof state>, note = 0) {
 describe('strike', () => {
   it('scores matching crystals and leaves other notes alive', () => {
     const s = state([crystal(1), crystal(2), crystal(3), crystal(4, 1)]); const r = strike(s);
-    expect(r.hit).toMatchObject({ n: 3, points: 90, mult: 1 }); expect(s.crystals[3]!.alive).toBe(true);
+    expect(r.hit).toMatchObject({ n: 3, points: 30, mult: 1 }); expect(s.crystals[3]!.alive).toBe(true);
   });
   it('ignores an empty strike', () => { const s=state(); s.streak=5; s.mult=3; expect(strike(s).events).toEqual([]); expect(s.streak).toBe(5); });
-  it('follows the multiplier ladder', () => {
+  it('scores two pairs and a group of four equally, and applies the multiplier', () => {
+    const s=state([crystal(1),crystal(2)]);expect(strike(s).hit).toMatchObject({points:20});s.crystals=[crystal(3),crystal(4)];expect(strike(s).hit).toMatchObject({points:20});const other=state([crystal(1),crystal(2),crystal(3),crystal(4)]);expect(strike(other).hit).toMatchObject({points:40});other.streak=3;other.crystals=[crystal(1),crystal(2),crystal(3)];expect(strike(other).hit).toMatchObject({points:60,mult:2});
+  });
+  it('follows the multiplier ladder' , () => {
     const s = state(); const mults = [];
     for (let i = 0; i < 16; i++) { s.crystals = [crystal(i)]; strike(s); mults.push(s.mult); }
     expect(mults).toEqual([1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8]);
@@ -30,14 +33,14 @@ describe('strike', () => {
     const s = state([p, crystal(2, 2, 6), crystal(3, 2, 7), crystal(4, 0, 8), crystal(5, 0, -8)]);
     expect(strike(s, 2).hit).toMatchObject({ n: 4 }); expect(s.crystals[4]!.alive).toBe(true);
   });
-  it('awards close calls', () => {
+  it('records close calls without extra points', () => {
     const c = crystal(1, 0, HALO_R + 0.55 + 1); const s = state([c]);
-    expect(strike(s).hit).toMatchObject({ n: 1, closeCount: 1, points: 30 });
+    expect(strike(s).hit).toMatchObject({ n: 1, closeCount: 1, points: 10 });
   });
   it('sweeps nearby survivors in a choir', () => {
     const cs = Array.from({ length: 7 }, (_, i) => crystal(i, 0, 6));
     cs.push(crystal(7, 1, CHOIR_R), crystal(8, 1, 4), crystal(9, 1, 8)); const s = state(cs); const r = strike(s);
-    expect(r.hit).toMatchObject({ n: 7, points: 1090 });
+    expect(r.hit).toMatchObject({ n: 7, points: 670 });
     expect(r.events.find(e => e.type === 'choir')).toMatchObject({ swept: [expect.anything(), expect.anything()] });
     expect(cs[9]!.alive).toBe(true);
   });

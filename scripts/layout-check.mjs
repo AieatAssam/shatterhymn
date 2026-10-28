@@ -135,8 +135,14 @@ function audit() {
   return { W, H, count: cands.length, problems };
 }
 
-const SCREENS = (opt("--screens") || "title,settings,missions,collection,credits,howto,daily,pause,results").split(",");
+const SCREENS = (opt("--screens") || "title,settings,missions,collection,credits,howto,daily,pause,results,intro").split(",");
 async function openScreen(page, name) {
+  if (name === "intro") {
+    await page.goto(base, { waitUntil: "load" });
+    await page.evaluate(() => localStorage.removeItem("shatterhymn:save"));
+    await page.goto(base + "&intro=hold", { waitUntil: "load" });
+    await page.waitForTimeout(1500); return;
+  }
   const tut = name === "howto";
   await page.goto(base, { waitUntil: "load" });
   await page.evaluate((s) => localStorage.setItem("shatterhymn:save", JSON.stringify(s)), save(true));
@@ -148,7 +154,7 @@ async function openScreen(page, name) {
   if (name === "missions") await click(".title-screen .missions-chip");
   if (name === "collection") await click('.title-screen button[aria-label="Collection"]');
   if (name === "credits") { await click('.title-screen button[aria-label="Settings"]'); await click('.screen-panel button:has-text("Credits")'); }
-  if (tut) { await click('.title-screen button[aria-label="Settings"]'); await click('.screen-panel button:has-text("How to play")'); await page.waitForTimeout(1500); }
+  if (tut) { await click('.title-screen button[aria-label="Settings"]'); await click('.screen-panel button:has-text("How to play Tap")'); await page.waitForTimeout(1500); }
   if (name === "daily" || name === "pause") { await click(".title-screen .daily"); await page.waitForTimeout(2500); }
   if (name === "pause") { await click(".pause-button"); await page.waitForTimeout(400); }
   if (name === "results") {

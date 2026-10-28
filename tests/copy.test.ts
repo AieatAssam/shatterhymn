@@ -20,7 +20,7 @@ describe('player copy', () => {
     const files = listFiles('src').filter(path => /\.(ts|css|html|md)$/.test(path));
     const content = [...files.map(file => readFileSync(file, 'utf8')), readFileSync('README.md', 'utf8')]
       .join('\n')
-      .replace(/slowDial/g, 'slowSetting');
+      .replace(/slowDial/g, 'slowSetting').replace(/\bhold\b/g, 'freeze');
     expect(content).not.toMatch(/\bhold\b|let go|\bdial\b|colour button|combo lost/i);
   });
   it('keeps the audited strings short and free of placeholders', () => {

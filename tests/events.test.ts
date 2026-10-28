@@ -27,5 +27,5 @@ describe('variety events', () => {
     for (let i = 0; i < 360; i++) { for (const c of sim.state.crystals) c.alive = false; for (const e of sim.step(idle)) if (e.type === 'chordWave') wave = e; }
     expect(wave?.ids).toHaveLength(7); expect(sim.state.K).toBe(5); expect(sim.state.level).toBe(0); expect(sim.state.elapsedMs).toBe(0);
   });
-  it('does not run in tutorial', () => { const sim = new Sim({ seed: 1, mode: 'tutorial', slowDial: false }); for (let i = 0; i < 1800; i++) expect(sim.step(idle).some(e => e.type === 'eventWarn')).toBe(false); });
+  it('does not run in tutorial', () => { const sim = new Sim({ seed: 1, mode: 'intro', slowDial: false }); for (let i = 0; i < 1800; i++) expect(sim.step(idle).some(e => e.type === 'eventWarn')).toBe(false); });
 });

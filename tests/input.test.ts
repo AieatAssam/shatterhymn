@@ -3,9 +3,9 @@ import { Input } from "../src/input/input";
 class Surface extends EventTarget { dispatch(type:string,fields:Record<string,unknown>={}):void{const e=new Event(type,{cancelable:true});Object.assign(e,fields);this.dispatchEvent(e);} }
 function setup(){const surface=new Surface();const input=new Input(surface as unknown as HTMLElement,{onFirstGesture:()=>{},iosSwitch:false});return {surface,input};}
 describe("direct input",()=>{
- it("keeps the latest tap in the frame",()=>{const {input}=setup();input.tap(0);input.tap(2);expect(input.consume()).toEqual({strike:2});expect(input.consume()).toEqual({strike:null});});
- it("resets the queued tap when disabled",()=>{const {input}=setup();input.tap(1);input.setEnabled(false);expect(input.consume()).toEqual({strike:null});input.setEnabled(true);input.tap(0);expect(input.consume()).toEqual({strike:0});});
- it("ignores Space and letter keys, supports digits, and ignores repeats",()=>{const {surface,input}=setup();surface.dispatch("keydown",{code:"Space",repeat:false});surface.dispatch("keydown",{code:"KeyA",repeat:false});expect(input.consume()).toEqual({strike:null});surface.dispatch("keydown",{code:"Digit2",repeat:false});expect(input.consume()).toEqual({strike:1});surface.dispatch("keydown",{code:"Numpad3",repeat:true});expect(input.consume()).toEqual({strike:null});});
+ it("keeps the latest tap in the frame",()=>{const {input}=setup();input.tap(0);input.tap(2);expect(input.consume()).toEqual({strike:2,miss:null});expect(input.consume()).toEqual({strike:null,miss:null});});
+ it("resets the queued tap when disabled",()=>{const {input}=setup();input.tap(1);input.setEnabled(false);expect(input.consume()).toEqual({strike:null,miss:null});input.setEnabled(true);input.tap(0);expect(input.consume()).toEqual({strike:0,miss:null});});
+ it("ignores Space and letter keys, supports digits, and ignores repeats",()=>{const {surface,input}=setup();surface.dispatch("keydown",{code:"Space",repeat:false});surface.dispatch("keydown",{code:"KeyA",repeat:false});expect(input.consume()).toEqual({strike:null,miss:null});surface.dispatch("keydown",{code:"Digit2",repeat:false});expect(input.consume()).toEqual({strike:1,miss:null});surface.dispatch("keydown",{code:"Numpad3",repeat:true});expect(input.consume()).toEqual({strike:null,miss:null});});
 });
 
 it("creates the iOS switch and follows vibration settings", () => {
