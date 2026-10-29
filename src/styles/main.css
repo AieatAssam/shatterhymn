@@ -219,3 +219,5 @@ body.reduce-motion .demo[data-mode=slice] .demo-hand { animation:demo-fade 1.4s 
 
 .combo-dot { display:inline-block; width:8px; height:8px; border-radius:50%; vertical-align:middle; }
 @media (max-height:499px) and (max-width:419px) { .title-screen .mode-play { flex-direction:column; align-items:center; text-align:center; gap:4px; min-height:0; padding:8px 6px; } .mode-copy { min-width:0; justify-items:center; } .mode-name { font-size:24px; } .mode-how { font-size:13px; overflow-wrap:normal; } .mode-best { font-size:13px; } .mode-play .mode-art { width:64px; height:38px; } }
+
+.title-screen.intro-arrival .mode-card { pointer-events: none; }
