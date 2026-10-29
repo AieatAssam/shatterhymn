@@ -15,8 +15,8 @@ Tap or slice glowing crystals and keep the singing bell safe. Shatterhymn is a f
 </p>
 
 <p align="center">
-  <img src="docs/media/cutface.gif" alt="Slice cut faces glow and cool, slowed down 4x" width="220" /><br/>
-  <sub>Cut halves show a glowing cut face (slowed down 4x)</sub>
+  <img src="docs/media/cutface.gif" alt="A Slice cut at real speed" width="220" /><br/>
+  <sub>A Slice cut at real speed: bright trail, glowing halves, colour splash</sub>
 </p>
 
 ## Play now
@@ -27,7 +27,7 @@ Tap or slice glowing crystals and keep the singing bell safe. Shatterhymn is a f
 
 **Tap:** Tap a crystal. Every crystal of that colour smashes too. Keep crystals away from the bell. The bell has a face and reacts as you play.
 
-**Slice:** Swipe fast through crystals as they fly up. Slice the same colour in one swipe for a combo. Don't hit dark crystals, and don't let crystals fall. A slow drag does not cut: the blade cuts only above 1.4 screen-heights per second. Each cutting burst stops after 350 ms, 1.5 screen-heights or 6 cuts.
+**Slice:** Swipe fast through crystals as they fly up. Slice several in one swipe for "Nice!", "Great!" and "Amazing!" bonuses. Watch for fans, crossing pairs, lobs and crystal rain, big crystals that take three hits, and a Crystal Rush with double points at 30 seconds. Don't hit dark crystals, and don't let crystals fall. A slow drag does not cut: the blade cuts only above about 2.4 short screen sides per second (about 940 px/s on a phone). One swipe cuts at most 6 crystals; lift your finger to slice again.
 
 Each mode has its own best score and Daily game. The short intro on first launch can be skipped with any tap, click or key.
 
