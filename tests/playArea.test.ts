@@ -1,0 +1,5 @@
+import { expect, it } from 'vitest';
+import { playArea, pokeTarget, toScreen, toWorld } from '../src/modes/slice/playArea';
+it('contains the fixed world and maps coordinates in both directions',()=>{const a=playArea(1000,600,.5);expect(a).toEqual({left:350,top:0,width:300,height:600,bottom:600});const p=toScreen(a,.2,.7);expect(toWorld(a,p.sx,p.sy)).toEqual({x:.2,y:.7});});
+it('normalises physical swipe distance by height',()=>{const a=playArea(390,844,390/844),b=playArea(390,667,390/667);expect((toWorld(a,100,100).x-toWorld(a,0,100).x)/(toWorld(b,100,100).x-toWorld(b,0,100).x)).toBeCloseTo(667/844);});
+it('reports only short taps on a living normal crystal as visual pokes',()=>{const crystals=[{id:1,alive:true,kind:'normal' as const,x:.5,y:.5,hitR:.062},{id:2,alive:true,kind:'dark' as const,x:.8,y:.5,hitR:.04}];expect(pokeTarget(crystals,.5,.5,.01,10)).toBe(1);expect(pokeTarget(crystals,.8,.5,.01,10)).toBeNull();expect(pokeTarget(crystals,.5,.5,.03,10)).toBeNull();expect(pokeTarget(crystals,.5,.5,.01,251)).toBeNull();});

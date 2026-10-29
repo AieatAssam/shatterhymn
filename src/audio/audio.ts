@@ -1,12 +1,11 @@
-import { EventBus, type GameEvent } from "../core/events";
-import type { SimEvent } from "../sim/types";
+import { EventBus, type GameBusEvent } from "../core/events";
 import { playBell, type Voice } from "./bellSynth";
 import { MusicEngine } from "./music";
 import { Samples, type Family } from "./samples";
 import { chordDegrees, noteHz, type ScaleId } from "./scales";
 export class AudioEngine {
  private ctx: AudioContext | null = null; private sfx: GainNode | null = null; private musicBus: GainNode | null = null; private duckGain: GainNode | null = null; private ready = false; private unlocking: Promise<void> | null = null; private scale: ScaleId = "bright"; private sfxVolume = 80; private musicVolume = 60; private readonly samples = new Samples(); private voices: Voice[] = []; readonly music = new MusicEngine();
- constructor(bus: EventBus<GameEvent | SimEvent>, private readonly baseUrl: string) {
+ constructor(bus: EventBus<GameBusEvent>, private readonly baseUrl: string) {
   bus.on("strike", e => { this.playStrike(e.note); if (e.n > 0) this.playShatter(e.note, e.n); });
   bus.on("miss", () => this.sample("ui-back", .3)); bus.on("shellBreak", () => this.sample("glass-light", 1, .7)); bus.on("choir", e => { this.playChoir(e.note); this.duck(-9, 60, 300, 1000); }); bus.on("crack", () => { this.playCrack(); this.duck(-6, 30, 150, 600); }); bus.on("mend", () => this.playMend()); bus.on("gameOver", () => { this.playGameOver(); this.music.slowDown(); }); bus.on("levelUp", e => this.music.setLevel(e.level)); bus.on("unlock", () => this.playUnlock()); bus.on("ui", e => this.playUi(e.sound)); bus.on("newBestLive", () => this.playNewBest(.4)); bus.on("settings", e => this.setVolumes(e.settings.sfx, e.settings.music)); bus.on("runStart", e => { this.music.setTitle(e.mode === "attract"); this.music.setLevel(0); this.music.restart(); });
  }

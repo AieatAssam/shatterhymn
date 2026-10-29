@@ -1,3 +1,8 @@
+import type { SimEvent } from '../sim/types';
+import type { SliceEvent } from '../sim/sliceTypes';
+
+export type GameBusEvent = GameEvent | SimEvent | (SliceEvent & { mode: 'slice' });
+
 export type GameEvent =
   | { type: 'newBestLive'; score: number }
   | { type: 'missionComplete'; id: string }
