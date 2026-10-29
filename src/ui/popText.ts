@@ -3,10 +3,15 @@ import type { SimEvent } from '../sim/types';
 import { placeFloaters } from '../game/floaters';
 import { FINISH, SLICE_FX } from '../render/fxConfig';
 import { colors } from './icons';
+import { playArea } from '../modes/slice/playArea';
 export function popLines(n:number,points:number,mult:number):{main:string;mult:string;sub:string;hint:string}{return {main:`+${points}`,mult:mult>1?`×${mult}`:'',sub:n>=2&&n<7?`${n} at once!`:'',hint:n===5?'2 more for a Choir':n===6?'1 more for a Choir':''};}
 export function popSize(n:number):number{return n>=2?40:32;}
 export function swipeCallout(cuts:number,bonus:number):{main:string;sub:string;size:number}|null {if(cuts<3)return null;return {main:cuts===3?'Nice!':cuts===4?'Great!':cuts===5?'Amazing!':'Incredible!',sub:`${cuts} in one swipe! +${bonus}`,size:cuts===3?34:cuts===4?40:cuts===5?46:52};}
-export function slicePopY(y:number,height:number,safeTop:number):number {return Math.max(Math.max(64,.09*height)+safeTop+40,Math.min(height*(1-(SLICE_FX.bellY+.10)),y));}
+export function slicePopY(y:number,width:number,height:number,safeTop:number,labelHeight:number):number {
+ const area=playArea(width,height,Math.max(.45,Math.min(2.4,width/height)));
+ const top=Math.max(64,.09*height)+safeTop,bottom=area.bottom-area.height*(SLICE_FX.bellY+.10)-12;
+ return Math.max(top,Math.min(bottom-labelHeight,y));
+}
 export function sliceCutText(points:number):string {return `+${points}`;}
 export function sliceSwipeScale(age:number):number {if(age>=180)return 1;const t=Math.max(0,age)/180;return 1+.4*Math.exp(-6*t)*Math.cos(8*t);}
 interface Label {el:HTMLElement;main:HTMLElement;mult:HTMLElement;sub:HTMLElement;hint:HTMLElement;x:number;y:number;age:number;life:number;sign:number;order:number;close:boolean;multValue:number;sliceKind:''|'cut'|'swipe';screenX:number;screenY:number}
@@ -27,7 +32,7 @@ export class PopText {
 
  update(dt:number,currentMult?:number):void{
   if(currentMult !== undefined) for(const l of this.labels) if(!l.sliceKind && l.el.classList.contains("points") && l.multValue !== currentMult){l.age=l.life;l.el.style.opacity="0";}
-  const slice=this.labels.filter(l=>l.sliceKind&&l.age<l.life);for(const l of slice){const bounds=l.el.getBoundingClientRect(),safeTop=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-top'))||0;const x=Math.max(12,Math.min(window.innerWidth-12-bounds.width,l.screenX-bounds.width/2));const y=slicePopY(l.screenY,window.innerHeight,safeTop)-bounds.height/2-(this.reduced||l.sliceKind==='swipe'?0:30*l.age/l.life);const scale=this.reduced||l.sliceKind==='cut'?1:sliceSwipeScale(l.age);l.el.style.transform=`translate3d(${x}px,${y}px,0) scale(${scale})`;l.el.style.opacity=String(Math.min(1,(l.life-l.age)/(l.sliceKind==='cut'?200:250)));l.age=Math.min(l.life,l.age+dt);if(l.age>=l.life)l.el.style.opacity='0';}
+  const slice=this.labels.filter(l=>l.sliceKind&&l.age<l.life);for(const l of slice){const width=l.el.offsetWidth,height=l.el.offsetHeight,safeTop=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-top'))||0;const scale=this.reduced||l.sliceKind==='cut'?1:sliceSwipeScale(l.age);const x=Math.max(12,Math.min(window.innerWidth-12-width*scale,l.screenX-width*scale/2));const y=slicePopY(l.screenY-height*scale/2-(this.reduced||l.sliceKind==='swipe'?0:30*l.age/l.life),window.innerWidth,window.innerHeight,safeTop,height*scale);l.el.style.transform=`translate3d(${x}px,${y}px,0) scale(${scale})`;l.el.style.opacity=String(Math.min(1,(l.life-l.age)/(l.sliceKind==='cut'?200:250)));l.age=Math.min(l.life,l.age+dt);if(l.age>=l.life)l.el.style.opacity='0';}
   const active=this.labels.filter(l=>!l.sliceKind&&l.age<l.life).sort((a,b)=>a.order-b.order);
   const rects=active.map(l=>{const p=this.project(l.x,l.y),t=l.age/l.life; if(l.el.classList.contains("penalty")){p.sx=window.innerWidth/2;p.sy=window.innerHeight*.22;} else if(l.el.classList.contains("points")){p.sx=window.innerWidth/2;p.sy=window.innerHeight*.68;} const bounds=l.el.getBoundingClientRect(),width=bounds.width,height=bounds.height;return {x:p.sx-width/2,y:l.el.classList.contains("points")?p.sy-height/2:p.sy-height/2-(l.close?FINISH.closeOffset:0)-(this.reduced?0:56)*t,width,height};});
   const rootStyle=getComputedStyle(document.documentElement);const inset=(name:string):number=>parseFloat(rootStyle.getPropertyValue(name))||0;const placed=placeFloaters(rects,{left:inset('--safe-left')+FINISH.floaterGap,top:inset('--safe-top')+FINISH.floaterGap,right:window.innerWidth-inset('--safe-right')-FINISH.floaterGap,bottom:window.innerHeight-inset('--safe-bottom')-FINISH.floaterGap});
