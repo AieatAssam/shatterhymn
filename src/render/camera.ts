@@ -11,3 +11,5 @@ export function fitCamera(camera: PerspectiveCamera, aspect: number): void {
   camera.position.set(0, -distance * Math.sin(tilt), distance * Math.cos(tilt));
   camera.up.set(0, 1, 0); camera.lookAt(0, 0, 0); camera.updateProjectionMatrix();
 }
+
+export function fitSliceCamera(camera:PerspectiveCamera, aspect:number, areaFraction=1):void { camera.aspect=aspect;camera.fov=30;camera.position.set(0,0,5/Math.tan(Math.PI/12)/areaFraction);camera.up.set(0,1,0);camera.lookAt(0,0,0);camera.clearViewOffset();camera.updateProjectionMatrix(); }

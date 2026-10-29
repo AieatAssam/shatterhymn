@@ -135,7 +135,7 @@ function audit() {
   return { W, H, count: cands.length, problems };
 }
 
-const SCREENS = (opt("--screens") || "title,settings,missions,collection,credits,howto,daily,pause,results,intro").split(",");
+const SCREENS = (opt("--screens") || "title,settings,missions,collection,credits,howto,daily,pause,results,intro,slice,sliceresults").split(",");
 async function openScreen(page, name) {
   if (name === "intro") {
     await page.goto(base, { waitUntil: "load" });
@@ -146,6 +146,12 @@ async function openScreen(page, name) {
   const tut = name === "howto";
   await page.goto(base, { waitUntil: "load" });
   await page.evaluate((s) => localStorage.setItem("shatterhymn:save", JSON.stringify(s)), save(true));
+  if (name === "slice" || name === "sliceresults") {
+    await page.goto(base + "&mode=slice", { waitUntil: "load" });
+    if (name === "slice") await page.waitForTimeout(2500);
+    else { await page.waitForTimeout(1000); await page.evaluate(() => window.__shatterhymnQA.forceGameOver()); await page.waitForSelector('button:has-text("Play again")', { timeout: 120000 }); await page.waitForTimeout(3000); }
+    return;
+  }
   await page.reload({ waitUntil: "load" });
   await page.waitForSelector(".title-screen", { timeout: 20000 });
   // dispatch (not a pointer click) so navigation works even when the layout is broken; the audit reports the overlap

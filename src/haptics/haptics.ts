@@ -1,6 +1,7 @@
-export type HapticId = 'fever' | 'ui' | 'tick' | 'shatter1' | 'shatter2' | 'shatter4' | 'shell' | 'mend' | 'crack' | 'newBest' | 'choir' | 'gameOver';
+export type HapticId = 'slice1' | 'slice2' | 'slice3' | 'slice4' | 'combo' | 'fever' | 'ui' | 'tick' | 'shatter1' | 'shatter2' | 'shatter4' | 'shell' | 'mend' | 'crack' | 'newBest' | 'choir' | 'gameOver';
 
 export const PATTERNS: Record<HapticId, { pattern: number[]; priority: number }> = {
+  slice1:{pattern:[8],priority:4},slice2:{pattern:[10],priority:4},slice3:{pattern:[12],priority:4},slice4:{pattern:[14],priority:4},combo:{pattern:[10,40,14],priority:6},
   shatter1: { pattern: [10], priority: 5 }, shatter2: { pattern: [14], priority: 5 }, shatter4: { pattern: [18], priority: 5 },
   choir: { pattern: [22, 60, 18], priority: 8 }, crack: { pattern: [26], priority: 7 },
   fever: { pattern: [12, 40, 16], priority: 5 }, mend: { pattern: [10, 40, 14], priority: 6 }, shell: { pattern: [8], priority: 5 },
@@ -19,11 +20,11 @@ export class Haptics {
     this.supported = !env.isIOS && typeof env.vibrate === 'function';
     this.iosSwitch = !this.supported && env.isIOS;
   }
-  play(id: HapticId, close = false): void {
+  play(id: HapticId, extraMs = 0): void {
     if (!this.enabled || !this.supported || !this.env.vibrate) return;
     const now = this.env.now(), entry = PATTERNS[id], last = this.last.get(id);
     if ((last !== undefined && now - last < 50) || (now < this.busyUntil && entry.priority < this.priority)) return;
-    const pattern = close ? [entry.pattern[0]! + 4, ...entry.pattern.slice(1)] : entry.pattern;
+    const pattern = extraMs ? [Math.min(30,entry.pattern[0]! + extraMs), ...entry.pattern.slice(1)] : entry.pattern;
     this.env.vibrate(pattern);
     this.last.set(id, now);
     this.priority = entry.priority;
@@ -34,3 +35,5 @@ export class Haptics {
 export function hapticForStrike(n: number): HapticId {
   return n <= 1 ? 'shatter1' : n <= 3 ? 'shatter2' : 'shatter4';
 }
+
+export function hapticForSlice(k:number):HapticId {return k<=1?"slice1":k===2?"slice2":k===3?"slice3":"slice4";}

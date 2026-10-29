@@ -210,4 +210,11 @@ body.reduce-motion .demo-hand { animation:demo-fade 1.1s ease-in-out infinite; }
 body.reduce-motion .intro-arrival .mode-cards, body.reduce-motion .intro-arrival .title-header { animation:none; }
 
 body.intro-held .demo-hand, body.intro-held .demo-ripple { animation-play-state:paused; }
-.slice-board { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; overflow: hidden; filter: drop-shadow(0 0 6px rgba(159,227,255,.6)); }
+.slice-board-unused { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; overflow: hidden; filter: drop-shadow(0 0 6px rgba(159,227,255,.6)); }
+
+.demo[data-mode=slice] .demo-hand { animation: none; }
+@keyframes slice-demo { 0%,15% { transform:translate(-45px,45px); opacity:0; } 20% { opacity:.85; } 42%,100% { transform:translate(45px,-45px); opacity:0; } }
+body.reduce-motion .demo[data-mode=slice] .demo-hand { animation:demo-fade 1.4s infinite; }
+.combo { color:#ffd27a; font-weight:800; }
+
+.combo-dot { display:inline-block; width:8px; height:8px; border-radius:50%; vertical-align:middle; }

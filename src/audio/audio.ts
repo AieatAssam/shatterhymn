@@ -3,9 +3,11 @@ import { playBell, type Voice } from "./bellSynth";
 import { MusicEngine } from "./music";
 import { Samples, type Family } from "./samples";
 import { chordDegrees, noteHz, type ScaleId } from "./scales";
+export function sliceDegree(k:number):number{return Math.min(9,Math.max(0,k-1));}
 export class AudioEngine {
  private ctx: AudioContext | null = null; private sfx: GainNode | null = null; private musicBus: GainNode | null = null; private duckGain: GainNode | null = null; private ready = false; private unlocking: Promise<void> | null = null; private scale: ScaleId = "bright"; private sfxVolume = 80; private musicVolume = 60; private readonly samples = new Samples(); private voices: Voice[] = []; readonly music = new MusicEngine();
  constructor(bus: EventBus<GameBusEvent>, private readonly baseUrl: string) {
+  bus.on('cut',e=>{const degree=sliceDegree(e.k);this.tone(degree,.5,.7);this.sample('glass-light',.8,1+.03*(e.k-1));if(e.chainStep>=2)this.tone(degree,.25,.7,0,1);});bus.on('strokeEnd',e=>{if(e.cuts>=3)this.sample('ui-glass');});bus.on('darkHit',()=>{this.sample('bell-heavy',1,.5);this.sample('glass-heavy',1,.7);this.tone(0,.6,.6,0,-2);});bus.on('fall',e=>{if(!e.cracked)this.sample('ui-back',.3);});
   bus.on("strike", e => { this.playStrike(e.note); if (e.n > 0) this.playShatter(e.note, e.n); });
   bus.on("miss", () => this.sample("ui-back", .3)); bus.on("shellBreak", () => this.sample("glass-light", 1, .7)); bus.on("choir", e => { this.playChoir(e.note); this.duck(-9, 60, 300, 1000); }); bus.on("crack", () => { this.playCrack(); this.duck(-6, 30, 150, 600); }); bus.on("mend", () => this.playMend()); bus.on("gameOver", () => { this.playGameOver(); this.music.slowDown(); }); bus.on("levelUp", e => this.music.setLevel(e.level)); bus.on("unlock", () => this.playUnlock()); bus.on("ui", e => this.playUi(e.sound)); bus.on("newBestLive", () => this.playNewBest(.4)); bus.on("settings", e => this.setVolumes(e.settings.sfx, e.settings.music)); bus.on("runStart", e => { this.music.setTitle(e.mode === "attract"); this.music.setLevel(0); this.music.restart(); });
  }
@@ -18,6 +20,7 @@ export class AudioEngine {
  private tone(note: number, gain: number, decay = 1, offset = 0, octave = 0, lowpass?: number): void { if (this.ready && this.ctx && this.sfx) this.bell(this.sfx, this.noteHz(note, octave), this.ctx.currentTime + .005 + offset, gain, decay, lowpass); }
  private sample(family: Family, gain = 1, rate = 1): void { if (this.ready && this.ctx && this.sfx) this.samples.play(this.ctx, this.sfx, family, this.ctx.currentTime + .005, gain, rate); }
  previewScale(id: ScaleId): void { if(!this.ready || !this.ctx || !this.sfx)return;for(let i=0;i<5;i++)this.bell(this.sfx,noteHz(id,i),this.ctx.currentTime+.005+i*.15,.35,.5); }
+ playWhoosh(speed:number):void {if(!this.ready||!this.ctx||!this.sfx)return;const ctx=this.ctx,when=ctx.currentTime,buffer=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*.09),ctx.sampleRate),data=buffer.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=Math.random()*2-1;const source=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();source.buffer=buffer;filter.type='bandpass';filter.frequency.value=2500;filter.Q.value=1.2;gain.gain.setValueAtTime(.05+.02*Math.min(speed,4),when);gain.gain.linearRampToValueAtTime(0,when+.09);source.connect(filter);filter.connect(gain);gain.connect(this.sfx);source.start(when);}
  playBoop():void {this.tone(0,.3,.5,0,1);}
  playDial(note: number): void { this.tone(note, .35, .5); }
  playStrike(note: number): void { this.tone(note, 1); this.sample("bell-heavy", .25, this.noteHz(note) / 523.25); }

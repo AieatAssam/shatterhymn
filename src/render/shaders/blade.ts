@@ -1,0 +1,2 @@
+export const vertex = `attribute float aEdge,aAlpha,aArmed; varying float vEdge,vAlpha,vArmed; void main(){vEdge=aEdge;vAlpha=aAlpha;vArmed=aArmed;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
+export const fragment = `uniform vec3 uEdgeColor; varying float vEdge,vAlpha,vArmed; void main(){float core=exp(-4.*vEdge*vEdge);vec3 c=mix(uEdgeColor,vec3(2.5),core);c=mix(vec3(.52,.50,.68)*.8,c,vArmed);gl_FragColor=vec4(c,vAlpha*(vArmed>.5?1.:.35));}`;
