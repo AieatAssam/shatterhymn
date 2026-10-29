@@ -16,12 +16,23 @@ function listFiles(dir: string): string[] {
 }
 
 describe('player copy', () => {
-  it('removes old hold and dial wording from source and README', () => {
+  it('removes old hold and dial wording from source and documentation', () => {
     const files = listFiles('src').filter(path => /\.(ts|css|html|md)$/.test(path));
-    const content = [...files.map(file => readFileSync(file, 'utf8')), readFileSync('README.md', 'utf8')]
+    const content = [...files.map(file => readFileSync(file, 'utf8')), readFileSync('README.md', 'utf8'), readFileSync('CREDITS.md', 'utf8')]
       .join('\n')
       .replace(/slowDial/g, 'slowSetting').replace(/\bhold\b/g, 'freeze');
     expect(content).not.toMatch(/\bhold\b|let go|\bdial\b|colour button|combo lost/i);
+  });
+  it('documents both modes and credits Slice inspiration in the in-game credits', () => {
+    const readme = readFileSync('README.md', 'utf8');
+    const credits = readFileSync('CREDITS.md', 'utf8');
+    for (const path of ['docs/media/title.png', 'docs/media/tap.gif', 'docs/media/slice.gif']) expect(readme).toContain(path);
+    expect(readme).toContain('## Two ways to play');
+    expect(readme).toContain('Shatterhymn is not affiliated with or endorsed by Halfbrick Studios.');
+    expect(credits).toContain('Slice mode is inspired by Fruit Ninja by Halfbrick Studios.');
+    expect(credits).toContain('Shatterhymn is a separate fan-made game. It is not made by, endorsed by, sponsored by or affiliated with Halfbrick Studios.');
+    expect(credits).toContain('It uses no Fruit Ninja code, art, sound or names in play. Fruit Ninja and Halfbrick are trademarks of their owner.');
+    expect(readFileSync('src/ui/screens/credits.ts', 'utf8')).toContain('CREDITS.md?raw');
   });
   it('keeps the audited strings short and free of placeholders', () => {
     const outcome: RunOutcome = { mode: 'tap', newBest: true, prevBest: 0, shardsEarned: 184, missionShards: 0, missionsCompleted: [], allMissionsBonus: false, unlocked: [], dailyBest: null, nextUnlock: { kind: 'skin', id: 'rosegold', name: 'Rose Gold', have: 412, need: 500 } };

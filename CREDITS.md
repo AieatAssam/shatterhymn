@@ -3,6 +3,11 @@
 ## Game
 **Shatterhymn**: design by the design lead for Aieat Assam (2026). Code under the MIT licence (see `LICENSE`).
 
+## Slice mode inspiration
+Slice mode is inspired by Fruit Ninja by Halfbrick Studios.
+Shatterhymn is a separate fan-made game. It is not made by, endorsed by, sponsored by or affiliated with Halfbrick Studios.
+It uses no Fruit Ninja code, art, sound or names in play. Fruit Ninja and Halfbrick are trademarks of their owner.
+
 ## Audio (all CC0 1.0, https://creativecommons.org/publicdomain/zero/1.0/)
 Converted to mono 44.1 kHz MP3, high-passed at 180 Hz and loudness-normalised (−16 LUFS target) for `public/audio/`.
 
@@ -34,3 +39,5 @@ Bell tones, chords and music are synthesised in the browser (Web Audio), with no
 - *Wordle* (Josh Wardle): the emoji share line.
 - *Celeste* and *Hollow Knight*: freeze-frame and hit-flash timings (via our game-feel research).
 - The old image of a singer's voice shattering a wine glass.
+- *Fruit Ninja* (Halfbrick Studios): the swipe-to-slice verb of Slice mode. No affiliation.
+- *Juice It or Lose It* (Jonasson and Purho): a face on the thing you care about.
