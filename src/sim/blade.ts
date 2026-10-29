@@ -1,4 +1,4 @@
-import { SLICE_BLADE as C } from './sliceConfig';
+import { SLICE_BLADE as C, BEGINNER_BLADE } from './sliceConfig';
 import type { BladeSegment } from './sliceTypes';
 type Point = {x:number;y:number;t:number};
 export type BladeTrailPoint = Point & {cutting:boolean};
@@ -8,6 +8,7 @@ export function capsuleProjection(s:BladeSegment,x:number,y:number,r:number):num
  return Math.hypot(x-(s.x0+p*dx),y-(s.y0+p*dy)) <= s.r+r ? p : null;
 }
 export class Blade {
+ constructor(private readonly profile:'beginner'|'standard'='standard') {}
  state:'up'|'ready'|'armed'|'cooling'='up'; speedHps=0; stroke=0; arm=0;
  readonly trail:BladeTrailPoint[]=[];
  private points:Point[]=[]; private segments:BladeSegment[]=[]; private ended:number|null=null; private radius:number=C.radius.touch;
@@ -21,9 +22,9 @@ export class Blade {
   const start={x:a.x+(b?b.x-a.x:0)*f,y:a.y+(b?b.y-a.y:0)*f,t:w}; const windowPoints=[start,...this.points.slice(first+1)];
   let length=0;for(let i=1;i<windowPoints.length;i++)length+=Math.hypot(windowPoints[i]!.x-windowPoints[i-1]!.x,windowPoints[i]!.y-windowPoints[i-1]!.y);
   this.speedHps=length/Math.max(t-w,C.minSpanMs)*1000;
-  if(this.state==='ready'&&this.speedHps>=C.armHps){this.state='armed';this.arm++;this.armStart=w;this.armPath=0;for(let i=1;i<windowPoints.length&&this.state==='armed';i++)this.emit(windowPoints[i-1]!,windowPoints[i]!);}
-  else if(this.state==='armed'){if(this.speedHps<C.disarmHps){this.state='cooling';this.slowSince=t;}else this.emit(prev,cur);}
-  else if(this.state==='cooling'){if(this.speedHps<C.disarmHps){if(this.slowSince===null)this.slowSince=t;if(t-this.slowSince>=C.rearmSlowMs)this.state='ready';}else this.slowSince=null;}
+  if(this.state==='ready'&&this.speedHps>=(this.profile==='beginner'?BEGINNER_BLADE.armHps:C.armHps)){this.state='armed';this.arm++;this.armStart=w;this.armPath=0;for(let i=1;i<windowPoints.length&&this.state==='armed';i++)this.emit(windowPoints[i-1]!,windowPoints[i]!);}
+  else if(this.state==='armed'){if(this.speedHps<(this.profile==='beginner'?BEGINNER_BLADE.disarmHps:C.disarmHps)){this.state='cooling';this.slowSince=t;}else this.emit(prev,cur);}
+  else if(this.state==='cooling'){if(this.speedHps<(this.profile==='beginner'?BEGINNER_BLADE.disarmHps:C.disarmHps)){if(this.slowSince===null)this.slowSince=t;if(t-this.slowSince>=(this.profile==='beginner'?BEGINNER_BLADE.rearmSlowMs:C.rearmSlowMs))this.state='ready';}else this.slowSince=null;}
   this.trail.push({...cur,cutting:this.state==='armed'});if(this.trail.length>C.trailPoints)this.trail.shift();
   if(first>0)this.points.splice(0,first);
  }

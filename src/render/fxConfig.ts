@@ -37,6 +37,6 @@ export const TELL_FX = { closeScale: 1.6, closeLife: .25, goldShards: 12, ringWi
 
 export const FINISH = { floaterGap: 12, closeOffset: 56, closeOpaqueMs: 400, scoreMs: 600, gemBodyMax: .55, shardBodyMax: .45, shardDarkFacet: .4, beamFadePx: 80, titleSweep: 3 } as const;
 
-export const PLAY_START = { rose: .055, rosePeriod: 7.0, roseBreath: .08, selectedScale: 1.28, crystalMax: .85, shaftAlpha: .03, facetHi: 1.1 } as const;
+export const PLAY_START = { rose: .20, rosePeriod: 7.0, roseBreath: .08, selectedScale: 1.28, crystalMax: .85, shaftAlpha: .03, facetHi: 1.1 } as const;
 
 export const FACE = { worriedGapU:2, worriedExitGapU:2.4, worriedExitMs:300, sliceWorriedY:.28, blinkMinMs:2500, blinkMaxMs:5500, blinkMs:140, doubleBlink:.15, doubleDelayMs:180, wakeMs:400, reducedExpressionMs:120, reducedLookMs:200 } as const;

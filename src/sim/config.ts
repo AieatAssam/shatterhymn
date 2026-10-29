@@ -48,4 +48,4 @@ export const CHORD_FROM_LEVEL = 2, CHORD_COUNT = 7, CHORD_ARC = 1.5, CHORD_SPEED
 export const EVENT_RETRY_MS = 250, EVENT_GIVE_UP_MS = 6000, EVENT_WEIGHTS = { golden: 3, chord: 2 } as const, EVENT_SEED_SALT = 0x5eede7e7;
 
 export const TAP_HIT = { minPx: 48, scale: 1.25, tieEps: 0.02, bellScale: 1.3 } as const;
-export const TAP_OPENING = { crownAtMs: 300, crownCount: 8, crownRho: 7.0, crownSpeed: 0.35, crownSwirl: 0.10, followAtMs: 3000, followCount: 5, followArc: 1.0, followSpeedFactor: 0.85, followCapSlack: 5, spawnerStartMs: 5000 } as const;
+export const TAP_OPENING = { crownAtMs: 300, crownCount: 8, crownRho: 7.0, crownSpeed: 0.35, crownSwirl: 0.10, followAtMs: 2200, followCount: 5, followArc: 1.0, followSpeedFactor: 0.85, followCapSlack: 5, spawnerStartMs: 4000 } as const;

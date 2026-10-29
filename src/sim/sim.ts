@@ -42,7 +42,7 @@ export class Sim {
     if (s.mode !== 'attract' && s.mode !== 'intro' && s.tick * dt < TAP_OPENING.followAtMs && nextMs + 1e-7 >= TAP_OPENING.followAtMs) {
       let note = this.spawner.drawTone(s.K); while (note === this.crownNote) note = this.spawner.drawTone(s.K);
       const theta = this.openingRng.range(0, Math.PI * 2);
-      for (let i = 0; i < TAP_OPENING.followCount; i++) this.spawner.spawn(s, note, theta + (i / (TAP_OPENING.followCount - 1) - .5) * TAP_OPENING.followArc, 'normal', levelRow(0).speed * TAP_OPENING.followSpeedFactor, 0, events);
+      for (let i = 0; i < TAP_OPENING.followCount; i++) this.spawner.spawn(s, note, theta + (i / (TAP_OPENING.followCount - 1) - .5) * TAP_OPENING.followArc, 'normal', levelRow(0).speed * TAP_OPENING.followSpeedFactor, 0, events, 8.5);
     }
     if (input.miss && s.gentleMiss && s.streak >= 2 && Math.hypot(input.miss.x, input.miss.y) <= ARENA_R) { s.streak = 0; s.mult = 1; s.stats.misses++; events.push({type:'miss', ...input.miss}); }
     if (input.strike !== null && input.strike >= 0 && input.strike < s.K) {

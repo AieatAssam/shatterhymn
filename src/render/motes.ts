@@ -15,12 +15,12 @@ export class Motes {
   });
   private readonly points: Points;
   constructor(scene: Scene) {
-    const positions = new Float32Array(BOARD.moteCount.high * 3), seeds = new Float32Array(BOARD.moteCount.high);
+    const positions = new Float32Array(64 * 3), seeds = new Float32Array(64);
     for (let i = 0; i < seeds.length; i++) { seeds[i] = (i + .5) / seeds.length; positions[i * 3] = ((i * 37) % 97) / 97; positions[i * 3 + 1] = ((i * 53) % 101) / 101; }
     this.geometry.setAttribute("position", new BufferAttribute(positions, 3)); this.geometry.setAttribute("aSeed", new BufferAttribute(seeds, 1));
     this.points = new Points(this.geometry, this.material); this.points.frustumCulled = false; this.points.renderOrder = -90; scene.add(this.points);
   }
-  setTier(tier: Tier, dpr: number): void { this.geometry.setDrawRange(0, BOARD.moteCount[tier]); this.material.uniforms.uDpr!.value = dpr; }
+  setTier(tier: Tier, dpr: number, slice=false): void { this.geometry.setDrawRange(0, slice && tier === "high" ? 64 : BOARD.moteCount[tier]); this.material.uniforms.uDpr!.value = dpr; }
   update(time: number, width: number): void { this.material.uniforms.uTime!.value = time; this.material.uniforms.uWidth!.value = width; }
   dispose(): void { this.points.removeFromParent(); this.geometry.dispose(); this.material.dispose(); }
 }

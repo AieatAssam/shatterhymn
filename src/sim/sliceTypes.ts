@@ -8,7 +8,7 @@ export type SliceEvent =
  | {type:'darkHit';id:number;x:number;y:number;cracked:boolean}
  | {type:'choir';note:number;n:number;swept:{id:number;x:number;y:number;note:number}[];points:number}
  | {type:'strokeEnd';cuts:number;bonus:number}
- | {type:'fall';id:number;x:number;note:number;cracked:boolean}
+ | {type:'fall';id:number;x:number;note:number;cracked:boolean;warning:boolean}
  | {type:'crack';cracks:number;cause:'dark'|'fall'}
  | {type:'levelUp';level:number;K:number}
  | {type:'gameOver';stats:SliceStats;hymn:number[]};

@@ -2,7 +2,7 @@ import type { SimEvent } from '../sim/types';
 import { placeFloaters } from '../game/floaters';
 import { FINISH } from '../render/fxConfig';
 import { colors } from './icons';
-export function popLines(n:number,points:number,mult:number):{main:string;mult:string;sub:string;hint:string}{return {main:`+${points}`,mult:mult>1?`×${mult}`:'',sub:n>=2?`${n} at once!`:'',hint:n===5?'2 more for a Choir':n===6?'1 more for a Choir':''};}
+export function popLines(n:number,points:number,mult:number):{main:string;mult:string;sub:string;hint:string}{return {main:`+${points}`,mult:mult>1?`×${mult}`:'',sub:n>=2&&n<7?`${n} at once!`:'',hint:n===5?'2 more for a Choir':n===6?'1 more for a Choir':''};}
 export function popSize(n:number):number{return n>=2?40:32;}
 interface Label {el:HTMLElement;main:HTMLElement;mult:HTMLElement;sub:HTMLElement;hint:HTMLElement;x:number;y:number;age:number;life:number;sign:number;order:number;close:boolean;multValue:number}
 export class PopText {
@@ -14,7 +14,7 @@ export class PopText {
  update(dt:number,currentMult?:number):void{
   if(currentMult !== undefined) for(const l of this.labels) if(l.el.classList.contains("points") && l.multValue !== currentMult){l.age=l.life;l.el.style.opacity="0";}
   const active=this.labels.filter(l=>l.age<l.life).sort((a,b)=>a.order-b.order);
-  const rects=active.map(l=>{const p=this.project(l.x,l.y),t=l.age/l.life; if(l.el.classList.contains("penalty")){p.sx=window.innerWidth/2;p.sy=window.innerHeight*.22;} else if(l.el.classList.contains("points")){const dx=window.innerWidth/2-p.sx,dy=window.innerHeight/2-p.sy,d=Math.hypot(dx,dy)||1;p.sx+=60*dx/d;p.sy=Math.max(240,p.sy+60*dy/d);} const bounds=l.el.getBoundingClientRect(),width=bounds.width,height=bounds.height;return {x:p.sx-width/2,y:l.el.classList.contains("points")?Math.max(240,p.sy-height/2-(this.reduced?0:56)*t):p.sy-height/2-(l.close?FINISH.closeOffset:0)-(this.reduced?0:56)*t,width,height};});
+  const rects=active.map(l=>{const p=this.project(l.x,l.y),t=l.age/l.life; if(l.el.classList.contains("penalty")){p.sx=window.innerWidth/2;p.sy=window.innerHeight*.22;} else if(l.el.classList.contains("points")){p.sx=window.innerWidth/2;p.sy=window.innerHeight*.68;} const bounds=l.el.getBoundingClientRect(),width=bounds.width,height=bounds.height;return {x:p.sx-width/2,y:l.el.classList.contains("points")?p.sy-height/2:p.sy-height/2-(l.close?FINISH.closeOffset:0)-(this.reduced?0:56)*t,width,height};});
   const rootStyle=getComputedStyle(document.documentElement);const inset=(name:string):number=>parseFloat(rootStyle.getPropertyValue(name))||0;const placed=placeFloaters(rects,{left:inset('--safe-left')+FINISH.floaterGap,top:inset('--safe-top')+FINISH.floaterGap,right:window.innerWidth-inset('--safe-right')-FINISH.floaterGap,bottom:window.innerHeight-inset('--safe-bottom')-FINISH.floaterGap});
   active.forEach((l,i)=>{const r=placed[i]!;const y=l.el.classList.contains("points")?Math.max(240,r.y):r.y;l.el.style.transform=`translate3d(${r.x}px,${y}px,0)`;l.el.style.opacity=String(l.close && l.age<FINISH.closeOpaqueMs?1:Math.min(1,(l.life-l.age)/250));l.age=Math.min(l.life,l.age+dt);if(l.age>=l.life)l.el.style.opacity='0';});
  }
