@@ -977,3 +977,7 @@ These override the numbers earlier in this file.
 ## §23. Polish amendments
 
 `docs/POLISH.md` P1 to P5 are approved and override this file where they differ.
+
+## §24. Slice rescue
+
+`docs/SLICE-RESCUE.md` R1 to R3, including its lead amendment at the end, are approved and override this file and POLISH.md where they differ. Blade speed thresholds stay in screen heights per second at their current values.
