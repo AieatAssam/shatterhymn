@@ -1,4 +1,4 @@
-export type Kind = 'normal' | 'geode' | 'prism' | 'splitter' | 'rusher' | 'mend' | 'golden';
+export type Kind = 'normal' | 'geode' | 'prism' | 'splitter' | 'rusher' | 'mend' | 'golden' | 'dark';
 export type RunMode = 'run' | 'daily' | 'intro' | 'attract';
 export interface Crystal {
   id: number; alive: boolean; kind: Kind; note: number;

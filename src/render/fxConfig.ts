@@ -50,8 +50,8 @@ export const TAP_STAGE = {
   hubCentre: 0x40307f, hubEdge: 0x4e3a9c,
   petalLight: [0x7650dc, 0x7b5ae8, 0x7650dc, 0x6e4cd0],
   petalDark: [0x6947c8, 0x6d4cd6, 0x6947c8, 0x6446c2],
-  lead: 0xe0a040, leadAlpha: 1.0, leadPx: 2,
-  frame: 0xe89a30, frameGlow: 0xc8642a, frameR: [.95, 1.02], frameCorePx: 3, frameGlowPx: 10, frameGlowAlpha: .35,
+  lead: 0xb8843a, leadAlpha: 1.0, leadPx: 2,
+  frame: 0xb8843a, frameGlow: 0xc8642a, frameR: [.95, 1.02], frameCorePx: 3, frameGlowPx: 10, frameGlowAlpha: .35,
   shaft: 0xffc070, shaftGain: .16,
   twinkleAmt: .06, twinklePeriodS: 4.0,
   sweepColor: 0xffb050, sweepGain: .10, sweepWidthRad: .55, sweepPeriodS: 12,
@@ -62,4 +62,4 @@ export const TAP_STAGE = {
 } as const;
 export function warnColor(kind: 'golden' | 'chord', note: number): number { return kind === 'golden' ? 0xffd27a : NOTE_COLORS[note]!; }
 
-export const CRYSTAL_EDGE = { facetLo: .75, facetHi: 1.15, facetLight: [.15, .85], topFacet: [.6, .95], topFacetLift: .55, topFacetGain: .55, edgeSil: [.80, .97], edgeMix: .55, edgeGain: .85, specSoft: [16, .12], specSharp: [64, 1.2], outline: 0x1a0f2e, faceNz: [.93, .97], rim: [.94, 1.0], rimGain: .8, bodyMaxChannel: .92, bodyMaxLum: .36, poolAlpha: .20, shadowAlpha: .35, sheenAt: [-.2, .24], sheenR: .13, sheenGain: .32 } as const;
+export const CRYSTAL_EDGE = { facetLo: .75, facetHi: 1.15, facetLight: [.15, .85], topFacet: [.6, .95], topFacetLift: .55, topFacetGain: .55, edgeSil: [.80, .97], edgeMix: .55, edgeGain: .85, specSoft: [16, .12], specSharp: [64, 1.2], outline: 0x1a0f2e, faceNz: [.93, .97], rim: [.94, 1.0], rimGain: .8, bodyMaxChannel: .92, bodyMaxLum: .36, poolAlpha: .20, haloColor: 0x241445, haloScale: 1.30, haloAlpha: .55, shadowAlpha: .55, lightLuma: [.45, .75], lightEdgeGain: .15, lightEdgeWidth: .06, sheenAt: [-.2, .24], sheenR: .13, sheenGain: .32 } as const;

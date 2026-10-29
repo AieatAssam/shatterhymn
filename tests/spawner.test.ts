@@ -32,7 +32,7 @@ describe('spawn director', () => {
         expect(alive.length).toBeLessThanOrEqual(levelRow(sim.state.level).fieldCap + 3);
         expect(alive.filter(c => c.kind === 'prism').length).toBeLessThanOrEqual(1);
         for (const e of events) if (e.type === 'spawn') {
-          const min = { normal: 0, geode: 2, prism: 3, splitter: 4, rusher: 5, mend: 5, golden: 1 }[e.kind];
+          const min = { normal: 0, geode: 2, prism: 3, splitter: 4, rusher: 5, mend: 5, golden: 1, dark: 0 }[e.kind];
           expect(sim.state.level).toBeGreaterThanOrEqual(min);
           if (e.kind === 'mend') expect(sim.state.cracks).toBeGreaterThan(0);
         }

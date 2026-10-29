@@ -1,8 +1,8 @@
 import { Sim } from '../../sim/sim';
 import { AttractPilot } from '../../sim/attract';
-import { TAP_HIT } from '../../sim/config';
+import { CRYSTAL_R, TAP_HIT } from '../../sim/config';
 import { pickCrystal, tapCandidates, tapHitPx, type PointerKind } from './tapHit';
-import { crystalVisualScale } from '../../render/fxConfig';
+import { crystalVisualScale, NOTE_COLORS } from '../../render/fxConfig';
 import type { RunMode, SimInput, SimEvent, SimState } from '../../sim/types';
 import { tapMetaStats, type GameMode, type ModeStart } from '../mode';
 import type { EventBus, GameBusEvent } from '../../core/events';
@@ -13,7 +13,7 @@ import { TIPS, type BannerQueue } from '../../ui/banners';
 import type { SaveV2 } from '../../meta/save';
 export class TapMode implements GameMode {
  readonly id='tap' as const;
- private sim:Sim;
+ private sim:Sim; private qaBoard=false;
  private pending:SimInput={strike:null};
  private readonly pilot=new AttractPilot();
  private project:(x:number,y:number)=>{sx:number;sy:number}=()=>({sx:0,sy:0});
@@ -26,9 +26,9 @@ export class TapMode implements GameMode {
  constructor(seed:number, mode:RunMode, slow:boolean, private attractDelay=0){this.sim=new Sim({seed,mode,slowDial:slow});}
  private get state(){return this.sim.state;}
  get over(){return this.state.over;}
- start(opts:ModeStart):void {this.sim=new Sim({seed:opts.seed,mode:opts.daily?'daily':'run',slowDial:opts.slow,profile:opts.profile,gentleMiss:opts.gentleMiss});}
+ start(opts:ModeStart):void {this.qaBoard=false;this.sim=new Sim({seed:opts.seed,mode:opts.daily?'daily':'run',slowDial:opts.slow,profile:opts.profile,gentleMiss:opts.gentleMiss});}
  queue(input:SimInput):void {this.pending=input;}
- tick():void {if(this.over){this.consume();return;}if(this.attractDelay>0){this.attractDelay-=1000/60;this.events=[];return;}this.events=this.sim.step(this.state.mode==='attract'?this.pilot.update(this.state):this.consume());this.pending={strike:null};this.forwardEvents();}
+ tick():void {if(this.qaBoard){this.events=[];return;}if(this.over){this.consume();return;}if(this.attractDelay>0){this.attractDelay-=1000/60;this.events=[];return;}this.events=this.sim.step(this.state.mode==='attract'?this.pilot.update(this.state):this.consume());this.pending={strike:null};this.forwardEvents();}
  tapAt(x:number,y:number,pointer:PointerKind='touch'):void {const candidates=tapCandidates(this.state.crystals,this.project,crystalVisualScale);const id=pickCrystal(candidates,x,y,note=>candidates.filter(c=>c.note===note).length,pointer,Math.min(innerWidth,innerHeight));const winner=candidates.find(c=>c.id===id);if(winner){this.tap(winner.note);return;}const center=this.project(0,0),edge=this.project(1.6,0);if(Math.hypot(x-center.sx,y-center.sy)<=TAP_HIT.bellScale*Math.hypot(edge.sx-center.sx,edge.sy-center.sy)){this.boop();return;}if(this.state.gentleMiss){const p=this.unproject(x,y);this.miss(p.x,p.y);}}
  configure(hooks:{bus:EventBus<GameBusEvent>;renderer:GameRenderer;hud:Hud;pops:PopText;banners:BannerQueue;save:SaveV2;audible:()=>boolean;onStrike:()=>void;onOver:()=>void;fever:()=>void;demoVisible:()=>boolean;consume:()=>SimInput;frame:(real:number,sim:number)=>void; input:(on:boolean)=>void;project:(x:number,y:number)=>{sx:number;sy:number};tap:(note:number)=>void;miss:(x:number,y:number)=>void;unproject:(x:number,y:number)=>{x:number;y:number};boop:()=>void}):void {this.hooks=hooks;this.consume=hooks.consume;this.frameHook=hooks.frame;this.inputHook=hooks.input;this.project=hooks.project;this.tap=hooks.tap;this.miss=hooks.miss;this.unproject=hooks.unproject;this.boop=hooks.boop;}
  private forwardEvents():void {const h=this.hooks;if(!h)return;const s=this.state;if(s.mode==='intro'||s.mode==='attract'){for(const e of this.events){h.renderer.event(e);if(h.audible())h.bus.emit(e);}return;}if(!this.liveBest&&h.save.modes.tap.bests.score>0&&s.stats.score>h.save.modes.tap.bests.score){this.liveBest=true;h.bus.emit({type:'newBestLive',score:s.stats.score});h.hud.newBest();}for(const e of this.events){if(e.type==='strike'&&e.n>0)h.onStrike();h.bus.emit(e);if(h.renderer.event(e))h.fever();h.hud.event(e);if(e.type==='strike'||e.type==='golden')h.hud.nextUnlock(h.save,s.stats.shards,true);h.pops.event(e);h.banners.event(e);if(e.type==='gameOver')h.onOver();}}
@@ -41,6 +41,7 @@ export class TapMode implements GameMode {
  get mult(){return this.state.mult;}
  setSlow(slow:boolean){this.state.slowDial=slow;}
  crystals(){return this.state.crystals.filter(c=>c.alive).map(c=>{const p=this.project(c.x,c.y),q=this.project(c.x+c.r*crystalVisualScale(c.rho)*(c.kind==='golden'?1.25:1),c.y);const rPx=Math.hypot(q.sx-p.sx,q.sy-p.sy);return {id:c.id,note:c.note,kind:c.kind,...p,rPx,hitRPx:tapHitPx(rPx,'touch',Math.min(innerWidth,innerHeight))};});}
+ testBoard(){this.qaBoard=true;this.state.crystals.forEach(c=>{c.alive=false;});const kinds=['normal','normal','normal','normal','normal','golden','mend','dark'] as const;for(let i=0;i<kinds.length;i++){const theta=i*Math.PI*2/kinds.length,rho=7,c=this.state.crystals[i]!;Object.assign(c,{id:10000+i,alive:true,kind:kinds[i],note:i<NOTE_COLORS.length?i:1,rho,theta,r:CRYSTAL_R,speed:0,swirl:0,shell:false,prismMs:0,pushMs:0,ageMs:1000,x:rho*Math.cos(theta),y:rho*Math.sin(theta)});}return this.crystals();}
  tapCrystal(id:number){const c=this.crystals().find(c=>c.id===id);if(c)this.tapAt(c.sx,c.sy);}
  demoPosition(){const cs=this.crystals();return cs.reduce<typeof cs[number]|null>((a,c)=>!a||c.sy>a.sy?c:a,null);}
  hud(hud:{update:(state:SimState,dt:number)=>void},dt:number){hud.update(this.state,dt);}

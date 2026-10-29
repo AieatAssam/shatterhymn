@@ -899,6 +899,7 @@ It stays callable (`__shatterhymnQA()` returns the state object, as today) and g
 | `.forceGameOver()` | calls `sim.forceGameOver()`; the normal game-over path runs (results mount 1.4 s later) |
 | `.tapCrystal(id)` | runs the real Tap handler at that crystal's `sx, sy` |
 | `.swipe(points: {x, y}[], durationMs)` | injects a stroke through `Input.injectStroke` with samples spread evenly over `durationMs`, starting at `performance.now()`; resolves 2 ticks after the end with `{ cuts, armed, maxSpeedHps }` |
+| `.tapTestBoard()` | Tap only: stops simulation and spawning, and places five note colours plus golden, mend and dark crystals evenly around the ring; returns their `QACrystal[]` |
 | `.sliceTestBoard(list?)` | Slice only: clears the board, stops waves and gravity, disables cracks, places crystals (default: three note-0 crystals at (0.3 W, .5), (0.5 W, .5), (0.7 W, .5)); returns their `QACrystal[]` |
 | `.blade()` | `{ state, speedHps, strokeCuts }` |
 | `.screen()` | current screen id |

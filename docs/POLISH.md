@@ -498,3 +498,12 @@ Each is one small push or can ride with any other; each stands alone.
 ## Lead amendment (P4, 2026-10-29)
 
 `SLICE_AIM.lagMs` is 120, not 80. With 80 ms the scripted child aim (aims where the crystal was 120 ms ago, jitter 0 to 30 px) averaged 13.75/18 over four runs; with 120 ms it scored 16, 16 and 14 of 18. 120 ms matches a child's reaction lag. Blade arming and stroke-cap values are unchanged, and the velocity e2e is identical (0.5 and 1.0 H/s cut 0, 3 H/s cut 3/3, 5 s wiggle cuts 2/24).
+
+
+## P6 art fixes
+
+Tap crystals have a #241445 contact halo at 1.30 times draw radius and .55 alpha. The stage lead and frame are #b8843a (lead amendment: Codex's #6c482e read as muddy brown; under every crystal the halo darkens the lead, so the contrast test checks the halo-darkened lead, and gems brighter than the raw lead must clear it by 40 luma); the frame glow remains amber. Light crystal edges use Rec.709 luma with smoothstep .45–.75, adding .15 edge gain and lowering the edge threshold by .06.
+
+The first four Slice waves launch vertically outside the bell face's .10 H radius plus crystal radius and .04 W clearance. The fourth also clears the face during the first six seconds. On narrow screens this requires partial side clipping: the clearance band and the P5.3 side margin cannot both fit.
+
+With `?qa=1`, `tapTestBoard()` freezes the Tap simulation and displays the five note colours, golden, mend and dark, evenly spaced at radius 7.

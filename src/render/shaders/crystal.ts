@@ -45,7 +45,8 @@ void main(){
          +vec3(1.,.82,.48)*0.25*(0.5+0.5*sin(uTime*9.4248));
   }
   if(vCut.w != 0. && !gl_FrontFacing) color=vDark;
-  float darkEdge=smoothstep(${CRYSTAL_EDGE.edgeSil[0]},${CRYSTAL_EDGE.edgeSil[1]},silhouette); color=mix(color,mix(uOutline,vDark,${CRYSTAL_EDGE.edgeMix}),darkEdge*${CRYSTAL_EDGE.edgeGain});
+  float luma=dot(vColor,vec3(.2126,.7152,.0722)); float lightEdge=smoothstep(${CRYSTAL_EDGE.lightLuma[0]},${CRYSTAL_EDGE.lightLuma[1]},luma);
+  float darkEdge=smoothstep(${CRYSTAL_EDGE.edgeSil[0]}-${CRYSTAL_EDGE.lightEdgeWidth}*lightEdge,${CRYSTAL_EDGE.edgeSil[1]},silhouette); color=mix(color,mix(uOutline,vDark,${CRYSTAL_EDGE.edgeMix}),darkEdge*(${CRYSTAL_EDGE.edgeGain}+${CRYSTAL_EDGE.lightEdgeGain}*lightEdge));
   color=mix(color,vec3(1.),vFlash);
   color*=min(1.,${Number(PLAY_START.crystalMax).toFixed(2)}/max(max(color.r,color.g),max(color.b,.0001)));
   gl_FragColor=vec4(color,vFade);
