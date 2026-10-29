@@ -971,3 +971,7 @@ These override the numbers earlier in this file.
 9. Title card art: selector `.play-hero svg:not(.mode-art)`; art 144 x 86 px on both cards.
 10. Slice beginner: missGraceMs.beginner 30000; falls crack at most once every 3 waves in beginner runs; first fall after grace shows "Catch them before they fall!" before any fall crack.
 11. Tap opening: TAP_OPENING.followAtMs 2200, follow-up arc at rho 8.5; spawnerStartMs 4000.
+
+## §23. Polish amendments
+
+`docs/POLISH.md` P1 to P5 are approved and override this file where they differ.
