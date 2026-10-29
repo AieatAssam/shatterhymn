@@ -953,3 +953,21 @@ Totals: 12 screens × 48 = **576** layouts must be clean (the original 432 plus 
 | Settings | `How to play Tap`, `How to play Slice`, `Crystals move 20% slower in both games. Shown on your share card.` |
 | Tips | section 4.7 |
 | Missions | section 11 |
+
+---
+
+## 22. Amendments from the first-10-seconds review (research/review-10s.md), approved by the lead
+
+These override the numbers earlier in this file.
+
+1. Blade (section 7): beginner runs (Slice runs 0-2) use `armHps` 1.2, `disarmHps` 0.8, `rearmSlowMs` 80; later runs keep 1.4 / 0.9 / 100. Per-arm limits unchanged (350 ms, 1.5 H, 6 cuts). Re-arm on direction reversal is REJECTED: it would let a continuous wiggle re-arm forever, which the owner forbade. The 1.2 floor stays inside the owner's 1.2-1.5 H/s range. Tests: slow drag at 0.5 and 1.0 H/s still cut 0 in beginner runs; 1.3 H/s cuts in beginner runs but not in later runs; 5 s wiggle still cuts at most 6.
+2. Slice backdrop: Slice hides the rose ring and centre disc and draws an open sky (#2A1D6E top, #203C7E middle, #1B5A6E bottom 25%), shaft gain .14, 64 motes, warm glow behind the bell (radius .28 H, #FFC89A, alpha .18); mid-screen board luminance at most 54/255.
+3. Slice opening waves: 600 ms three same-colour crystals in a level row (apex .62 H, .14 H apart); 2400 ms two same-colour; 4200 ms a 5-crystal chord toss; no gap over 1600 ms in the first 10 s.
+4. Slice sizes: radius .075 H, hitRadius .085 H, darkRadius .070 H.
+5. Blade visuals: cutting trail life 220 ms, inert trail 320 ms; head width clamp(12 + 8 x (speed - 1.4), 12, 28) px, taper exponent 0.8; inert trail 5 px #CFC8FF alpha .55; a 250 ms glowing slash line through each cut crystal; demo hand follows the crystal's predicted path.
+6. Tap board: PLAY_START.rose .20; rim ring and title blurred ring recoloured #3B4A9A and crossed by warm shafts.
+7. Face: quad 5.0 u; eyes .24 x .28; pupils .14; backing disc alpha .45; line brightness 1.6.
+8. Choir banner at 17% H (Tap, intro) and 30% H (Slice); points popup at 68% H; no "N at once!" line in the popup while the banner shows; banner hold 1.2 s.
+9. Title card art: selector `.play-hero svg:not(.mode-art)`; art 144 x 86 px on both cards.
+10. Slice beginner: missGraceMs.beginner 30000; falls crack at most once every 3 waves in beginner runs; first fall after grace shows "Catch them before they fall!" before any fall crack.
+11. Tap opening: TAP_OPENING.followAtMs 2200, follow-up arc at rho 8.5; spawnerStartMs 4000.
