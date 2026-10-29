@@ -1,0 +1,28 @@
+import { Color, DynamicDrawUsage, FrontSide, InstancedBufferAttribute, InstancedMesh, Matrix4, PlaneGeometry, Scene, ShaderMaterial, Shape, Vector3 } from 'three';
+import { NOTE_COLORS } from './fxConfig';
+import type { Tier } from './quality';
+import { SLICE_TOSS } from '../sim/sliceConfig';
+
+export const CAP = { dirs: 64, bevelX: .12, bevelZ: .18, halfDepth: .39, hotHoldMs: 60, coolMs: 480, hdrHot: 2.2, rimWidth: .16, rimMin: .35, rimGain: 1.65, lift: .25, zOffset: .002 } as const;
+export const CAP_HOT = [0xffb3c0,0xffe8a8,0xb8ffe2,0xc2e2ff,0xebd3ff].map(c=>new Color(c));
+export const CAP_DARK = [0x7a1230,0x7a4a06,0x0b5a3e,0x103c7a,0x46177a].map(c=>new Color(c));
+export const CAP_COOL = NOTE_COLORS.map((c,i)=>new Color(c).lerp(CAP_DARK[i]!, .35));
+export function buildChordTable(shape: Shape, R: number, dirs = CAP.dirs): Float32Array {
+ const points=shape.extractPoints(12).shape.map(p=>{const len=Math.hypot(p.x,p.y);return {x:(p.x+CAP.bevelX*p.x/len)/R,y:(p.y+CAP.bevelX*p.y/len)/R};});
+ const table=new Float32Array(dirs*2);
+ for(let k=0;k<dirs;k++){const angle=k*Math.PI/dirs, ux=Math.cos(angle),uy=Math.sin(angle);for(let sign=0;sign<2;sign++){const dx=ux*(sign?-1:1),dy=uy*(sign?-1:1);let best=Infinity;for(let i=0;i<points.length;i++){const a=points[i]!,b=points[(i+1)%points.length]!,ex=b.x-a.x,ey=b.y-a.y,den=dx*ey-dy*ex;if(Math.abs(den)<1e-10)continue;const t=(a.x*ey-a.y*ex)/den, u=(a.x*dy-a.y*dx)/den;if(t>=0&&u>=0&&u<=1)best=Math.min(best,t);}table[k*2+sign]=best;}}
+ return table;
+}
+export function chordFor(table:Float32Array,dx:number,dy:number):{mid:number;half:number}{let angle=Math.atan2(dy,dx);if(angle<0)angle+=Math.PI*2;const swap=angle>=Math.PI;if(swap)angle-=Math.PI;const dirs=table.length/2, pos=angle/Math.PI*dirs, i=Math.floor(pos),f=pos-i,j=(i+1)%dirs;const plus=table[2*i]!*(1-f)+table[2*j+(j===0?1:0)]!*f,minus=table[2*i+1]!*(1-f)+table[2*j+(j===0?0:1)]!*f;return {mid:(swap?-1:1)*(plus-minus)/2,half:(plus+minus)/2};}
+export function capHeat(ageMs:number):number{const t=Math.max(0,Math.min(1,(ageMs-CAP.hotHoldMs)/CAP.coolMs));return 1-t*t*(3-2*t);}
+export function tumbleAngle(ageMs:number,reduced:boolean):number{const t=Math.max(0,Math.min(1,ageMs/220));return .96*(1-(1-t)**3)+(reduced?0:.45*Math.max(0,ageMs-220)/1000);}
+export function halfScale(ageMs:number):number{return SLICE_TOSS.radius*10*(1-.15*ageMs/900);}
+export class CutCaps {
+ private readonly mesh:InstancedMesh; private readonly local=new Matrix4();private readonly matrix=new Matrix4();private readonly x=new Vector3();private readonly y=new Vector3();private readonly origin=new Vector3();private readonly attrs:Record<string,InstancedBufferAttribute>={};private count=0;private readonly material:ShaderMaterial;
+ constructor(private readonly scene:Scene,private readonly radii:readonly number[]=[]){const geo=new PlaneGeometry(2,2);for(const [name,size] of [['aHot',3],['aCool',3],['aHeat',1],['aFade',1],['aCorner',2]] as const){const attr=new InstancedBufferAttribute(new Float32Array(48*size),size);attr.setUsage(DynamicDrawUsage);geo.setAttribute(name,attr);this.attrs[name]=attr;}this.material=new ShaderMaterial({transparent:true,depthWrite:false,side:FrontSide,uniforms:{uLow:{value:0}},vertexShader:`attribute vec3 aHot,aCool; attribute float aHeat,aFade; attribute vec2 aCorner; varying vec3 vHot,vCool; varying float vHeat,vFade; varying vec2 vCorner,vUv; void main(){vHot=aHot;vCool=aCool;vHeat=aHeat;vFade=aFade;vCorner=aCorner;vUv=uv*2.-1.;gl_Position=projectionMatrix*modelViewMatrix*instanceMatrix*vec4(position,1.);}`,fragmentShader:`uniform float uLow; varying vec3 vHot,vCool; varying float vHeat,vFade; varying vec2 vCorner,vUv; void main(){vec2 r=max(vCorner,vec2(.0001));vec2 q=(abs(vUv)-(1.-r))/r;float sdf=(length(max(q,0.))+min(max(q.x,q.y),0.)-1.)*min(r.x,r.y);float aa=max(fwidth(sdf),.0001);float edgeAA=1.-smoothstep(-aa,aa,sdf);vec3 color=mix(vCool,vHot*2.2,vHeat)+vHot*.25*(1.-vUv.x*vUv.x)*vHeat;float rim=1.-smoothstep(0.,.16,-sdf);color+=vec3(1.)*rim*(.35+1.65*vHeat*(1.-uLow));gl_FragColor=vec4(color,vFade*edgeAA);}`});this.mesh=new InstancedMesh(geo,this.material,48);this.mesh.frustumCulled=false;this.mesh.instanceMatrix.setUsage(DynamicDrawUsage);this.mesh.renderOrder=11;this.mesh.visible=false;scene.add(this.mesh);}
+ setTier(t:Tier):void{this.material.uniforms.uLow!.value=t==='low'?1:0;}
+ begin():void{this.count=0;}
+ push(halfMatrix:Matrix4,c:Vector3,dirLocal:Vector3,mid:number,half:number,note:number,ageMs:number,fade:number):void{if(this.count>=48)return;const R=this.radii[note]??1;this.x.copy(dirLocal).multiplyScalar(half);this.y.set(0,0,CAP.halfDepth/R);this.origin.copy(dirLocal).multiplyScalar(mid).addScaledVector(c,CAP.zOffset);this.local.makeBasis(this.x,this.y,c);this.local.setPosition(this.origin);this.matrix.multiplyMatrices(halfMatrix,this.local);const i=this.count++;this.mesh.setMatrixAt(i,this.matrix);const hot=CAP_HOT[note]!,cool=CAP_COOL[note]!;this.attrs.aHot!.setXYZ(i,hot.r,hot.g,hot.b);this.attrs.aCool!.setXYZ(i,cool.r,cool.g,cool.b);this.attrs.aHeat!.setX(i,capHeat(ageMs));this.attrs.aFade!.setX(i,fade);this.attrs.aCorner!.setXY(i,CAP.bevelX/R/half,CAP.bevelZ/CAP.halfDepth);}
+ end():void{this.mesh.count=this.count;this.mesh.visible=this.count>0;this.mesh.instanceMatrix.needsUpdate=true;this.attrs.aHot!.needsUpdate=true;this.attrs.aCool!.needsUpdate=true;this.attrs.aHeat!.needsUpdate=true;this.attrs.aFade!.needsUpdate=true;this.attrs.aCorner!.needsUpdate=true;}
+ reset():void{this.begin();this.end();} dispose():void{this.scene.remove(this.mesh);this.mesh.geometry.dispose();this.material.dispose();}
+}

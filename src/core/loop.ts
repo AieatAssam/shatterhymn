@@ -9,7 +9,7 @@ export class Loop {
   private slowRamp = 0;
   private slowScale = 1;
   private raf: number | null = null;
-  constructor(private readonly opts: { now: () => number; tick: () => void; frame: (realDtMs: number, simDtMs: number) => void }) {}
+  constructor(private readonly opts: { now: () => number; tick: () => void; frame: (realDtMs: number, simDtMs: number) => void; clockDivisor?: number }) {}
   get frozen(): boolean { return this.opts.now() < this.freezeUntil; }
   get timeScale(): number {
     const elapsed = this.opts.now() - this.slowStart;
@@ -20,7 +20,7 @@ export class Loop {
   start(): void {
     if (this.raf !== null) return;
     this.last = this.opts.now();
-    const frame = (now: number): void => { this.raf = null; this.pumpFrame(now); if (this.running) this.raf = requestAnimationFrame(frame); };
+    const frame = (now: number): void => { this.raf = null; this.pumpFrame(now / (this.opts.clockDivisor ?? 1)); if (this.running) this.raf = requestAnimationFrame(frame); };
     this.running = true;
     this.raf = requestAnimationFrame(frame);
   }

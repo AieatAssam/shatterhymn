@@ -36,7 +36,7 @@ void main(){
     color=mix(color,color*vec3(1.25,1.0,0.6),0.35)+vec3(1.0,0.78,0.35)*(fres*2.6+glint*2.0)
          +vec3(1.,.82,.48)*0.25*(0.5+0.5*sin(uTime*9.4248));
   }
-  if(vCut.w != 0. && !gl_FrontFacing) color=vCore*1.6;
+  if(vCut.w != 0. && !gl_FrontFacing) color=vDark;
   color=mix(color,vec3(1.),vFlash);
   color*=min(1.,${Number(PLAY_START.crystalMax).toFixed(2)}/max(max(color.r,color.g),max(color.b,.0001)));
   gl_FragColor=vec4(color,vFade);

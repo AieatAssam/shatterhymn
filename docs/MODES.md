@@ -884,6 +884,7 @@ Everything here exists only when the URL has `qa=1`. No visible UI. Used by the 
 | `intro=hold` | play the intro but freeze it at 1200 ms (hand and line visible), for capture |
 | `demo=1` | force the demo hand in the started run |
 | `waves=0` | Slice: no waves (empty board) |
+| `slowmo=<n>` | slow game timing by n (1–20; default 1) |
 
 ### 19.2 `window.__shatterhymnQA`
 

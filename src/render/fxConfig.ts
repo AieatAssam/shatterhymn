@@ -40,3 +40,6 @@ export const FINISH = { floaterGap: 12, closeOffset: 56, closeOpaqueMs: 400, sco
 export const PLAY_START = { rose: .20, rosePeriod: 7.0, roseBreath: .08, selectedScale: 1.28, crystalMax: .85, shaftAlpha: .03, facetHi: 1.1 } as const;
 
 export const FACE = { worriedGapU:2, worriedExitGapU:2.4, worriedExitMs:300, sliceWorriedY:.28, blinkMinMs:2500, blinkMaxMs:5500, blinkMs:140, doubleBlink:.15, doubleDelayMs:180, wakeMs:400, reducedExpressionMs:120, reducedLookMs:200 } as const;
+
+export const SLICE_FX = { spill: { high: 14, medium: 10, low: 6 } } as const;
+export function spillCount(tier: keyof typeof SLICE_FX.spill, reduced: boolean): number { return Math.ceil(SLICE_FX.spill[tier] * (reduced ? .5 : 1)); }
