@@ -1,3 +1,4 @@
+import { SLICE_FX } from '../render/fxConfig';
 import { AudioEngine } from "../audio/audio";
 import { EventBus, type GameBusEvent } from "../core/events";
 import { Loop } from "../core/loop";
@@ -49,7 +50,7 @@ export class Controller {
   this.input.setVibration(haptics.enabled);
   this.bus.on("settings", e => { haptics.enabled = e.settings.vibration; this.input.setVibration(haptics.enabled); });
   this.bus.on("strike", e => { if (e.n > 0) { if(e.n<7) haptics.play(hapticForStrike(e.n));  } });
-  this.bus.on('darkHit',e=>{if(!e.cracked)haptics.play('crack');});this.bus.on('cut', e=>haptics.play(hapticForSlice(e.k),e.chainStep>=2?2:0));this.bus.on('strokeEnd',e=>{if(e.cuts>=3)haptics.play('combo');});
+  this.bus.on('darkHit',e=>{if(!e.cracked)haptics.play('crack');});this.bus.on('cut', e=>haptics.play(hapticForSlice(e.k),e.chainStep>=2?SLICE_FX.rescue.haptics.chainExtra:0));this.bus.on('strokeEnd',e=>{if(e.cuts>=3)haptics.play('combo');});
   this.bus.on("shellBreak", () => haptics.play("shell"));
   this.bus.on("crack", () => haptics.play("crack"));
   this.bus.on("mend", () => haptics.play("mend")); this.bus.on("choir", () => haptics.play("choir"));

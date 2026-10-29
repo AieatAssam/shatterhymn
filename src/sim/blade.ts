@@ -34,10 +34,10 @@ export class Blade {
   const start={x:a.x+(b?b.x-a.x:0)*f,y:a.y+(b?b.y-a.y:0)*f,t:w}; const windowPoints=[start,...this.points.slice(first+1)];
   let length=0;for(let i=1;i<windowPoints.length;i++)length+=Math.hypot(windowPoints[i]!.x-windowPoints[i-1]!.x,windowPoints[i]!.y-windowPoints[i-1]!.y);
   this.speedHps=length/Math.max(t-w,C.minSpanMs)*1000;
-  const arm=this.profile==='beginner'?BEGINNER_BLADE.armHps:C.armHps, disarm=this.profile==='beginner'?BEGINNER_BLADE.disarmHps:C.disarmHps;
-  if((this.state==='ready'||this.state==='slow')&&this.speedHps>=arm){this.state='armed';this.arm++;for(let i=1;i<windowPoints.length;i++)this.emit(windowPoints[i-1]!,windowPoints[i]!);}
-  else if(this.state==='armed'){if(this.speedHps<disarm)this.state='slow';else this.emit(prev,cur);}
-  else if(this.state==='spent'&&this.budgetReady&&this.speedHps<disarm)this.state='slow';
+  const arm=this.profile==='beginner'?BEGINNER_BLADE.armSps:C.armSps, disarm=this.profile==='beginner'?BEGINNER_BLADE.disarmSps:C.disarmSps;
+  if((this.state==='ready'||this.state==='slow')&&this.speedSps>=arm){this.state='armed';this.arm++;for(let i=1;i<windowPoints.length;i++)this.emit(windowPoints[i-1]!,windowPoints[i]!);}
+  else if(this.state==='armed'){if(this.speedSps<disarm)this.state='slow';else this.emit(prev,cur);}
+  else if(this.state==='spent'&&this.budgetReady&&this.speedSps<disarm)this.state='slow';
   this.trail.push({...cur,mode:this.mode});if(this.trail.length>C.trailPoints)this.trail.shift();
   if(first>0)this.points.splice(0,first);
  }

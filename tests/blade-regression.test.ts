@@ -17,7 +17,7 @@ function drain(b:Blade,s:SliceSim) {const segments:BladeSegment[]=[];const strok
 describe('Slice blade regressions',()=>{
  it('backfills a crystal at the start',()=>{const b=new Blade(),s=board();s.placeTestCrystals([{x:.1,y:.5,note:0}]);b.begin(.1,.5,0);line(b,.1,.4,3,0);expect(drain(b,s).some(e=>e.type==='cut')).toBe(true);});
  it('does not arm at 1.1 H/s',()=>{const b=new Blade();b.begin(0,.5,0);line(b,0,.5,1.1,0);const seg:BladeSegment[]=[];b.drain(seg);expect(seg).toHaveLength(0);expect(b.state).toBe('ready');});
- it('keeps armed above the disarm threshold',()=>{const b=new Blade();b.begin(0,.5,0);const t=line(b,0,.3,3,0);line(b,.3,.4,1,t);expect(b.state).toBe('armed');});
+ it('keeps armed above the disarm threshold',()=>{const b=new Blade();b.begin(0,.5,0);const t=line(b,0,.3,3,0);line(b,.3,.5,1.6,t);expect(b.state).toBe('armed');});
  it('does not clip time or path',()=>{const b=new Blade();b.begin(0,.5,0);line(b,0,3,3,0);const seg:BladeSegment[]=[];b.drain(seg);expect(seg.at(-1)!.x1).toBeCloseTo(3);expect(b.state).toBe('armed');});
  it('caps a dense mixed-colour arm at six',()=>{const b=new Blade(),s=board();s.placeTestCrystals(Array.from({length:10},(_,i)=>({x:.1+i*.05,y:.5,note:i%2})));b.begin(0,.5,0);line(b,0,.7,3,0);drain(b,s);expect(s.state.stats.crystalsSliced).toBe(6);});
  it('limits a continuous five-second wiggle to one arm',()=>{const b=new Blade('beginner'),s=board();s.placeTestCrystals(Array.from({length:24},(_,i)=>({x:.1+(i%6)*.14,y:.44+Math.floor(i/6)*.04,note:i%2})));b.begin(0,.5,0);for(let t=8;t<=5000;t+=8){const p=(t*3/1000)%1.6;b.move(p<.8?p:1.6-p,.5,t);}drain(b,s);expect(s.state.stats.crystalsSliced).toBeLessThanOrEqual(6);expect(b.state).toBe('armed');});

@@ -1,5 +1,7 @@
+import { SLICE_FX } from '../fxConfig';
+const R = SLICE_FX.rescue.ribbon;
 export const vertex = `attribute float aEdge,aAlpha,aMode,aAlong; varying float vEdge,vAlpha,vMode,vAlong; void main(){vEdge=aEdge;vAlpha=aAlpha;vMode=aMode;vAlong=aAlong;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
-export const fragment = `uniform vec3 uEdgeColor; varying float vEdge,vAlpha,vMode,vAlong; void main(){if(vMode<.5 || vMode>1.5)discard;float core=exp(-4.*vEdge*vEdge);vec3 c=mix(uEdgeColor,vec3(2.5),core);float alpha=1.;if(vMode<.5){c=vec3(.812,.784,1.);alpha=.45;}else if(vMode>2.5){if(mod(vAlong,18.)>=10.)discard;c=vec3(.486,.467,.6);alpha=.5;}else if(vMode>1.5){c=vec3(.725,.702,.902)*.9;alpha=.55;}gl_FragColor=vec4(c,vAlpha*alpha);}`;
+export const fragment = `uniform vec3 uEdgeColor; varying float vEdge,vAlpha,vMode,vAlong; void main(){if(vMode<.5 || vMode>1.5)discard;float d=abs(vEdge);float core=1.-smoothstep(0.,${R.coreEdge},d);float body=exp(-${R.bodyFalloff.toFixed(1)}*d*d);gl_FragColor=vec4(mix(uEdgeColor*${R.bodyHdr},vec3(${R.coreHdr.toFixed(1)}),core),vAlpha*max(core,body));}`;
 
 export const inertFragment = `uniform vec3 uColor; uniform float uReadyAlpha,uSlowAlpha,uSpentAlpha,uEdgeAlpha,uReadyWidth,uSlowWidth,uSpentWidth,uEdgeWidth,uDashOn,uDashOff; varying float vEdge,vAlpha,vMode,vAlong; void main(){if(vMode>.5 && vMode<1.5)discard; float width=vMode<.5?uReadyWidth:(vMode<2.5?uSlowWidth:uSpentWidth);float edge=vMode<.5?0.:uEdgeWidth;if(vMode>2.5 && mod(vAlong,uDashOn+uDashOff)>=uDashOn)discard;float core=width/(width+2.*edge);bool isEdge=abs(vEdge)>core;float alpha=isEdge?uEdgeAlpha:(vMode<.5?uReadyAlpha:(vMode<2.5?uSlowAlpha:uSpentAlpha));gl_FragColor=vec4(isEdge?vec3(1.):uColor,vAlpha*alpha);
 #include <colorspace_fragment>

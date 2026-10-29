@@ -41,7 +41,17 @@ export const PLAY_START = { selectedScale: 1.28, crystalMax: .85, shaftAlpha: .0
 
 export const FACE = { worriedGapU:2, worriedExitGapU:2.4, worriedExitMs:300, sliceWorriedY:.28, blinkMinMs:2500, blinkMaxMs:5500, blinkMs:140, doubleBlink:.15, doubleDelayMs:180, wakeMs:400, reducedExpressionMs:120, reducedLookMs:200 } as const;
 
-export const SLICE_FX = { bellY: .13, spill: { high: 14, medium: 10, low: 6 } } as const;
+export const SLICE_FX = { bellY: .13, spill: { high: 14, medium: 10, low: 6 }, rescue: {
+  ribbon: { lifeMs: 260, minPx: 16, maxPx: 30, reducedMaxPx: 22, speedBase: 1.5, speedGain: 8, taper: .6, alphaPower: 1.5, halfWidth: .9, edgeColor: 0xffc56b, coreEdge: .22, bodyFalloff: 6, bodyHdr: 1.6, coreHdr: 3 },
+  slash: { lifeMs: 320, drawMs: 40, holdMs: 120, minLength: .30, lengthStep: .03, maxLength: .42, endWidth: .4, glowPx: 22, corePx: 6, coreHdr: 2.5, pool: 12, lowWidth: .8 },
+  hitstop: { minMs: 40, maxMs: 70, cutMs: 6, chainMs: 4, windowMs: 500, capMs: 160, reducedMs: 40 },
+  flash: { lifeMs: 140, intervalMs: 333, base: .10, step: .03, max: .22, reduced: .5 },
+  kick: { basePx: 4, stepPx: 1, maxPx: 8, attackMs: 30, returnMs: 30, traumaBase: .10, traumaStep: .03, traumaMax: .8 },
+  halves: { normal: 9, swipe: 5, speedCap: 3, spinBase: 6, spinRange: 5, pop: 1.1, popMs: 120, endScale: .85, lifeMs: 900, fadeMs: 250, gravity: 1.2 },
+  splash: { high: 18, medium: 12, low: 8, normalFraction: .7, normalDegrees: 70, swipeDegrees: 50, minSpeed: 6, speedRange: 8, minSizePx: 6, sizeRangePx: 6, life: .45, coreLife: .12, splatMs: 220, splatStart: .6, splatEnd: 1.6, splatAlpha: .7 },
+  sound: { start: .005, voices: 6, noiseLife: .03, highpassHz: 1800, q: .7, snapGain: .35, snapEnd: .001, hz: 520, pitchMax: 1.6, pitchStep: .06, chainCap: 9, thwackEndPitch: .35, pitchLife: .06, thwackGain: .30, thwackLife: .08 },
+  haptics: { slice: [18, 22, 26, 28], combo: [20, 40, 26], chainExtra: 4, cap: 30 },
+} } as const;
 export function spillCount(tier: keyof typeof SLICE_FX.spill, reduced: boolean): number { return Math.ceil(SLICE_FX.spill[tier] * (reduced ? .5 : 1)); }
 
 export const TAP_STAGE = {
@@ -71,3 +81,5 @@ export const BLADE_FX = {
   spent: { widthPx: 7, alpha: .75, edgePx: 2, dashOnPx: 10, dashOffPx: 8 },
   edgeAlpha: .55, head: { radiusPx: 18, widthPx: 3, edgePx: 1.5, alpha: .85, spentMin: .4, spentMax: .9, spentHz: 3, reducedAlpha: .7 },
 } as const;
+
+export function splashCount(tier: keyof typeof SLICE_FX.rescue.splash, reduced: boolean):number { return Math.ceil(SLICE_FX.rescue.splash[tier]*(reduced?.5:1)); }

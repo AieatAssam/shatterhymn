@@ -8,6 +8,7 @@ import { glyphShape } from "./glyphs";
 import { NOTE_COLORS } from "./fxConfig";
 import { GlowQuads } from './glowQuads';
 import type { SliceCrystal, SliceEvent } from '../sim/sliceTypes';
+import { SLICE_FX } from './fxConfig';
 import { buildChordTable, chordFor, CutCaps, halfScale, tumbleAngle, CAP_COOL } from './sliceCap';
 import type { Tier } from './quality';
 import { SLICE_TOSS } from '../sim/sliceConfig';
@@ -79,9 +80,9 @@ export class Crystals {
   cut(e: Extract<SliceEvent,{type:'cut'}>, aspect:number):{x0:number;y0:number;x1:number;y1:number} {
     const nx=-e.dirY, ny=e.dirX, co=Math.cos(e.angle), si=Math.sin(e.angle);
     const localX=nx*co+ny*si, localY=-nx*si+ny*co;
-    const impulse=3*Math.min(e.speed,3)/3;
+    const fx=SLICE_FX.rescue.halves,impulse=fx.swipe*Math.min(e.speed/Math.min(1,aspect),fx.speedCap)/fx.speedCap;
     const chord=chordFor(this.tables[e.note]!, -localY,localX);
-    for(const side of [-1,1]) Object.assign(this.halves.add(),{x:(e.x-aspect/2)*10,y:(e.y-.5)*10,vx:e.vx*10+side*nx*4.5+e.dirX*impulse,vy:e.vy*10+side*ny*4.5+e.dirY*impulse,angle:e.angle,spin:side*(4+(e.id%5)),note:e.note,nx:localX*side,ny:localY*side,ax:-localY*side,ay:localX*side,mid:-side*chord.mid,half:chord.half,age:0});
+    for(const side of [-1,1]) Object.assign(this.halves.add(),{x:(e.x-aspect/2)*10,y:(e.y-.5)*10,vx:e.vx*10+side*nx*fx.normal+e.dirX*impulse,vy:e.vy*10+side*ny*fx.normal+e.dirY*impulse,angle:e.angle,spin:side*(fx.spinBase+(e.id%fx.spinRange)),note:e.note,nx:localX*side,ny:localY*side,ax:-localY*side,ay:localX*side,mid:-side*chord.mid,half:chord.half,age:0});
     const x=(e.x-aspect/2)*10,y=(e.y-.5)*10, scale=SLICE_TOSS.radius*10; return {x0:x+e.dirX*(chord.mid-chord.half)*scale,y0:y+e.dirY*(chord.mid-chord.half)*scale,x1:x+e.dirX*(chord.mid+chord.half)*scale,y1:y+e.dirY*(chord.mid+chord.half)*scale};
   }
   updateSlice(crystals:readonly SliceCrystal[], aspect:number, dt:number, gravity:number, reduced:boolean):void {
@@ -92,7 +93,7 @@ export class Crystals {
       a.aColor!.setXYZ(index,c.r,c.g,c.b);a.aCore!.setXYZ(index,core.r,core.g,core.b);const dark=note===5?this.shadow:CAP_COOL[note]!;a.aDark!.setXYZ(index,dark.r,dark.g,dark.b);a.aFlash!.setX(index,0);a.aCrack!.setX(index,0);a.aFade!.setX(index,fade);a.aKind!.setX(index,note===5?1:0);a.aCut!.setXYZW(index,nx,ny,0,cut?1:0);if(h){this.capNormal.set(-nx,-ny,0);this.capDir.set(ny,-nx,0);this.caps.push(this.object.matrix,this.capNormal,this.capDir,h.mid,h.half,note,h.age,fade);}
     };
     for(const c of crystals)if(c.alive)draw(c.kind==='dark'?5:c.note,(c.x-aspect/2)*10,(c.y-.5)*10,c.angle,c.r*10,1,0,0,false);
-    for(const h of this.halves.slots){if(h.age>=900)continue;h.age+=dt;if(h.age>=900)continue;const seconds=dt/1000;h.x+=h.vx*seconds;h.y+=h.vy*seconds;h.vy-=1.2*gravity*10*seconds;h.angle+=h.spin*seconds;draw(h.note,h.x,h.y,h.angle,halfScale(h.age),Math.min(1,(900-h.age)/250),h.nx,h.ny,true,h);}
+    for(const h of this.halves.slots){if(h.age>=SLICE_FX.rescue.halves.lifeMs)continue;h.age+=dt;if(h.age>=SLICE_FX.rescue.halves.lifeMs)continue;const seconds=dt/1000;h.x+=h.vx*seconds;h.y+=h.vy*seconds;h.vy-=SLICE_FX.rescue.halves.gravity*gravity*10*seconds;h.angle+=h.spin*seconds;draw(h.note,h.x,h.y,h.angle,halfScale(h.age),Math.min(1,(SLICE_FX.rescue.halves.lifeMs-h.age)/SLICE_FX.rescue.halves.fadeMs),h.nx,h.ny,true,h);}
     this.caps.end(); for(let i=0;i<6;i++){const mesh=this.meshes[i]!,a=this.attrs[i]!;mesh.count=this.counts[i]!;mesh.visible=mesh.count>0;mesh.instanceMatrix.needsUpdate=true;for(const attr of Object.values(a))attr.needsUpdate=true;}
   }
   setTier(t:Tier):void {this.caps.setTier(t);}

@@ -980,4 +980,4 @@ These override the numbers earlier in this file.
 
 ## §24. Slice rescue
 
-`docs/SLICE-RESCUE.md` R1 to R3, including its lead amendment at the end, are approved and override this file and POLISH.md where they differ. Blade speed thresholds stay in screen heights per second at their current values.
+`docs/SLICE-RESCUE.md` R1 to R3, including its lead amendment at the end, are approved and override this file and POLISH.md where they differ. Its art-director amendment 2 (speed in short sides per second, arm 2.2 S/s; per-stroke budget refills only on lift) supersedes the earlier lead amendment.
