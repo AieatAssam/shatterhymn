@@ -7,7 +7,7 @@
   font-family: Inter, sans-serif;
 }
 html, body, #app { width: 100%; height: 100%; margin: 0; overflow: hidden; }
-html, body { touch-action: none; user-select: none; overscroll-behavior: none; }
+html, body { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; overscroll-behavior: none; }
 #app { position: relative; }
 #gl, #surface, #hud, #screens { position: absolute; inset: 0; width: 100%; height: 100%; }
 .is-hidden { display: none !important; }
@@ -220,3 +220,5 @@ body.reduce-motion .demo[data-mode=slice] .demo-hand { animation:demo-fade 1.4s 
 @media (max-height:499px) and (max-width:419px) { .title-screen .mode-play { flex-direction:column; align-items:center; text-align:center; gap:4px; min-height:0; padding:8px 6px; } .mode-copy { min-width:0; justify-items:center; } .mode-name { font-size:24px; } .mode-how { font-size:13px; overflow-wrap:normal; } .mode-best { font-size:13px; } .mode-play .mode-art { width:64px; height:38px; } }
 
 .title-screen.intro-arrival .mode-card { pointer-events: none; }
+
+#surface, #gl { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }

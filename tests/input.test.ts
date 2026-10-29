@@ -29,3 +29,16 @@ it("creates the iOS switch and follows vibration settings", () => {
   const other = doc.createElement(); new Input(other as unknown as HTMLElement, { onFirstGesture: () => {}, iosSwitch: false });
   expect(other.replacement).toBeUndefined();
 });
+
+describe('slice pointer routing',()=>{
+ function fixture(fail=false){
+  const surface=new Surface(); const calls:string[]=[];const captured:number[]=[];
+  Object.assign(surface,{setPointerCapture:(id:number)=>{captured.push(id);if(fail)throw new Error('capture');},releasePointerCapture:()=>{}});
+  const input=new Input(surface as unknown as HTMLElement,{onFirstGesture:()=>{},iosSwitch:false,onTap:()=>calls.push('tap')});
+  const dispatch=(type:string,id:number,extra:Record<string,unknown>={})=>surface.dispatch(type,{pointerId:id,pointerType:'touch',clientX:1,clientY:2,...extra});
+  return {input,calls,captured,dispatch};
+ }
+ it('captures a stroke and recovers after cancel',()=>{const f=fixture();f.input.setStrokeHandlers({begin:()=>f.calls.push('begin'),move:()=>f.calls.push('move'),end:()=>f.calls.push('end')});f.dispatch('pointerdown',1);f.dispatch('pointermove',1);f.dispatch('pointercancel',1);f.dispatch('lostpointercapture',1);f.dispatch('pointerdown',2);expect(f.captured).toEqual([1,2]);expect(f.calls).toEqual(['begin','move','end','begin']);});
+ it('keeps a stroke when capture fails and routes coalesced samples',()=>{const f=fixture(true);const times:number[]=[];f.input.setStrokeHandlers({begin:()=>{},move:p=>times.push(p.t),end:()=>{}});f.dispatch('pointerdown',1);f.dispatch('pointermove',1,{getCoalescedEvents:()=>[1,2,3,4].map(timeStamp=>({clientX:0,clientY:0,pointerType:'touch',timeStamp}))});expect(times).toEqual([1,2,3,4]);f.dispatch('pointermove',1,{getCoalescedEvents:()=>[]});expect(times).toHaveLength(5);});
+ it('lets the newest finger win and preserves tap routing',()=>{const f=fixture();f.input.setStrokeHandlers({begin:()=>f.calls.push('begin'),move:()=>f.calls.push('move'),end:()=>f.calls.push('end')});f.dispatch('pointerdown',1);f.dispatch('pointerdown',2);f.dispatch('pointermove',1);f.dispatch('pointermove',2);expect(f.calls).toEqual(['begin','end','begin','move']);f.input.setStrokeHandlers(null);f.dispatch('pointerdown',3);expect(f.calls.at(-1)).toBe('tap');});
+});

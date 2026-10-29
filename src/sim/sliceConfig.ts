@@ -1,5 +1,5 @@
-export const SLICE_BLADE = { windowMs: 64, minSpanMs: 32, armHps: 1.4, disarmHps: 0.9, maxArmMs: 350, maxArmPathH: 1.5, maxCutsPerArm: 6, rearmSlowMs: 100, radius: { touch: 0.020, pen: 0.020, mouse: 0.012 }, tapMaxPathH: 0.03, trailPoints: 32 } as const;
-export const BEGINNER_BLADE = { armHps: 1.2, disarmHps: 0.8, rearmSlowMs: 80 } as const;
+export const SLICE_BLADE = { windowMs: 64, minSpanMs: 32, armHps: 1.4, disarmHps: 0.9, maxCutsPerArm: 6, budget: { cap: 6, refillMs: 800 }, radius: { touch: 0.020, pen: 0.020, mouse: 0.012 }, tapMaxPathH: 0.03, trailPoints: 64 } as const;
+export const BEGINNER_BLADE = { armHps: 1.2, disarmHps: 0.8 } as const;
 export const SLICE_TOSS = { spawnY: -0.08, x0Frac: [0.12, 0.88], apexXFrac: [0.15, 0.85], maxVx: 0.30, gravity: { standard: 1.6, beginner: 1.35 }, apexY: { standard: [0.55, 0.88], beginner: [0.60, 0.80] }, spin: [1.2, 3.5], radius: 0.075, hitRadius: 0.085, darkRadius: 0.070, darkHitRadius: 0.040, staggerMs: 110, fallY: -0.10, maxAlive: 14 } as const;
 export const SLICE_SCORE = { perCut: 10, chainCap: 10, choirChain: 5, choirFlat: 500, choirEach: 10, comboMin: 3, comboEach: 20 } as const;
 export const SLICE_RULES = { maxCracks: 3, crackGraceMs: 1500, missGraceMs: { standard: 6000, beginner: 30000 }, darkFromMs: { standard: 12000, beginner: 25000 }, levelMs: 20000 } as const;

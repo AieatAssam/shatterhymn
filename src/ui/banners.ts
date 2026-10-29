@@ -1,5 +1,6 @@
 import type { SimEvent } from "../sim/types";
 export const TIPS: Record<string, string> = {
+ lift: "Lift your finger to slice again!",
  dark: "Don't hit dark ones!",
  fall: "Catch them before they fall!",
  golden: "Gold crystal! Smash it for lots of points.",

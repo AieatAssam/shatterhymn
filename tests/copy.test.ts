@@ -16,6 +16,7 @@ function listFiles(dir: string): string[] {
 }
 
 describe('player copy', () => {
+  it('includes the lift tip', () => expect(TIPS.lift).toBe('Lift your finger to slice again!'));
   it('removes old hold and dial wording from source and documentation', () => {
     const files = listFiles('src').filter(path => /\.(ts|css|html|md)$/.test(path));
     const content = [...files.map(file => readFileSync(file, 'utf8')), readFileSync('README.md', 'utf8'), readFileSync('CREDITS.md', 'utf8')]

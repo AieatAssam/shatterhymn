@@ -63,3 +63,11 @@ export const TAP_STAGE = {
 export function warnColor(kind: 'golden' | 'chord', note: number): number { return kind === 'golden' ? 0xffd27a : NOTE_COLORS[note]!; }
 
 export const CRYSTAL_EDGE = { facetLo: .75, facetHi: 1.15, facetLight: [.15, .85], topFacet: [.6, .95], topFacetLift: .55, topFacetGain: .55, edgeSil: [.80, .97], edgeMix: .55, edgeGain: .85, specSoft: [16, .12], specSharp: [64, 1.2], outline: 0x1a0f2e, faceNz: [.93, .97], rim: [.94, 1.0], rimGain: .8, bodyMaxChannel: .92, bodyMaxLum: .36, poolAlpha: .20, haloColor: 0x241445, haloScale: 1.30, haloAlpha: .55, shadowAlpha: .55, lightLuma: [.45, .75], lightEdgeGain: .15, lightEdgeWidth: .06, sheenAt: [-.2, .24], sheenR: .13, sheenGain: .32 } as const;
+
+export const BLADE_FX = {
+  inertColor: 0x3b2f7a, inertLifeMs: 320,
+  ready: { widthPx: 7, alpha: .65, edgePx: 0 },
+  slow: { widthPx: 8, alpha: .80, edgePx: 2 },
+  spent: { widthPx: 7, alpha: .75, edgePx: 2, dashOnPx: 10, dashOffPx: 8 },
+  edgeAlpha: .55, head: { radiusPx: 18, widthPx: 3, edgePx: 1.5, alpha: .85, spentMin: .4, spentMax: .9, spentHz: 3, reducedAlpha: .7 },
+} as const;

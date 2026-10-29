@@ -5,7 +5,7 @@ import { SliceSim } from '../src/sim/sliceSim';
 import type { BladeSegment } from '../src/sim/sliceTypes';
 function run(speed:number,profile:'beginner'|'standard'='beginner') {const b=new Blade(profile),sim=new SliceSim({seed:1,daily:false,profile:'beginner',aspect:1,slow:false,test:{waves:false,gravity:false,cracks:false}});sim.placeTestCrystals([{x:.2,y:.5,note:0},{x:.4,y:.5,note:0},{x:.6,y:.5,note:0}]);b.begin(.05,.5,0);for(let t=8;t<=600/speed;t+=8)b.move(.05+speed*t/1000,.5,t);b.end();const segments:BladeSegment[]=[];const ended=b.drain(segments);const events=sim.step({segments,strokeEnded:ended});return {b,sim,events};}
 describe('Slice core',()=>{
- it('uses the specified blade constants',()=>{expect(SLICE_BLADE).toEqual({windowMs:64,minSpanMs:32,armHps:1.4,disarmHps:.9,maxArmMs:350,maxArmPathH:1.5,maxCutsPerArm:6,rearmSlowMs:100,radius:{touch:.02,pen:.02,mouse:.012},tapMaxPathH:.03,trailPoints:32});});
+ it('uses the specified blade constants',()=>{expect(SLICE_BLADE).toEqual({windowMs:64,minSpanMs:32,armHps:1.4,disarmHps:.9,maxCutsPerArm:6,budget:{cap:6,refillMs:800},radius:{touch:.02,pen:.02,mouse:.012},tapMaxPathH:.03,trailPoints:64});});
  it.each([.5,1])('does not cut on a %s H/s beginner drag',speed=>{expect(run(speed).sim.state.stats.crystalsSliced).toBe(0);});
  it('allows 1.3 H/s in beginner runs only',()=>{expect(run(1.3,'beginner').sim.state.stats.crystalsSliced).toBeGreaterThan(0);expect(run(1.3,'standard').sim.state.stats.crystalsSliced).toBe(0);});
  it('cuts and scores a same-colour stroke',()=>{const r=run(3);expect(r.sim.state.stats.crystalsSliced).toBe(3);expect(r.sim.state.stats.score).toBe(120);expect(r.events.filter(e=>e.type==='cut').map(e=>e.points)).toEqual([10,20,30]);});
