@@ -20,3 +20,5 @@ export function hudChipLayout(viewport: number, bestWidth: number): { maxWidth: 
 }
 
 export function multiplierText(mult: number): string { return mult > 1 ? `×${mult}` : ""; }
+
+export function bestLabel(best: number): string | null { return best === 0 ? null : `BEST ${best.toLocaleString("en-US")}`; }

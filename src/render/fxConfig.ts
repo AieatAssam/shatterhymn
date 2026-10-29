@@ -41,7 +41,7 @@ export const PLAY_START = { selectedScale: 1.28, crystalMax: .85, shaftAlpha: .0
 
 export const FACE = { worriedGapU:2, worriedExitGapU:2.4, worriedExitMs:300, sliceWorriedY:.28, blinkMinMs:2500, blinkMaxMs:5500, blinkMs:140, doubleBlink:.15, doubleDelayMs:180, wakeMs:400, reducedExpressionMs:120, reducedLookMs:200 } as const;
 
-export const SLICE_FX = { spill: { high: 14, medium: 10, low: 6 } } as const;
+export const SLICE_FX = { bellY: .13, spill: { high: 14, medium: 10, low: 6 } } as const;
 export function spillCount(tier: keyof typeof SLICE_FX.spill, reduced: boolean): number { return Math.ceil(SLICE_FX.spill[tier] * (reduced ? .5 : 1)); }
 
 export const TAP_STAGE = {
@@ -60,4 +60,6 @@ export const TAP_STAGE = {
   breathAmt: .05, hueDriftDeg: 6, hueDriftPeriodS: 24,
   gain: 1.0,
 } as const;
-export const CRYSTAL_EDGE = { outline: 0x1a0f2e, faceNz: [.93, .97], rim: [.94, 1.0], rimGain: .8, bodyMaxChannel: .92, bodyMaxLum: .36, poolAlpha: .20, shadowAlpha: .35 } as const;
+export function warnColor(kind: 'golden' | 'chord', note: number): number { return kind === 'golden' ? 0xffd27a : NOTE_COLORS[note]!; }
+
+export const CRYSTAL_EDGE = { facetLo: .75, facetHi: 1.15, facetLight: [.15, .85], topFacet: [.6, .95], topFacetLift: .55, topFacetGain: .55, edgeSil: [.80, .97], edgeMix: .55, edgeGain: .85, specSoft: [16, .12], specSharp: [64, 1.2], outline: 0x1a0f2e, faceNz: [.93, .97], rim: [.94, 1.0], rimGain: .8, bodyMaxChannel: .92, bodyMaxLum: .36, poolAlpha: .20, shadowAlpha: .35, sheenAt: [-.2, .24], sheenR: .13, sheenGain: .32 } as const;

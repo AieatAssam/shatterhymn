@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Color, Scene } from 'three';
 import { AutoTier } from '../src/render/quality';
-import { crystalVisualScale, SHATTER } from '../src/render/fxConfig';
+import { crystalVisualScale, SHATTER, warnColor, NOTE_COLORS } from '../src/render/fxConfig';
 import { GlowQuads } from '../src/render/glowQuads';
 import { Rings } from '../src/render/rings';
 import { heatForStreak, shaftsForStrike } from '../src/render/juice';
@@ -35,3 +35,5 @@ it('keeps the signed shard tuning and pool capacity',()=>{expect(SHATTER.counts)
 it('steps down the low sub-tier after thirty slow frames',()=>{const a=new AutoTier('low');for(let i=0;i<20;i++)a.update(100);for(let i=0;i<30;i++)a.update(41);expect(a.lowSub).toBe(true);});
 
 it.each([360,390,430])('reserves the HUD gap at %i px',width=>{const layout=hudChipLayout(width,110);expect(layout.maxWidth).toBeLessThanOrEqual(width/2-64);expect(layout.gap).toBe(16);expect(layout.maxWidth).toBeGreaterThanOrEqual(92);});
+
+it('warnColor is gold for golden and the note colour for chord',()=>{expect(warnColor('golden',0)).toBe(0xffd27a);for(let note=0;note<5;note++)expect(warnColor('chord',note)).toBe(NOTE_COLORS[note]);});

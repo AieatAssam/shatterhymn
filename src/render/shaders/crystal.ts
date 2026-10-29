@@ -24,7 +24,14 @@ void main(){
   color=mix(color,coreColor,core*.2);
   vec3 H=normalize(uKeyDir+V);
   float glint=pow(max(dot(N,H),0.),48.)*(.55+.45*sin(uTime*7.+vSeed*31.));
-  color+=vec3(1.)*smoothstep(${CRYSTAL_EDGE.rim[0].toFixed(2)},${CRYSTAL_EDGE.rim[1].toFixed(1)},silhouette)*${CRYSTAL_EDGE.rimGain.toFixed(1)}+vec3(1.)*glint*1.6;
+  float face=smoothstep(${CRYSTAL_EDGE.faceNz[0]},${CRYSTAL_EDGE.faceNz[1]},abs(vLocalN.z));
+  float fl=max(dot(N,uKeyDir),0.);
+  vec3 bevel=mix(vDark*${CRYSTAL_EDGE.facetLo},vColor*${CRYSTAL_EDGE.facetHi},smoothstep(${CRYSTAL_EDGE.facetLight[0]},${CRYSTAL_EDGE.facetLight[1]},fl));
+  bevel+=mix(vColor,vec3(1.),${CRYSTAL_EDGE.topFacetLift})*smoothstep(${CRYSTAL_EDGE.topFacet[0]},${CRYSTAL_EDGE.topFacet[1]},fl)*${CRYSTAL_EDGE.topFacetGain};
+  color=mix(bevel,color,face);
+  float spec=pow(max(dot(N,H),0.),${CRYSTAL_EDGE.specSoft[0].toFixed(1)})*${CRYSTAL_EDGE.specSoft[1]}+pow(max(dot(N,H),0.),${CRYSTAL_EDGE.specSharp[0].toFixed(1)})*${CRYSTAL_EDGE.specSharp[1]};
+  color+=vec3(1.)*spec*face;
+  color+=mix(vColor,vec3(1.),.7)*face*smoothstep(${CRYSTAL_EDGE.sheenR.toFixed(2)},0.,length(vLocal.xy-vec2(${CRYSTAL_EDGE.sheenAt[0].toFixed(2)},${CRYSTAL_EDGE.sheenAt[1].toFixed(2)})))*${CRYSTAL_EDGE.sheenGain.toFixed(2)};
   color+=vec3(1.)*fres*.6*uHeat;
   vec3 irid=.5+.5*cos(6.2831*(fres+uTime*.04+vec3(0.,.33,.67)));
   float e=min(edge(vLocal.xy*3.),min(edge(vLocal.xy*6.),edge(vLocal.xy*12.)));
@@ -38,7 +45,7 @@ void main(){
          +vec3(1.,.82,.48)*0.25*(0.5+0.5*sin(uTime*9.4248));
   }
   if(vCut.w != 0. && !gl_FrontFacing) color=vDark;
-  float face=smoothstep(.93,.97,abs(vLocalN.z)); color=mix(mix(uOutline,vDark,.55),color,face);
+  float darkEdge=smoothstep(${CRYSTAL_EDGE.edgeSil[0]},${CRYSTAL_EDGE.edgeSil[1]},silhouette); color=mix(color,mix(uOutline,vDark,${CRYSTAL_EDGE.edgeMix}),darkEdge*${CRYSTAL_EDGE.edgeGain});
   color=mix(color,vec3(1.),vFlash);
   color*=min(1.,${Number(PLAY_START.crystalMax).toFixed(2)}/max(max(color.r,color.g),max(color.b,.0001)));
   gl_FragColor=vec4(color,vFade);

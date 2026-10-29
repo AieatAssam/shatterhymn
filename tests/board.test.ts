@@ -27,5 +27,5 @@ it('stageUniforms disables motion when reduced and gives the normal sweep angle'
   for (const t of [0,1,12,51]) { expect(stageUniforms(t,true).uStageMotion).toBe(0); expect(stageUniforms(t,false).uStageMotion).toBe(1); expect(stageUniforms(t,false).sweepAngle).toBeCloseTo(2*Math.PI*t/12); }
 });
 it('crystal edge config', () => {
-  expect(CRYSTAL_EDGE).toEqual({outline:0x1a0f2e,faceNz:[.93,.97],rim:[.94,1],rimGain:.8,bodyMaxChannel:.92,bodyMaxLum:.36,poolAlpha:.20,shadowAlpha:.35}); expect(FINISH.gemBodyMax).toBe(.92);
+  expect(CRYSTAL_EDGE).toEqual({facetLo:.75,facetHi:1.15,facetLight:[.15,.85],topFacet:[.6,.95],topFacetLift:.55,topFacetGain:.55,edgeSil:[.80,.97],edgeMix:.55,edgeGain:.85,specSoft:[16,.12],specSharp:[64,1.2],outline:0x1a0f2e,faceNz:[.93,.97],rim:[.94,1],rimGain:.8,bodyMaxChannel:.92,bodyMaxLum:.36,poolAlpha:.20,shadowAlpha:.35,sheenAt:[-.2,.24],sheenR:.13,sheenGain:.32}); expect(FINISH.gemBodyMax).toBe(.92);
 });

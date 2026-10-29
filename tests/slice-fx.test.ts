@@ -18,7 +18,7 @@ import { ExtrudeGeometry, Quaternion, Scene, Vector3 } from 'three';
 import { glyphShape } from '../src/render/glyphs';
 import { buildChordTable, chordFor, capHeat, tumbleAngle, halfScale, CAP } from '../src/render/sliceCap';
 import { SLICE_TOSS } from '../src/sim/sliceConfig';
-import { spillCount } from '../src/render/fxConfig';
+import { spillCount, SLICE_FX } from '../src/render/fxConfig';
 import { Shards } from '../src/render/shards';
 import { Sparks } from '../src/render/sparks';
 
@@ -34,3 +34,5 @@ describe('Slice cut face',()=>{
  it('spill counts per tier are 14 / 10 / 6 and halve (ceil) with reduced motion',()=>{expect(['high','medium','low'].map(t=>spillCount(t as 'high'|'medium'|'low',false))).toEqual([14,10,6]);expect(['high','medium','low'].map(t=>spillCount(t as 'high'|'medium'|'low',true))).toEqual([7,5,3]);});
  it('spill shards never harvest and die within 0.75 s',()=>{const scene=new Scene(),sparks=new Sparks(scene),shards=new Shards(scene,sparks,{});shards.spill(-1,0,1,0,0,1,0,0,0,14,1.6);const pool=(shards as unknown as {pool:{age:number;life:number;harvest:boolean}[]}).pool;const spill=pool.slice(0,14);expect(spill.every(s=>!s.harvest&&s.life<=.75)).toBe(true);shards.update(.75);expect(spill.every(s=>s.age>=s.life)).toBe(true);shards.dispose();sparks.dispose();});
 });
+
+it('the slice face is fully on screen: bellY - faceRadiusH >= 8 / 844',()=>{const faceRadiusH=5*.4/2/10;expect(SLICE_FX.bellY-faceRadiusH).toBeGreaterThanOrEqual(8/844);});
