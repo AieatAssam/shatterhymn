@@ -33,7 +33,7 @@ it('preserves the first combo when a new finger starts before the next tick',()=
  b.begin(0,.7,161);for(let t=8;t<=160;t+=8)b.move(3*t/1000,.7,161+t);
  const segments:BladeSegment[]=[],endings:{stroke:number;index:number}[]=[];
  const strokeEnded=b.drain(segments,endings);const events=s.step({segments,strokeEnded,endings});
- expect(events.filter(e=>e.type==='strokeEnd')).toEqual([{type:'strokeEnd',cuts:3,bonus:60}]);
+ expect(events.filter(e=>e.type==='strokeEnd')).toEqual([expect.objectContaining({type:'strokeEnd',cuts:3,bonus:60})]);
  expect(s.state.strokeCuts).toBe(1);
 });
 

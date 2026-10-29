@@ -77,6 +77,8 @@ export class Crystals {
     for(let i=0;i<6;i++){const mesh=this.meshes[i]!; mesh.count=this.counts[i]!; mesh.visible=mesh.count>0; mesh.instanceMatrix.needsUpdate=true; const a=this.attrs[i]!; a.aColor!.needsUpdate=true; a.aCore!.needsUpdate=true; a.aDark!.needsUpdate=true; a.aFlash!.needsUpdate=true; a.aCrack!.needsUpdate=true; a.aFade!.needsUpdate=true; a.aKind!.needsUpdate=true; a.aCut!.needsUpdate=true;}
   }
   private halves = new HalfPool();
+  private bigFlash=new Map<number,number>();
+  bigHit(id:number):void {this.bigFlash.set(id,60);}
   cut(e: Extract<SliceEvent,{type:'cut'}>, aspect:number):{x0:number;y0:number;x1:number;y1:number} {
     const nx=-e.dirY, ny=e.dirX, co=Math.cos(e.angle), si=Math.sin(e.angle);
     const localX=nx*co+ny*si, localY=-nx*si+ny*co;
@@ -92,7 +94,9 @@ export class Crystals {
       this.object.position.set(x,y,0);this.spinQ.setFromAxisAngle(this.zAxis,angle); if(h){this.axis.set(h.ax,h.ay,0);this.tumbleQ.setFromAxisAngle(this.axis,tumbleAngle(h.age,reduced));this.object.quaternion.copy(this.spinQ).multiply(this.tumbleQ);}else this.object.quaternion.copy(this.spinQ);this.object.scale.setScalar(scale);this.object.updateMatrix();mesh.setMatrixAt(index,this.object.matrix);
       a.aColor!.setXYZ(index,c.r,c.g,c.b);a.aCore!.setXYZ(index,core.r,core.g,core.b);const dark=note===5?this.shadow:CAP_COOL[note]!;a.aDark!.setXYZ(index,dark.r,dark.g,dark.b);a.aFlash!.setX(index,0);a.aCrack!.setX(index,0);a.aFade!.setX(index,fade);a.aKind!.setX(index,note===5?1:0);a.aCut!.setXYZW(index,nx,ny,0,cut?1:0);if(h){this.capNormal.set(-nx,-ny,0);this.capDir.set(ny,-nx,0);this.caps.push(this.object.matrix,this.capNormal,this.capDir,h.mid,h.half,note,h.age,fade);}
     };
-    for(const c of crystals)if(c.alive)draw(c.kind==='dark'?5:c.note,(c.x-aspect/2)*10,(c.y-.5)*10,c.angle,c.r*10,1,0,0,false);
+    for(const c of crystals)if(c.alive){draw(c.kind==='dark'?5:c.note,(c.x-aspect/2)*10,(c.y-.5)*10,c.angle,c.r*10,1,0,0,false);
+      if(c.kind==='big'){const a=this.attrs[c.note]!,index=this.counts[c.note]!-1;const flash=this.bigFlash.get(c.id)??0;a.aFlash!.setX(index,flash>0?1:0);a.aCrack!.setX(index,(3-c.hp)/3);this.bigFlash.set(c.id,Math.max(0,flash-dt));const x=(c.x-aspect/2)*10,y=(c.y-.5)*10;for(let i=0;i<c.hp;i++){const angle=c.angle+i*Math.PI*2/3;this.glow.disc(x+Math.cos(angle)*c.r*12,y+Math.sin(angle)*c.r*12,.5,60/Math.max(1,window.innerHeight),this.gold,.9);}}
+    }
     for(const h of this.halves.slots){if(h.age>=SLICE_FX.rescue.halves.lifeMs)continue;h.age+=dt;if(h.age>=SLICE_FX.rescue.halves.lifeMs)continue;const seconds=dt/1000;h.x+=h.vx*seconds;h.y+=h.vy*seconds;h.vy-=SLICE_FX.rescue.halves.gravity*gravity*10*seconds;h.angle+=h.spin*seconds;draw(h.note,h.x,h.y,h.angle,halfScale(h.age),Math.min(1,(SLICE_FX.rescue.halves.lifeMs-h.age)/SLICE_FX.rescue.halves.fadeMs),h.nx,h.ny,true,h);}
     this.caps.end(); for(let i=0;i<6;i++){const mesh=this.meshes[i]!,a=this.attrs[i]!;mesh.count=this.counts[i]!;mesh.visible=mesh.count>0;mesh.instanceMatrix.needsUpdate=true;for(const attr of Object.values(a))attr.needsUpdate=true;}
   }

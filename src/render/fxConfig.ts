@@ -43,7 +43,7 @@ export const FACE = { worriedGapU:2, worriedExitGapU:2.4, worriedExitMs:300, sli
 
 export const SLICE_FX = { bellY: .13, spill: { high: 14, medium: 10, low: 6 }, rescue: {
   ribbon: { lifeMs: 260, minPx: 16, maxPx: 30, reducedMaxPx: 22, speedBase: 1.5, speedGain: 8, taper: .6, alphaPower: 1.5, halfWidth: .9, edgeColor: 0xffc56b, coreEdge: .22, bodyFalloff: 6, bodyHdr: 1.6, coreHdr: 3 },
-  slash: { lifeMs: 320, drawMs: 40, holdMs: 120, minLength: .30, lengthStep: .03, maxLength: .42, endWidth: .4, glowPx: 22, corePx: 6, coreHdr: 2.5, pool: 12, lowWidth: .8 },
+  slash: { lifeMs: 320, drawMs: 40, holdMs: 120, minLength: .30, lengthStep: .03, maxLength: .42, endWidth: .4, glowPx: 22, coreEdge: .22, coreHalfWidth: .9, coreSolidEdge: .8, minSpeedSps: 2.2, coreHdr: 3, pool: 12, lowWidth: .8 },
   hitstop: { minMs: 40, maxMs: 70, cutMs: 6, chainMs: 4, windowMs: 500, capMs: 160, reducedMs: 40 },
   flash: { lifeMs: 140, intervalMs: 333, base: .10, step: .03, max: .22, reduced: .5 },
   kick: { basePx: 4, stepPx: 1, maxPx: 8, attackMs: 30, returnMs: 30, traumaBase: .10, traumaStep: .03, traumaMax: .8 },

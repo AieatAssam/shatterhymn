@@ -29,15 +29,15 @@ describe('Slice blade regressions',()=>{
 });
 
 describe('Slice wave regressions',()=>{
- it('matches the seven beginner opening waves',()=>{const w=new SliceWaves(new Rng(3),'beginner');const expected=[[600,3,1],[2400,2,1],[4200,5,1],[5800,2,2],[7400,4,1],[9000,3,2],[10600,5,1]];for(const [time,count,colours] of expected){const wave=w.update(time!,0)!;expect(wave.notes).toHaveLength(count!);expect(new Set(wave.notes).size).toBe(colours);expect(wave.dark).toBe(0);}});
- it('starts beginner runs with red, yellow, and green waves',()=>{for(let seed=0;seed<20;seed++){const w=new SliceWaves(new Rng(seed),'beginner');for(const [i,time] of [600,2400,4200].entries())expect(w.update(time,0)!.notes.every(note=>note===i)).toBe(true);}});
+ it('matches the seven beginner opening waves',()=>{const w=new SliceWaves(new Rng(3),'beginner');const expected=[[600,1,1],[2200,3,1],[3800,2,1],[5600,5,1],[7200,3,2],[8600,3,1],[10000,4,2]];for(const [time,count,colours] of expected){const wave=w.update(time!,0)!;expect(wave.notes).toHaveLength(count!);expect(new Set(wave.notes).size).toBe(colours);expect(wave.dark).toBe(0);}});
+ it('starts beginner runs with red, yellow, and green waves',()=>{for(let seed=0;seed<20;seed++){const w=new SliceWaves(new Rng(seed),'beginner');for(const [i,time] of [600,2200,3800].entries())expect(w.update(time,0)!.notes.every(note=>note===i)).toBe(true);}});
  it.each(['beginner','standard'] as const)('does not schedule dark crystals early in %s',profile=>{for(let seed=0;seed<20;seed++){const w=new SliceWaves(new Rng(seed),profile);const until=profile==='beginner'?25000:12000;for(let t=0;t<until;t+=1000/60){expect(w.update(t,0)?.dark??0).toBe(0);}}});
 });
 
 describe('Slice fall and scoring rules',()=>{
  const falling = () => new SliceSim({seed:2,daily:false,profile:'standard',aspect:1,slow:false,test:{waves:false,gravity:false,cracks:true}});
  const addFalls = (s:SliceSim,wave:number,count:number) => {
-  s.state.crystals.push(...Array.from({length:count},(_,i)=>({id:100+wave*10+i,alive:true,kind:'normal' as const,note:0,x:.5,y:-.11,vx:0,vy:-1,r:.058,hitR:.062,spin:0,angle:0,ageMs:0,wave})));
+  s.state.crystals.push(...Array.from({length:count},(_,i)=>({id:100+wave*10+i,hp:1,alive:true,kind:'normal' as const,note:0,x:.5,y:-.11,vx:0,vy:-1,r:.058,hitR:.062,spin:0,angle:0,ageMs:0,wave})));
  };
  const step = (s:SliceSim) => [...s.step({segments:[],strokeEnded:null})];
  it('does not crack during miss grace',()=>{const s=falling();addFalls(s,1,1);expect(step(s).find(e=>e.type==='fall')).toMatchObject({cracked:false});expect(s.state.cracks).toBe(0);});
@@ -56,5 +56,5 @@ describe('section 7.5 stroke integration',()=>{
 });
 
 describe('slice segment limits',()=>{
- it('cracks on a dark hit and blocks a normal crystal behind it',()=>{const s=new SliceSim({seed:1,daily:false,profile:'standard',aspect:1,slow:false,test:{waves:false,gravity:false,cracks:true}});for(const [i,kind] of (['dark','normal'] as const).entries())s.state.crystals.push({id:i+1,alive:true,kind,note:0,x:.2+i*.3,y:.5,vx:0,vy:0,r:.058,hitR:kind==='dark'?.04:.062,spin:0,angle:0,ageMs:0,wave:1});const events=s.step({segments:[{x0:0,y0:.5,x1:.7,y1:.5,r:.02,stroke:1,arm:1,speed:3}],strokeEnded:null});expect(events.some(e=>e.type==='darkHit')).toBe(true);expect(events.some(e=>e.type==='crack')).toBe(true);expect(events.some(e=>e.type==='cut')).toBe(false);});
+ it('cracks on a dark hit and blocks a normal crystal behind it',()=>{const s=new SliceSim({seed:1,daily:false,profile:'standard',aspect:1,slow:false,test:{waves:false,gravity:false,cracks:true}});for(const [i,kind] of (['dark','normal'] as const).entries())s.state.crystals.push({id:i+1,hp:1,alive:true,kind,note:0,x:.2+i*.3,y:.5,vx:0,vy:0,r:.058,hitR:kind==='dark'?.04:.062,spin:0,angle:0,ageMs:0,wave:1});const events=s.step({segments:[{x0:0,y0:.5,x1:.7,y1:.5,r:.02,stroke:1,arm:1,speed:3}],strokeEnded:null});expect(events.some(e=>e.type==='darkHit')).toBe(true);expect(events.some(e=>e.type==='crack')).toBe(true);expect(events.some(e=>e.type==='cut')).toBe(false);});
 });

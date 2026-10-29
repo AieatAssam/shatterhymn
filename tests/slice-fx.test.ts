@@ -14,7 +14,7 @@ describe('Slice presentation rules',()=>{
  it('enables Slice and uses its own best and daily',()=>{const save=resetSave();save.modes.slice.runs=1;save.modes.slice.bests.score=3100;save.modes.slice.daily['2026-01-01']={best:80,plays:1};const model=titleModel({save,friend:null},'2026-01-01');expect(model.slice).toMatchObject({enabled:true,best:'Best 3,100',daily:{badge:'80',played:true}});});
 });
 
-import { ExtrudeGeometry, Quaternion, Scene, Vector3 } from 'three';
+import { Color, ExtrudeGeometry, Quaternion, Scene, ShaderMaterial, Vector3 } from 'three';
 import { glyphShape } from '../src/render/glyphs';
 import { buildChordTable, chordFor, capHeat, tumbleAngle, halfScale, CAP } from '../src/render/sliceCap';
 import { SLICE_TOSS } from '../src/sim/sliceConfig';
@@ -38,7 +38,7 @@ describe('Slice cut face',()=>{
 it('the slice face is fully on screen: bellY - faceRadiusH >= 8 / 844',()=>{const faceRadiusH=5*.4/2/10;expect(SLICE_FX.bellY-faceRadiusH).toBeGreaterThanOrEqual(8/844);});
 
 import { ribbonWidthPx } from '../src/render/blade';
-import { slashAt, FlashLimiter } from '../src/render/renderer';
+import { slashAt, slashCoreWidthPx, FlashLimiter } from '../src/render/renderer';
 import { splashCount } from '../src/render/fxConfig';
 import { thwackHz } from '../src/audio/audio';
 import { Juice } from '../src/render/juice';
@@ -57,3 +57,6 @@ it('slice haptics add four milliseconds and cap at thirty',()=>{const values:num
 
 it('slash draws on, holds, then fades and shrinks through its full lifetime',()=>{expect(slashAt(0,1)).toMatchObject({draw:0,alpha:1,width:1});expect(slashAt(20,1).draw).toBe(.5);expect(slashAt(40,1).draw).toBe(1);expect(slashAt(120,1).alpha).toBe(1);expect(slashAt(220,1)).toMatchObject({alpha:.25,width:.7});expect(slashAt(320,1).width).toBeCloseTo(.4);});
 it('flash limiter accepts only one peak for ten cuts in 300 ms',()=>{const limiter=new FlashLimiter();expect(Array.from({length:10},(_,i)=>limiter.allow(i*30)).filter(Boolean)).toHaveLength(1);expect(limiter.allow(333)).toBe(true);});
+
+it('slash core matches the blade core at speed and at least at arming speed',()=>{const r=SLICE_FX.rescue.ribbon;for(const speed of [0,2.2,3,5])expect(slashCoreWidthPx(speed,false)).toBeCloseTo(ribbonWidthPx(Math.max(2.2,speed),false)*2*r.halfWidth*r.coreEdge);expect(SLICE_FX.rescue.slash.coreHdr).toBe(r.coreHdr);expect(SLICE_FX.rescue.slash.lifeMs).toBeGreaterThanOrEqual(320);expect(SLICE_FX.rescue.slash.holdMs).toBeGreaterThanOrEqual(120);});
+it('slash core uses a full-length line instead of the tapered streak',()=>{const scene=new Scene(),glow=new GlowQuads(scene);glow.begin();glow.line(0,0,1,0,0,1,new Color(3,3,3),1,SLICE_FX.rescue.slash.coreSolidEdge);glow.end();expect(glow.mesh.geometry.getAttribute('aMode').getX(0)).toBe(5);const shader=(glow.mesh.material as ShaderMaterial).fragmentShader;expect(shader).toContain('else a=1.-smoothstep(vWidth,1.,abs(vUv.y))');glow.dispose();});

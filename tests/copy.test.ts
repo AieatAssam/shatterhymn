@@ -7,6 +7,7 @@ import type { RunOutcome } from '../src/meta/runEnd';
 import { result } from './metaHelpers';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { swipeCallout } from '../src/ui/popText';
 
 function listFiles(dir: string): string[] {
   return readdirSync(dir).flatMap(name => {
@@ -17,6 +18,19 @@ function listFiles(dir: string): string[] {
 
 describe('player copy', () => {
   it('includes the lift tip', () => expect(TIPS.lift).toBe('Lift your finger to slice again!'));
+  it('includes the Slice swipe words and sub-line templates', () => {
+    expect([3, 4, 5, 6].map(n => swipeCallout(n, n * 20)?.main)).toEqual(['Nice!', 'Great!', 'Amazing!', 'Incredible!']);
+    expect(swipeCallout(3, 60)?.sub).toBe('3 in one swipe! +60');
+    expect(swipeCallout(4, 80)?.sub).toBe('4 in one swipe! +80');
+  });
+  it('includes Crystal Rush and Big crystal callouts', () => {
+    const renderer = readFileSync('src/render/renderer.ts', 'utf8');
+    const pops = readFileSync('src/ui/popText.ts', 'utf8');
+    expect(renderer).toContain('CRYSTAL RUSH!');
+    expect(renderer).toContain('You got ${e.cuts}!');
+    expect(pops).toContain('${e.hpLeft} more!');
+    expect(pops).toContain('BIG BREAK!');
+  });
   it('removes old hold and dial wording from source and documentation', () => {
     const files = listFiles('src').filter(path => /\.(ts|css|html|md)$/.test(path));
     const content = [...files.map(file => readFileSync(file, 'utf8')), readFileSync('README.md', 'utf8'), readFileSync('CREDITS.md', 'utf8')]

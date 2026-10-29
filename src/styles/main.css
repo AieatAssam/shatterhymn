@@ -222,3 +222,5 @@ body.reduce-motion .demo[data-mode=slice] .demo-hand { animation:demo-fade 1.4s 
 .title-screen.intro-arrival .mode-card { pointer-events: none; }
 
 #surface, #gl { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+
+.pop-text.slice-pop { font-family:Inter,sans-serif; background:transparent; padding:0; color:white; }
