@@ -44,7 +44,7 @@ export class Controller {
   document.addEventListener("pointerdown", unlock, true); document.addEventListener("keydown", unlock, true);
   const haptics = new Haptics({ vibrate: typeof navigator.vibrate === "function" ? navigator.vibrate.bind(navigator) : undefined, now: () => performance.now(), isIOS: /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) });
   this.haptics = haptics; this.ios = haptics.iosSwitch; this.vibrationSupported = haptics.supported; haptics.enabled = this.save.settings?.vibration !== false;
-  this.input = new Input(surface, { onTap: (x,y) => { if(this.intro) { this.skipIntro(); } else this.sim.tapAt(x,y); }, onFirstGesture: () => { void this.audio.unlock(); }, iosSwitch: haptics.iosSwitch, onPause: () => this.pause() });
+  this.input = new Input(surface, { onTap: (x,y,pointer) => { if(this.intro) { this.skipIntro(); } else this.sim.tapAt(x,y,pointer); }, onFirstGesture: () => { void this.audio.unlock(); }, iosSwitch: haptics.iosSwitch, onPause: () => this.pause() });
   this.input.setVibration(haptics.enabled);
   this.bus.on("settings", e => { haptics.enabled = e.settings.vibration; this.input.setVibration(haptics.enabled); });
   this.bus.on("strike", e => { if (e.n > 0) { if(e.n<7) haptics.play(hapticForStrike(e.n));  } });

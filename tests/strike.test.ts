@@ -57,6 +57,7 @@ describe('strike', () => {
       expect(r.events.some(e => e.type === 'mend')).toBe(cracks > 0);
     }
   });
+  it('strikes a crystal at rho 10.5', () => { const c=crystal(1,0,10.5); expect(strike(state([c])).hit).toMatchObject({n:1}); });
   it('does not target crystals outside the targetable radius', () => {
     const c = crystal(1, 0, TARGETABLE_R + 0.1); const s = state([c]);
     expect(strike(s).events).toEqual([]); expect(c.alive).toBe(true);

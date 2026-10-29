@@ -46,7 +46,7 @@ describe('simulation', () => {
     expect(levels.map(e => [e.level, e.K, e.newNote])).toEqual([[1, 3, null], [2, 4, 3], [3, 4, null], [4, 5, 4]]);
   });
   it('ends idle runs in the specified range for 20 seeds', () => {
-    for (let seed = 0; seed < 20; seed++) { const s = run(seed, false).state; expect(s.over).toBe(true); expect(s.elapsedMs).toBeGreaterThanOrEqual(14000); expect(s.elapsedMs).toBeLessThanOrEqual(70000); }
+    for (let seed = 0; seed < 20; seed++) { const s = run(seed, false).state; expect(s.over).toBe(true); expect(s.elapsedMs).toBeGreaterThanOrEqual(14000); expect(s.elapsedMs).toBeLessThanOrEqual(75000); }
   });
   it('measures urgent bot survival over 20 seeds', () => {
     const times = Array.from({ length: 20 }, (_, seed) => { const s = run(seed, true).state; return s.elapsedMs / 1000; }).sort((a, b) => a - b);

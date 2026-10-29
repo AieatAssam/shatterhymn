@@ -1,4 +1,4 @@
-import { SLICE_BLADE as C, BEGINNER_BLADE } from './sliceConfig';
+import { SLICE_BLADE as C, BEGINNER_BLADE, SLICE_AIM } from './sliceConfig';
 import type { BladeSegment } from './sliceTypes';
 type Point = {x:number;y:number;t:number};
 export type BladeTrailPoint = Point & {cutting:boolean};
@@ -7,13 +7,23 @@ export function capsuleProjection(s:BladeSegment,x:number,y:number,r:number):num
  const p=d ? Math.max(0,Math.min(1,((x-s.x0)*dx+(y-s.y0)*dy)/d)) : 0;
  return Math.hypot(x-(s.x0+p*dx),y-(s.y0+p*dy)) <= s.r+r ? p : null;
 }
+export function bladeRadiusH(pointer:'touch'|'pen'|'mouse',areaWpx:number,areaHpx:number):number {return Math.min(SLICE_AIM.bladeMaxH,Math.max(C.radius[pointer],Math.max(SLICE_AIM.bladeMinPx[pointer],SLICE_AIM.bladeShortFrac[pointer]*Math.min(areaWpx,areaHpx))/areaHpx));}
+export function sweptProjection(s:BladeSegment,c:{x:number;y:number;vx:number;vy:number;hitR:number},lag:number,g:number):number|null {
+ const ax=s.x0,ay=s.y0,ux=s.x1-ax,uy=s.y1-ay,bx=c.x-c.vx*lag,by=c.y-c.vy*lag-.5*g*lag*lag,vx=c.x-bx,vy=c.y-by;
+ const a=ux*ux+uy*uy,b=ux*vx+uy*vy,d=vx*vx+vy*vy,wx=ax-bx,wy=ay-by,e=ux*wx+uy*wy,f=vx*wx+vy*wy,den=a*d-b*b;
+ let p=den>1e-15?Math.max(0,Math.min(1,(b*f-d*e)/den)):0;
+ let q=d?Math.max(0,Math.min(1,(b*p+f)/d)):0;
+ p=a?Math.max(0,Math.min(1,(b*q-e)/a)):0;
+ q=d?Math.max(0,Math.min(1,(b*p+f)/d)):0;
+ return Math.hypot(ax+ux*p-bx-vx*q,ay+uy*p-by-vy*q)<=s.r+c.hitR?p:null;
+}
 export class Blade {
  constructor(private readonly profile:'beginner'|'standard'='standard') {}
  state:'up'|'ready'|'armed'|'cooling'='up'; speedHps=0; stroke=0; arm=0;
  readonly trail:BladeTrailPoint[]=[];
  private points:Point[]=[]; private segments:BladeSegment[]=[]; private ended:number|null=null; private radius:number=C.radius.touch;
  private armStart=0; private armPath=0; private slowSince:number|null=null; private path=0;
- begin(x:number,y:number,t:number,pointer:'touch'|'pen'|'mouse'='touch'):void {if(this.state!=='up')return;this.stroke++;this.state='ready';this.points=[{x,y,t}];this.trail.length=0;this.trail.push({x,y,t,cutting:false});this.radius=C.radius[pointer];this.speedHps=0;this.path=0;}
+ begin(x:number,y:number,t:number,pointer:'touch'|'pen'|'mouse'='touch',radiusH?:number):void {if(this.state!=='up')return;this.stroke++;this.state='ready';this.points=[{x,y,t}];this.trail.length=0;this.trail.push({x,y,t,cutting:false});this.radius=radiusH??C.radius[pointer];this.speedHps=0;this.path=0;}
  move(x:number,y:number,t:number):void {
   if(this.state==='up')return; const prev=this.points[this.points.length-1]!;if(t<prev.t)return;
   const cur={x,y,t}; this.path+=Math.hypot(x-prev.x,y-prev.y);this.points.push(cur);

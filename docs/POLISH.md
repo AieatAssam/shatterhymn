@@ -493,3 +493,8 @@ Each is one small push or can ride with any other; each stands alone.
 - P3: §2.1 timeline: hand 450 ms, auto-tap 2400 ms (earlier on slow boot), title strike + 1100 ms, hard cap 4400 ms from page load; any tap, click or key skips to the title at once while the Choir plays behind it. §14.3 Intro row: hand at 450 ms.
 - P4: §4.1 `TAP_HIT` by pointer type, overlap rule "on the crystal first", `TARGETABLE_R` 10.65. §4.5 and §6.2 early speed factors. §6.5 cut test against the crystal's last 80 ms of motion. §7.1 unchanged; new `SLICE_AIM`. §4.6 idle bound 14-75 s.
 - P5: §6.1 Slice bell at `(W/2, .13)`; §6.2 toss x margins; §13 no `BEST` line while the best is 0.
+
+
+## Lead amendment (P4, 2026-10-29)
+
+`SLICE_AIM.lagMs` is 120, not 80. With 80 ms the scripted child aim (aims where the crystal was 120 ms ago, jitter 0 to 30 px) averaged 13.75/18 over four runs; with 120 ms it scored 16, 16 and 14 of 18. 120 ms matches a child's reaction lag. Blade arming and stroke-cap values are unchanged, and the velocity e2e is identical (0.5 and 1.0 H/s cut 0, 3 H/s cut 3/3, 5 s wiggle cuts 2/24).

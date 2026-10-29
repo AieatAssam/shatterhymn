@@ -1,3 +1,4 @@
+import { tapEarlySpeed } from './config';
 import { Rng } from '../core/rng';
 import { CRYSTAL_R, FAIRNESS_ANGLE, FAIRNESS_MS, FAIRNESS_R, FAIRNESS_ROTATION, FAIRNESS_TRIES, FORMATIONS, GEODE_R, KINDS, MAX_CRYSTALS, MEND_COOLDOWN_MS, PRISM_CYCLE_MS, RING_SPEED_FACTOR, RUSHER_R, RUSHER_SPEED_FACTOR, SPAWN_COUNT_FACTOR, SPAWN_R, SPAWN_RETRY_MS, SPIRAL_ANGLE, SPIRAL_INTERVAL_MS, SPIRAL_SWIRL, SPLITTER_PUSH_MS, SWIRL_MAX, SWIRL_MIN, levelRow } from './config';
 import { ATTRACT_LEVEL, ATTRACT_FIRST_EVENT_MS, ATTRACT_EVENT_GAP_MS, EVENT_FIRST_MS, EVENT_GAP_MS, EVENT_WARN_MS, EVENT_RETRY_MS, EVENT_GIVE_UP_MS, EVENT_SEED_SALT, EVENT_WEIGHTS, GOLDEN_FROM_LEVEL, GOLDEN_SPEED, GOLDEN_SWIRL, CHORD_FROM_LEVEL, CHORD_COUNT, CHORD_ARC, CHORD_SPEED, CHORD_CAP_SLACK } from './config';
@@ -66,7 +67,7 @@ export class Spawner {
   spawn(state: SimState, note: number, theta: number, kind: Kind, speed: number, swirl: number, events: SimEvent[], rho = SPAWN_R, pushMs = 0): Crystal | undefined {
     const slot = state.crystals.find(c => !c.alive);
     if (!slot) return undefined;
-    Object.assign(slot, { id: this.nextId++, alive: true, kind, note, rho, theta, r: kind === 'geode' ? GEODE_R : kind === 'rusher' || pushMs > 0 ? RUSHER_R : CRYSTAL_R, speed, swirl, shell: kind === 'geode', prismMs: PRISM_CYCLE_MS, pushMs, ageMs: 0, x: rho * Math.cos(theta), y: rho * Math.sin(theta) });
+    Object.assign(slot, { id: this.nextId++, alive: true, kind, note, rho, theta, r: kind === 'geode' ? GEODE_R : kind === 'rusher' || pushMs > 0 ? RUSHER_R : CRYSTAL_R, speed: speed * (rho === SPAWN_R || pushMs > 0 ? tapEarlySpeed(state.profile, state.mode === 'daily' || state.mode === 'attract', state.elapsedMs) : 1), swirl, shell: kind === 'geode', prismMs: PRISM_CYCLE_MS, pushMs, ageMs: 0, x: rho * Math.cos(theta), y: rho * Math.sin(theta) });
     events.push({ type: 'spawn', id: slot.id, kind, note });
     return slot;
   }

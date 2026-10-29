@@ -14,7 +14,7 @@ export class Input {
   private enabled = true;
   private first = false;
   private label: HTMLLabelElement | null = null;
-  constructor(private readonly surface: HTMLElement, private readonly opts: { onFirstGesture: () => void; onTap?: (x: number, y: number) => void; iosSwitch: boolean; onPause?: () => void }) {
+  constructor(private readonly surface: HTMLElement, private readonly opts: { onFirstGesture: () => void; onTap?: (x: number, y: number, pointerType: StrokeSample['pointerType']) => void; iosSwitch: boolean; onPause?: () => void }) {
     if (opts.iosSwitch) {
       const doc = surface.ownerDocument;
       const label = doc.createElement("label"), toggle = doc.createElement("input");
@@ -24,7 +24,7 @@ export class Input {
       surface.replaceWith(label); label.after(toggle); this.surface = label; this.label = label;
     }
     this.surface.addEventListener("contextmenu", this.prevent);
-    this.surface.addEventListener("pointerdown", e => { if (!this.enabled || (e.pointerType === "mouse" && e.button !== 0)) return; this.gesture(); if(this.strokeHandlers){if(this.pointer!==null)return;this.pointer=e.pointerId;this.surface.setPointerCapture?.(e.pointerId);this.strokeHandlers.begin(this.sample(e));}else this.opts.onTap?.(e.clientX,e.clientY); });
+    this.surface.addEventListener("pointerdown", e => { if (!this.enabled || (e.pointerType === "mouse" && e.button !== 0)) return; this.gesture(); if(this.strokeHandlers){if(this.pointer!==null)return;this.pointer=e.pointerId;this.surface.setPointerCapture?.(e.pointerId);this.strokeHandlers.begin(this.sample(e));}else this.opts.onTap?.(e.clientX,e.clientY,this.sample(e).pointerType); });
     this.surface.addEventListener("pointermove",e=>{if(!this.enabled||this.pointer!==e.pointerId||(e.pointerType==='mouse'&&e.buttons===0))return;const coalesced=e.getCoalescedEvents?.();for(const sample of coalesced?.length?coalesced:[e])this.strokeHandlers?.move(this.sample(sample));});
     for(const name of ['pointerup','pointercancel','lostpointercapture'] as const)this.surface.addEventListener(name,e=>{if(this.pointer===e.pointerId)this.endStroke(e.timeStamp);});
     this.surface.ownerDocument?.addEventListener?.('visibilitychange',()=>{if(this.surface.ownerDocument.hidden)this.endStroke();});

@@ -1,6 +1,6 @@
 import type { Kind } from './types';
 
-export const ARENA_R = 10.0, SPAWN_R = 10.6, TARGETABLE_R = 10.2, HALO_R = 1.6;
+export const ARENA_R = 10.0, SPAWN_R = 10.6, TARGETABLE_R = 10.65, HALO_R = 1.6;
 export const CRYSTAL_R = 0.55, RUSHER_R = 0.42, GEODE_R = 0.70, CLOSE_GAP = 1.2;
 export const PRISM_BLAST_R = 3.5, CHOIR_N = 7, CHOIR_R = 5.0, FLARE_R = 3.6;
 export const MAX_CRACKS = 3, RECOVERY_MS = 150, CRACK_GRACE_MS = 1000;
@@ -47,5 +47,7 @@ export const GOLDEN_FROM_LEVEL = 1, GOLDEN_SPEED = 0.8, GOLDEN_SWIRL = 0.08, GOL
 export const CHORD_FROM_LEVEL = 2, CHORD_COUNT = 7, CHORD_ARC = 1.5, CHORD_SPEED = 0.75, CHORD_CAP_SLACK = 3;
 export const EVENT_RETRY_MS = 250, EVENT_GIVE_UP_MS = 6000, EVENT_WEIGHTS = { golden: 3, chord: 2 } as const, EVENT_SEED_SALT = 0x5eede7e7;
 
-export const TAP_HIT = { minPx: 48, scale: 1.25, tieEps: 0.02, bellScale: 1.3 } as const;
+export const TAP_HIT = { minPx: { touch: 52, pen: 48, mouse: 40 }, shortFrac: { touch: .135, pen: .12, mouse: .09 }, maxPx: { touch: 72, pen: 64, mouse: 52 }, scale: { touch: 1.45, pen: 1.35, mouse: 1.2 }, tieEps: 0.02, bellScale: 1.3 } as const;
+export const TAP_EARLY = { beginner: { factor: .80, holdMs: 20000, rampMs: 10000 }, standard: { factor: .90, holdMs: 10000, rampMs: 10000 } } as const;
+export function tapEarlySpeed(profile: 'beginner'|'standard', daily: boolean, elapsedMs: number): number { const c = TAP_EARLY[profile]; return daily ? 1 : c.factor + (1-c.factor)*Math.max(0,Math.min(1,(elapsedMs-c.holdMs)/c.rampMs)); }
 export const TAP_OPENING = { crownAtMs: 300, crownCount: 8, crownRho: 7.0, crownSpeed: 0.35, crownSwirl: 0.10, followAtMs: 2200, followCount: 5, followArc: 1.0, followSpeedFactor: 0.85, followCapSlack: 5, spawnerStartMs: 4000 } as const;

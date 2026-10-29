@@ -5,7 +5,7 @@ export interface SliceInput { segments:readonly BladeSegment[]; strokeEnded:numb
 export type SliceEvent =
  | {type:'toss';id:number;note:number;kind:'normal'|'dark'}
  | {type:'cut';id:number;x:number;y:number;vx:number;vy:number;angle:number;note:number;k:number;chainStep:number;points:number;dirX:number;dirY:number;speed:number}
- | {type:'darkHit';id:number;x:number;y:number;cracked:boolean}
+ | {type:'darkHit';id:number;x:number;y:number;cracked:boolean;stroke:number;arm:number}
  | {type:'choir';note:number;n:number;swept:{id:number;x:number;y:number;note:number}[];points:number}
  | {type:'strokeEnd';cuts:number;bonus:number}
  | {type:'fall';id:number;x:number;note:number;cracked:boolean;warning:boolean}
