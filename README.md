@@ -14,6 +14,11 @@ Tap or slice glowing crystals and keep the singing bell safe. Shatterhymn is a f
   <img src="docs/media/slice.gif" alt="Slice mode" width="220" />
 </p>
 
+<p align="center">
+  <img src="docs/media/cutface.gif" alt="Slice cut faces glow and cool, slowed down 4x" width="220" /><br/>
+  <sub>Cut halves show a glowing cut face (slowed down 4x)</sub>
+</p>
+
 ## Play now
 
 [Play Shatterhymn](https://aieatassam.github.io/shatterhymn/) in a modern mobile or desktop browser. Saves stay on your device.
@@ -24,7 +29,7 @@ Tap or slice glowing crystals and keep the singing bell safe. Shatterhymn is a f
 
 **Slice:** Swipe fast through crystals as they fly up. Slice the same colour in one swipe for a combo. Don't hit dark crystals, and don't let crystals fall. A slow drag does not cut: the blade cuts only above 1.4 screen-heights per second. Each cutting burst stops after 350 ms, 1.5 screen-heights or 6 cuts.
 
-Each mode has its own best score and Daily game.
+Each mode has its own best score and Daily game. The short intro on first launch can be skipped with any tap, click or key.
 
 | Mode | Controls |
 |---|---|
